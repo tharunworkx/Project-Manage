@@ -1,15 +1,25 @@
 import React, { useState } from 'react';
-import { ShieldCheck, UserCheck, Users, Search, MoreVertical, Plus, CheckCircle2, AlertCircle } from 'lucide-react';
+import {
+  ShieldCheck,
+  UserCheck,
+  Search,
+  Plus,
+  MoreVertical,
+  Briefcase,
+  Users2,
+  Mail,
+  CheckCircle2,
+} from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { toast } from 'sonner';
 
 const INITIAL_USERS = [
-  { id: '1', name: 'Tharun R', email: 'tharun.workx@gmail.com', role: 'admin', status: 'Active', avatar: 'TR' },
-  { id: '2', name: 'Alex Johnson', email: 'alex.j@company.com', role: 'project_manager', status: 'Active', avatar: 'AJ' },
-  { id: '3', name: 'Maria Garcia', email: 'maria.g@company.com', role: 'team_member', status: 'Active', avatar: 'MG' },
-  { id: '4', name: 'David Chen', email: 'david.c@company.com', role: 'team_member', status: 'Active', avatar: 'DC' },
-  { id: '5', name: 'Sophie Taylor', email: 'sophie.t@company.com', role: 'project_manager', status: 'Active', avatar: 'ST' },
-  { id: '6', name: 'Liam Wilson', email: 'liam.w@company.com', role: 'team_member', status: 'Invited', avatar: 'LW' },
+  { id: '1', name: 'Tharun R', email: 'tharun.workx@gmail.com', role: 'admin', status: 'Active', avatar: 'TR', color: '#E8831D' },
+  { id: '2', name: 'Alex Johnson', email: 'alex.j@company.com', role: 'admin', status: 'Active', avatar: 'AJ', color: '#0C66E4' },
+  { id: '3', name: 'Maria Garcia', email: 'maria.g@company.com', role: 'team_member', status: 'Active', avatar: 'MG', color: '#579DFF' },
+  { id: '4', name: 'David Chen', email: 'david.c@company.com', role: 'team_member', status: 'Active', avatar: 'DC', color: '#4BCE97' },
+  { id: '5', name: 'Sophie Taylor', email: 'sophie.t@company.com', role: 'team_member', status: 'Active', avatar: 'ST', color: '#BA75FF' },
+  { id: '6', name: 'Liam Wilson', email: 'liam.w@company.com', role: 'team_member', status: 'Invited', avatar: 'LW', color: '#F5CD47' },
 ];
 
 export default function UserManagement() {
@@ -22,7 +32,7 @@ export default function UserManagement() {
 
   const handleRoleChange = (userId, newRole) => {
     setUsers(users.map(u => u.id === userId ? { ...u, role: newRole } : u));
-    toast.success(`User role updated to ${newRole.replace('_', ' ')}`);
+    toast.success(`User role updated to ${newRole === 'admin' ? 'Admin / Project Manager' : 'Team Member'}`);
   };
 
   const handleInvite = (e) => {
@@ -35,12 +45,13 @@ export default function UserManagement() {
       role: inviteRole,
       status: 'Invited',
       avatar: (inviteName ? inviteName.substring(0, 2) : inviteEmail.substring(0, 2)).toUpperCase(),
+      color: inviteRole === 'admin' ? '#0C66E4' : '#4BCE97',
     };
     setUsers([newUser, ...users]);
     setInviteEmail('');
     setInviteName('');
     setIsInviteOpen(false);
-    toast.success(`Invitation sent to ${inviteEmail} as ${inviteRole.replace('_', ' ')}`);
+    toast.success(`Invitation sent to ${inviteEmail} as ${inviteRole === 'admin' ? 'Admin / Project Manager' : 'Team Member'}`);
   };
 
   const filteredUsers = users.filter(u =>
@@ -49,76 +60,86 @@ export default function UserManagement() {
     u.role.toLowerCase().includes(search.toLowerCase())
   );
 
+  const adminCount = users.filter(u => u.role === 'admin').length;
+  const memberCount = users.filter(u => u.role === 'team_member').length;
+
   return (
     <div className="p-8 space-y-6 max-w-6xl mx-auto">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <div className="flex items-center gap-2.5">
-            <ShieldCheck className="h-6 w-6 text-[#0C66E4] dark:text-[#579DFF]" />
+            <div className="h-9 w-9 rounded-xl bg-[#0C66E4]/10 dark:bg-[#579DFF]/15 border border-[#0C66E4]/25 flex items-center justify-center text-[#0C66E4] dark:text-[#579DFF]">
+              <ShieldCheck className="h-5 w-5" />
+            </div>
             <h1 className="text-2xl font-extrabold text-slate-900 dark:text-[#DEE4EA]">User Management</h1>
           </div>
-          <p className="text-xs text-slate-500 dark:text-[#9FADBC] mt-1">
-            Admin console: Manage team access, assign Project Managers, and configure permissions.
+          <p className="text-xs text-slate-500 dark:text-[#9FADBC] mt-1 ml-11.5">
+            Admin console: Manage team access, assign roles, and configure project permissions.
           </p>
         </div>
 
-        <Button onClick={() => setIsInviteOpen(true)} className="gap-2">
+        <Button onClick={() => setIsInviteOpen(true)} className="gap-2 bg-[#0C66E4] hover:bg-[#0055CC] text-white">
           <Plus className="h-4 w-4" />
           <span>Invite New User</span>
         </Button>
       </div>
 
-      {/* Role Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="rounded-xl border border-slate-200 dark:border-[#282E33] bg-white dark:bg-[#161A1D] p-4 flex items-center justify-between">
-          <div>
-            <span className="text-xs font-semibold text-slate-500 dark:text-[#9FADBC]">Administrators</span>
-            <p className="text-2xl font-bold text-slate-900 dark:text-[#DEE4EA]">
-              {users.filter(u => u.role === 'admin').length}
-            </p>
+      {/* Exactly 2 Role Summary Cards with Coloured Lucide Logos */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {/* Card 1: Admin / Project Managers */}
+        <div className="rounded-2xl border border-slate-200 dark:border-[#282E33] bg-white dark:bg-[#161A1D] p-5 flex items-center justify-between shadow-xs hover:border-[#0C66E4]/40 transition-colors">
+          <div className="space-y-1">
+            <span className="text-xs font-semibold text-slate-500 dark:text-[#9FADBC]">
+              Admin / Project Managers
+            </span>
+            <div className="flex items-baseline gap-2">
+              <p className="text-3xl font-extrabold text-slate-900 dark:text-[#DEE4EA]">
+                {adminCount}
+              </p>
+              <span className="text-xs text-slate-400">overseeing projects</span>
+            </div>
           </div>
-          <div className="h-10 w-10 rounded-lg bg-indigo-500/10 text-indigo-500 flex items-center justify-center font-bold">
-            👑
-          </div>
-        </div>
-
-        <div className="rounded-xl border border-slate-200 dark:border-[#282E33] bg-white dark:bg-[#161A1D] p-4 flex items-center justify-between">
-          <div>
-            <span className="text-xs font-semibold text-slate-500 dark:text-[#9FADBC]">Project Managers</span>
-            <p className="text-2xl font-bold text-slate-900 dark:text-[#DEE4EA]">
-              {users.filter(u => u.role === 'project_manager').length}
-            </p>
-          </div>
-          <div className="h-10 w-10 rounded-lg bg-blue-500/10 text-blue-500 flex items-center justify-center font-bold">
-            💼
+          {/* Coloured Logo Box with Sidebar-style Icon */}
+          <div className="h-12 w-12 rounded-2xl bg-[#0C66E4]/10 dark:bg-[#579DFF]/15 border border-[#0C66E4]/30 flex items-center justify-center text-[#0C66E4] dark:text-[#579DFF] shadow-xs">
+            <ShieldCheck className="h-6 w-6 stroke-[2]" />
           </div>
         </div>
 
-        <div className="rounded-xl border border-slate-200 dark:border-[#282E33] bg-white dark:bg-[#161A1D] p-4 flex items-center justify-between">
-          <div>
-            <span className="text-xs font-semibold text-slate-500 dark:text-[#9FADBC]">Team Members</span>
-            <p className="text-2xl font-bold text-slate-900 dark:text-[#DEE4EA]">
-              {users.filter(u => u.role === 'team_member').length}
-            </p>
+        {/* Card 2: Team Members */}
+        <div className="rounded-2xl border border-slate-200 dark:border-[#282E33] bg-white dark:bg-[#161A1D] p-5 flex items-center justify-between shadow-xs hover:border-emerald-500/40 transition-colors">
+          <div className="space-y-1">
+            <span className="text-xs font-semibold text-slate-500 dark:text-[#9FADBC]">
+              Team Members
+            </span>
+            <div className="flex items-baseline gap-2">
+              <p className="text-3xl font-extrabold text-slate-900 dark:text-[#DEE4EA]">
+                {memberCount}
+              </p>
+              <span className="text-xs text-slate-400">working on tasks</span>
+            </div>
           </div>
-          <div className="h-10 w-10 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center font-bold">
-            👤
+          {/* Coloured Logo Box with Sidebar-style Icon */}
+          <div className="h-12 w-12 rounded-2xl bg-emerald-500/10 dark:bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shadow-xs">
+            <UserCheck className="h-6 w-6 stroke-[2]" />
           </div>
         </div>
       </div>
 
       {/* Invite Modal */}
       {isInviteOpen && (
-        <div className="rounded-2xl border border-indigo-200 dark:border-indigo-500/30 bg-indigo-50/50 dark:bg-indigo-950/20 p-5 space-y-4">
-          <h3 className="font-semibold text-sm text-slate-900 dark:text-[#DEE4EA]">Invite Member to Workspace</h3>
+        <div className="rounded-2xl border border-[#0C66E4]/30 bg-blue-50/50 dark:bg-[#1C2B41]/40 p-5 space-y-4">
+          <div className="flex items-center gap-2">
+            <Users2 className="h-4 w-4 text-[#0C66E4] dark:text-[#579DFF]" />
+            <h3 className="font-semibold text-sm text-slate-900 dark:text-[#DEE4EA]">Invite Member to Workspace</h3>
+          </div>
           <form onSubmit={handleInvite} className="grid grid-cols-1 sm:grid-cols-4 gap-3">
             <input
               type="text"
               placeholder="Full name"
               value={inviteName}
               onChange={(e) => setInviteName(e.target.value)}
-              className="h-9 px-3 rounded-lg border border-slate-200 dark:border-[#333C44] bg-white dark:bg-[#22272B] text-xs text-slate-900 dark:text-[#DEE4EA]"
+              className="h-9 px-3 rounded-xl border border-slate-200 dark:border-[#333C44] bg-white dark:bg-[#22272B] text-xs text-slate-900 dark:text-[#DEE4EA]"
             />
             <input
               type="email"
@@ -126,19 +147,18 @@ export default function UserManagement() {
               placeholder="Email address"
               value={inviteEmail}
               onChange={(e) => setInviteEmail(e.target.value)}
-              className="h-9 px-3 rounded-lg border border-slate-200 dark:border-[#333C44] bg-white dark:bg-[#22272B] text-xs text-slate-900 dark:text-[#DEE4EA]"
+              className="h-9 px-3 rounded-xl border border-slate-200 dark:border-[#333C44] bg-white dark:bg-[#22272B] text-xs text-slate-900 dark:text-[#DEE4EA]"
             />
             <select
               value={inviteRole}
               onChange={(e) => setInviteRole(e.target.value)}
-              className="h-9 px-3 rounded-lg border border-slate-200 dark:border-[#333C44] bg-white dark:bg-[#22272B] text-xs text-slate-900 dark:text-[#DEE4EA]"
+              className="h-9 px-3 rounded-xl border border-slate-200 dark:border-[#333C44] bg-white dark:bg-[#22272B] text-xs text-slate-900 dark:text-[#DEE4EA] font-medium"
             >
               <option value="team_member">Team Member (Default)</option>
-              <option value="project_manager">Project Manager</option>
-              <option value="admin">Admin</option>
+              <option value="admin">Admin / Project Manager</option>
             </select>
             <div className="flex gap-2">
-              <Button type="submit" className="flex-1 h-9 text-xs">Send Invite</Button>
+              <Button type="submit" className="flex-1 h-9 text-xs bg-[#0C66E4] hover:bg-[#0055CC] text-white">Send Invite</Button>
               <Button type="button" variant="outline" onClick={() => setIsInviteOpen(false)} className="h-9 text-xs">Cancel</Button>
             </div>
           </form>
@@ -155,7 +175,7 @@ export default function UserManagement() {
               placeholder="Filter users..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full h-8.5 pl-8.5 pr-3 rounded-lg border border-slate-200 dark:border-[#333C44] bg-slate-50 dark:bg-[#22272B] text-xs text-slate-900 dark:text-[#DEE4EA] focus:outline-none"
+              className="w-full h-8.5 pl-8.5 pr-3 rounded-xl border border-slate-200 dark:border-[#333C44] bg-slate-50 dark:bg-[#22272B] text-xs text-slate-900 dark:text-[#DEE4EA] focus:outline-none"
             />
           </div>
           <span className="text-xs text-slate-500 dark:text-[#738496]">{filteredUsers.length} total users</span>
@@ -167,6 +187,7 @@ export default function UserManagement() {
               <tr>
                 <th className="py-3 px-4 font-semibold">User</th>
                 <th className="py-3 px-4 font-semibold">Email</th>
+                <th className="py-3 px-4 font-semibold">Role Badge</th>
                 <th className="py-3 px-4 font-semibold">Role & Permissions</th>
                 <th className="py-3 px-4 font-semibold">Status</th>
                 <th className="py-3 px-4 font-semibold text-right">Actions</th>
@@ -177,31 +198,49 @@ export default function UserManagement() {
                 <tr key={user.id} className="hover:bg-slate-50/70 dark:hover:bg-[#22272B]/50 transition-colors">
                   <td className="py-3 px-4">
                     <div className="flex items-center gap-3">
-                      <div className="h-8 w-8 rounded-full bg-[#E8831D] text-[#0C162D] font-bold text-xs flex items-center justify-center">
+                      <div
+                        className="h-8.5 w-8.5 rounded-full text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-xs"
+                        style={{ backgroundColor: user.color || '#0C66E4' }}
+                      >
                         {user.avatar}
                       </div>
                       <div>
                         <span className="font-semibold text-slate-900 dark:text-[#DEE4EA]">{user.name}</span>
-                        {user.role === 'admin' && (
-                          <span className="ml-1.5 px-1.5 py-0.5 rounded text-[10px] bg-amber-500/10 text-amber-600 dark:text-amber-400 font-medium">
-                            Admin
-                          </span>
+                        {user.id === '1' && (
+                          <span className="ml-1.5 text-[10px] text-slate-400">(You)</span>
                         )}
                       </div>
                     </div>
                   </td>
                   <td className="py-3 px-4 text-slate-600 dark:text-[#9FADBC]">{user.email}</td>
+
+                  {/* Coloured Badge with Lucide Icon */}
+                  <td className="py-3 px-4">
+                    {user.role === 'admin' ? (
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-[#0C66E4]/10 dark:bg-[#579DFF]/15 text-[#0C66E4] dark:text-[#579DFF] border border-[#0C66E4]/30">
+                        <ShieldCheck className="h-3.5 w-3.5 stroke-[2.2]" />
+                        <span>Admin / Project Manager</span>
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
+                        <UserCheck className="h-3.5 w-3.5 stroke-[2.2]" />
+                        <span>Team Member</span>
+                      </span>
+                    )}
+                  </td>
+
+                  {/* Editable Role Dropdown */}
                   <td className="py-3 px-4">
                     <select
-                      value={user.role}
+                      value={user.role === 'admin' ? 'admin' : 'team_member'}
                       onChange={(e) => handleRoleChange(user.id, e.target.value)}
-                      className="px-2.5 py-1 rounded-md border border-slate-200 dark:border-[#333C44] bg-white dark:bg-[#22272B] text-xs text-slate-900 dark:text-[#DEE4EA] font-medium cursor-pointer"
+                      className="px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-[#333C44] bg-white dark:bg-[#22272B] text-xs text-slate-900 dark:text-[#DEE4EA] font-semibold cursor-pointer focus:outline-none"
                     >
-                      <option value="admin">Admin</option>
-                      <option value="project_manager">Project Manager</option>
+                      <option value="admin">Admin / Project Manager</option>
                       <option value="team_member">Team Member</option>
                     </select>
                   </td>
+
                   <td className="py-3 px-4">
                     <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium ${
                       user.status === 'Active'
@@ -212,9 +251,10 @@ export default function UserManagement() {
                       {user.status}
                     </span>
                   </td>
+
                   <td className="py-3 px-4 text-right">
                     <button
-                      onClick={() => toast.info(`Viewing details for ${user.name}`)}
+                      onClick={() => toast.info(`Viewing profile and permissions for ${user.name}`)}
                       className="p-1 rounded hover:bg-slate-100 dark:hover:bg-[#282E33] text-slate-400 hover:text-slate-700 dark:text-[#738496] cursor-pointer"
                     >
                       <MoreVertical className="h-4 w-4" />

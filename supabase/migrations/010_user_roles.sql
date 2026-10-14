@@ -1,15 +1,15 @@
 -- 010_user_roles.sql
--- Configure 3 user roles: 'admin', 'project_manager', 'team_member'
+-- Configure 2 user roles: 'admin' (Admin / Project Manager) and 'team_member' (Team Member)
 
 -- 1. Add role column to profiles table if not present
 ALTER TABLE public.profiles 
 ADD COLUMN IF NOT EXISTS role TEXT DEFAULT 'team_member' 
-CHECK (role IN ('admin', 'project_manager', 'team_member'));
+CHECK (role IN ('admin', 'team_member'));
 
 -- 2. Add role column to workspace_members if not present
 ALTER TABLE public.workspace_members 
 ADD COLUMN IF NOT EXISTS role TEXT DEFAULT 'team_member' 
-CHECK (role IN ('admin', 'project_manager', 'team_member', 'owner'));
+CHECK (role IN ('admin', 'team_member', 'owner'));
 
 -- 3. Designate the primary user as Admin
 UPDATE public.profiles 
@@ -28,15 +28,14 @@ BEGIN
     new.id,
     COALESCE(new.raw_user_meta_data->>'full_name', 'New Member'),
     COALESCE(new.raw_user_meta_data->>'avatar_url', ''),
-    COALESCE(new.raw_user_meta_data->>'role', 'team_member')
+    'team_member'
   )
   ON CONFLICT (id) DO UPDATE
   SET 
     full_name = EXCLUDED.full_name,
     role = CASE 
-      -- Retain admin if already set, otherwise default to team_member
       WHEN profiles.role = 'admin' THEN 'admin'
-      ELSE COALESCE(new.raw_user_meta_data->>'role', 'team_member')
+      ELSE 'team_member'
     END;
 
   RETURN new;

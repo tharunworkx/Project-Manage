@@ -12,6 +12,7 @@ import {
   BarChart3,
   Settings,
   ShieldCheck,
+  UserCheck,
   Sliders,
   ChevronsUpDown,
   Search,
@@ -23,49 +24,37 @@ import { toast } from 'sonner';
 
 export function AppSidebar6() {
   const { isOpen } = useSidebar();
-  const { role } = useAuthContext();
+  const { role, isAdmin } = useAuthContext();
   const [searchFilter, setSearchFilter] = useState('');
   const [hoveredId, setHoveredId] = useState(null);
 
-  // Define sidebar items according to the 3 roles from specifications
+  // Navigation items for the 2 user roles
   const getNavItemsForRole = () => {
-    switch (role) {
-      case ROLES.ADMIN:
-        return [
-          { label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
-          { label: 'My Tasks', path: '/tasks', icon: CheckSquare },
-          { label: 'Projects', path: '/projects', icon: FolderKanban },
-          { label: 'Calendar', path: '/calendar', icon: Calendar },
-          { label: 'Activity', path: '/activity', icon: Activity },
-          { label: 'Notifications', path: '/notifications', icon: Bell },
-          { label: 'Team Members', path: '/team', icon: Users2 },
-          { label: 'Reports & Analytics', path: '/reports', icon: BarChart3 },
-          { label: 'Workspace Settings', path: '/settings', icon: Settings },
-          { label: 'User Management', path: '/users', icon: ShieldCheck },
-          { label: 'Preferences', path: '/preferences', icon: Sliders },
-        ];
-      case ROLES.PROJECT_MANAGER:
-        return [
-          { label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
-          { label: 'My Tasks', path: '/tasks', icon: CheckSquare },
-          { label: 'Projects', path: '/projects', icon: FolderKanban },
-          { label: 'Calendar', path: '/calendar', icon: Calendar },
-          { label: 'Activity', path: '/activity', icon: Activity },
-          { label: 'Notifications', path: '/notifications', icon: Bell },
-          { label: 'Team Members', path: '/team', icon: Users2 },
-          { label: 'Reports & Analytics', path: '/reports', icon: BarChart3 },
-          { label: 'Preferences', path: '/preferences', icon: Sliders },
-        ];
-      case ROLES.TEAM_MEMBER:
-      default:
-        return [
-          { label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
-          { label: 'My Tasks', path: '/tasks', icon: CheckSquare },
-          { label: 'Projects', path: '/projects', icon: FolderKanban },
-          { label: 'Calendar', path: '/calendar', icon: Calendar },
-          { label: 'Notifications', path: '/notifications', icon: Bell },
-          { label: 'Preferences', path: '/preferences', icon: Sliders },
-        ];
+    if (isAdmin) {
+      // User 1 — Admin / Project Manager (11 items)
+      return [
+        { label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
+        { label: 'My Tasks', path: '/tasks', icon: CheckSquare },
+        { label: 'Projects', path: '/projects', icon: FolderKanban },
+        { label: 'Calendar', path: '/calendar', icon: Calendar },
+        { label: 'Activity', path: '/activity', icon: Activity },
+        { label: 'Notifications', path: '/notifications', icon: Bell },
+        { label: 'Team Members', path: '/team', icon: Users2 },
+        { label: 'Reports & Analytics', path: '/reports', icon: BarChart3 },
+        { label: 'Workspace Settings', path: '/settings', icon: Settings },
+        { label: 'User Management', path: '/users', icon: ShieldCheck },
+        { label: 'Preferences', path: '/preferences', icon: Sliders },
+      ];
+    } else {
+      // User 2 — Team Member (6 items)
+      return [
+        { label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
+        { label: 'My Tasks', path: '/tasks', icon: CheckSquare },
+        { label: 'Projects', path: '/projects', icon: FolderKanban },
+        { label: 'Calendar', path: '/calendar', icon: Calendar },
+        { label: 'Notifications', path: '/notifications', icon: Bell },
+        { label: 'Preferences', path: '/preferences', icon: Sliders },
+      ];
     }
   };
 
@@ -74,15 +63,9 @@ export function AppSidebar6() {
     item.label.toLowerCase().includes(searchFilter.toLowerCase())
   );
 
-  const getRoleDisplayName = () => {
-    if (role === ROLES.ADMIN) return '👑 Admin';
-    if (role === ROLES.PROJECT_MANAGER) return '💼 Project Manager';
-    return '👤 Team Member';
-  };
-
   return (
     <div className="relative flex select-none shrink-0 z-30">
-      {/* Static In-Dashboard Sidebar Panel */}
+      {/* Sidebar Panel */}
       <aside
         className={`flex flex-col border-r border-slate-200 dark:border-[#282E33] bg-white dark:bg-[#161A1D] text-slate-800 dark:text-[#DEE4EA] h-[calc(100vh-3.5rem)] transition-all duration-200 ease-in-out overflow-hidden ${
           isOpen ? 'w-64 min-w-[256px]' : 'w-0 min-w-0 border-r-0'
@@ -92,7 +75,7 @@ export function AppSidebar6() {
           {/* Workspace Switcher Header & Active Role Indicator */}
           <div className="pb-3 border-b border-slate-200 dark:border-[#282E33]/70 shrink-0">
             <button
-              onClick={() => toast.info(`Current Role: ${getRoleDisplayName()}`)}
+              onClick={() => toast.info(`Active Role: ${isAdmin ? 'Admin / Project Manager' : 'Team Member'}`)}
               className="flex w-full items-center justify-between p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-[#22272B] transition cursor-pointer group"
             >
               <div className="flex items-center gap-2.5 min-w-0">
@@ -104,9 +87,18 @@ export function AppSidebar6() {
                     Southern Rescue Ser...
                   </h3>
                   <div className="flex items-center gap-1.5 mt-0.5">
-                    <span className="text-[10px] font-semibold px-1.5 py-0.2 rounded bg-slate-100 dark:bg-[#22272B] text-slate-600 dark:text-[#579DFF] border border-slate-200 dark:border-[#333C44]">
-                      {getRoleDisplayName()}
-                    </span>
+                    {/* Coloured Logo Badge with Sidebar-style Icon */}
+                    {isAdmin ? (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-md bg-[#0C66E4]/10 dark:bg-[#579DFF]/15 text-[#0C66E4] dark:text-[#579DFF] border border-[#0C66E4]/25">
+                        <ShieldCheck className="h-3 w-3 stroke-[2.2]" />
+                        <span>Admin / PM</span>
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-md bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25">
+                        <UserCheck className="h-3 w-3 stroke-[2.2]" />
+                        <span>Team Member</span>
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>
@@ -129,7 +121,7 @@ export function AppSidebar6() {
             </div>
           </div>
 
-          {/* Scrollable Navigation List */}
+          {/* Navigation Items List with Smooth Sliding Pill */}
           <div
             onMouseLeave={() => setHoveredId(null)}
             className="flex-1 overflow-y-auto py-2 space-y-1"

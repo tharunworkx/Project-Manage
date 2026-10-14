@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
-import { Users2, Search, Mail, CheckCircle2, Shield, Briefcase, User } from 'lucide-react';
+import { Users2, Search, Mail, ShieldCheck, UserCheck } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { toast } from 'sonner';
 
 const MEMBERS = [
   { id: '1', name: 'Tharun R', email: 'tharun.workx@gmail.com', role: 'admin', activeTasks: 5, avatar: 'TR', color: '#E8831D' },
-  { id: '2', name: 'Alex Johnson', email: 'alex.j@company.com', role: 'project_manager', activeTasks: 8, avatar: 'AJ', color: '#0C66E4' },
+  { id: '2', name: 'Alex Johnson', email: 'alex.j@company.com', role: 'admin', activeTasks: 8, avatar: 'AJ', color: '#0C66E4' },
   { id: '3', name: 'Maria Garcia', email: 'maria.g@company.com', role: 'team_member', activeTasks: 4, avatar: 'MG', color: '#579DFF' },
   { id: '4', name: 'David Chen', email: 'david.c@company.com', role: 'team_member', activeTasks: 6, avatar: 'DC', color: '#4BCE97' },
-  { id: '5', name: 'Sophie Taylor', email: 'sophie.t@company.com', role: 'project_manager', activeTasks: 7, avatar: 'ST', color: '#BA75FF' },
+  { id: '5', name: 'Sophie Taylor', email: 'sophie.t@company.com', role: 'team_member', activeTasks: 7, avatar: 'ST', color: '#BA75FF' },
   { id: '6', name: 'Liam Wilson', email: 'liam.w@company.com', role: 'team_member', activeTasks: 2, avatar: 'LW', color: '#F5CD47' },
 ];
 
@@ -23,37 +23,33 @@ export default function TeamMembers() {
   });
 
   const getRoleBadge = (role) => {
-    switch (role) {
-      case 'admin':
-        return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
-            <Shield className="h-3 w-3" /> Admin
-          </span>
-        );
-      case 'project_manager':
-        return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
-            <Briefcase className="h-3 w-3" /> Project Manager
-          </span>
-        );
-      default:
-        return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-            <User className="h-3 w-3" /> Team Member
-          </span>
-        );
+    if (role === 'admin') {
+      return (
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg text-[11px] font-semibold bg-[#0C66E4]/10 dark:bg-[#579DFF]/15 text-[#0C66E4] dark:text-[#579DFF] border border-[#0C66E4]/25">
+          <ShieldCheck className="h-3.5 w-3.5 stroke-[2.2]" />
+          <span>Admin / Project Manager</span>
+        </span>
+      );
     }
+    return (
+      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg text-[11px] font-semibold bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25">
+        <UserCheck className="h-3.5 w-3.5 stroke-[2.2]" />
+        <span>Team Member</span>
+      </span>
+    );
   };
 
   return (
     <div className="p-8 space-y-6 max-w-6xl mx-auto">
       <div>
         <div className="flex items-center gap-2.5">
-          <Users2 className="h-6 w-6 text-[#0C66E4] dark:text-[#579DFF]" />
+          <div className="h-9 w-9 rounded-xl bg-[#0C66E4]/10 dark:bg-[#579DFF]/15 border border-[#0C66E4]/25 flex items-center justify-center text-[#0C66E4] dark:text-[#579DFF]">
+            <Users2 className="h-5 w-5" />
+          </div>
           <h1 className="text-2xl font-extrabold text-slate-900 dark:text-[#DEE4EA]">Team Members</h1>
         </div>
-        <p className="text-xs text-slate-500 dark:text-[#9FADBC] mt-1">
-          Collaborators, project managers, and contributors active in this workspace.
+        <p className="text-xs text-slate-500 dark:text-[#9FADBC] mt-1 ml-11.5">
+          Workspace directory: Admins / Project Managers and collaborating Team Members.
         </p>
       </div>
 
@@ -71,17 +67,21 @@ export default function TeamMembers() {
         </div>
 
         <div className="flex gap-2 w-full sm:w-auto">
-          {['all', 'admin', 'project_manager', 'team_member'].map((r) => (
+          {[
+            { id: 'all', label: 'All Users' },
+            { id: 'admin', label: 'Admin / Project Managers' },
+            { id: 'team_member', label: 'Team Members' },
+          ].map((tab) => (
             <button
-              key={r}
-              onClick={() => setFilterRole(r)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-medium transition cursor-pointer capitalize ${
-                filterRole === r
-                  ? 'bg-[#0C66E4] text-white'
+              key={tab.id}
+              onClick={() => setFilterRole(tab.id)}
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer ${
+                filterRole === tab.id
+                  ? 'bg-[#0C66E4] text-white shadow-xs'
                   : 'bg-white dark:bg-[#161A1D] border border-slate-200 dark:border-[#282E33] text-slate-600 dark:text-[#9FADBC] hover:bg-slate-50 dark:hover:bg-[#22272B]'
               }`}
             >
-              {r === 'all' ? 'All Roles' : r.replace('_', ' ')}
+              {tab.label}
             </button>
           ))}
         </div>
@@ -112,14 +112,14 @@ export default function TeamMembers() {
             <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-[#282E33]/60 text-xs">
               <div>{getRoleBadge(member.role)}</div>
               <div className="text-slate-500 dark:text-[#738496]">
-                <strong className="text-slate-900 dark:text-[#DEE4EA]">{member.activeTasks}</strong> active tasks
+                <strong className="text-slate-900 dark:text-[#DEE4EA]">{member.activeTasks}</strong> tasks
               </div>
             </div>
 
             <Button
               variant="outline"
               size="sm"
-              onClick={() => toast.info(`Viewing profile for ${member.name}`)}
+              onClick={() => toast.info(`Direct message: ${member.name}`)}
               className="w-full text-xs h-8"
             >
               <Mail className="h-3.5 w-3.5 mr-1.5" />

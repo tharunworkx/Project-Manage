@@ -9,14 +9,17 @@ export function AuthProvider({ children }) {
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Role state: defaults to 'admin' for Tharun/initial admin, persisted in localStorage
+  // Role state: 'admin' (Admin / Project Manager) or 'team_member' (Team Member)
   const [role, setRoleState] = useState(() => {
-    return localStorage.getItem('taskora_role') || ROLES.ADMIN;
+    const saved = localStorage.getItem('taskora_role');
+    if (saved === 'team_member') return ROLES.TEAM_MEMBER;
+    return ROLES.ADMIN;
   });
 
   const setRole = (newRole) => {
-    setRoleState(newRole);
-    localStorage.setItem('taskora_role', newRole);
+    const targetRole = newRole === 'team_member' ? ROLES.TEAM_MEMBER : ROLES.ADMIN;
+    setRoleState(targetRole);
+    localStorage.setItem('taskora_role', targetRole);
   };
 
   useEffect(() => {
@@ -25,17 +28,15 @@ export function AuthProvider({ children }) {
       const currentUser = session?.user ?? null;
       setUser(currentUser);
 
-      // Determine role from profile or metadata
       if (currentUser) {
         const userEmail = currentUser.email?.toLowerCase() || '';
         const metaRole = currentUser.user_metadata?.role;
 
         if (userEmail.includes('tharun')) {
           setRole(ROLES.ADMIN);
-        } else if (metaRole) {
-          setRole(metaRole);
+        } else if (metaRole === 'admin' || metaRole === 'project_manager') {
+          setRole(ROLES.ADMIN);
         } else {
-          // New user default
           setRole(ROLES.TEAM_MEMBER);
         }
       }
@@ -52,8 +53,8 @@ export function AuthProvider({ children }) {
         const metaRole = currentUser.user_metadata?.role;
         if (userEmail.includes('tharun')) {
           setRole(ROLES.ADMIN);
-        } else if (metaRole) {
-          setRole(metaRole);
+        } else if (metaRole === 'admin' || metaRole === 'project_manager') {
+          setRole(ROLES.ADMIN);
         } else {
           setRole(ROLES.TEAM_MEMBER);
         }
@@ -66,7 +67,7 @@ export function AuthProvider({ children }) {
 
   const signIn = (email, password) => supabase.auth.signInWithPassword({ email, password });
 
-  // Automatically assign 'team_member' role to all newly registered users
+  // Automatically assign 'team_member' to all new users
   const signUp = (email, password, metadata = {}) => {
     return supabase.auth.signUp({
       email,
@@ -89,7 +90,7 @@ export function AuthProvider({ children }) {
     role,
     setRole,
     isAdmin: role === ROLES.ADMIN,
-    isProjectManager: role === ROLES.PROJECT_MANAGER || role === ROLES.ADMIN,
+    isProjectManager: role === ROLES.ADMIN, // Admin / Project Manager are unified
     isTeamMember: role === ROLES.TEAM_MEMBER,
     signIn,
     signUp,
