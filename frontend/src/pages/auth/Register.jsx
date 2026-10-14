@@ -21,8 +21,8 @@ export default function Register() {
 
   const onSubmit = async (data) => {
     try {
-      await signUp(data.email, data.password, { full_name: data.fullName });
-      toast.success('Registration completed! Please check your email.');
+      await signUp(data.email, data.password, { full_name: data.fullName, role: 'team_member' });
+      toast.success('Registration completed! You are signed up as a Team Member.');
       navigate('/login');
     } catch (err) {
       toast.error(err.message || 'Registration failed');

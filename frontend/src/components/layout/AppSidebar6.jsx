@@ -2,51 +2,83 @@ import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import {
+  LayoutDashboard,
   CheckSquare,
   FolderKanban,
-  Repeat,
-  Boxes,
-  FileText,
   Calendar,
-  Settings,
+  Activity,
+  Bell,
   Users2,
-  Plus,
+  BarChart3,
+  Settings,
+  ShieldCheck,
+  Sliders,
   ChevronsUpDown,
   Search,
-  Bookmark,
 } from 'lucide-react';
 import { useSidebar } from '../../context/SidebarContext';
+import { useAuthContext } from '../../context/AuthContext';
+import { ROLES } from '../../lib/constants';
 import { toast } from 'sonner';
 
 export function AppSidebar6() {
   const { isOpen } = useSidebar();
+  const { role } = useAuthContext();
   const [searchFilter, setSearchFilter] = useState('');
-
-  // Track hovered item for smooth sliding pill animation that follows the cursor/arrow
   const [hoveredId, setHoveredId] = useState(null);
 
-  // Main navigation items
-  const primaryNav = [
-    { label: 'Work Items', path: '/board', icon: CheckSquare },
-    { label: 'Projects', path: '/projects', icon: FolderKanban },
-    { label: 'Cycles', path: '/cycles', icon: Repeat },
-    { label: 'Modules', path: '/modules', icon: Boxes },
-    { label: 'Calendar', path: '/calendar', icon: Calendar },
-    { label: 'Views', path: '/views', icon: Bookmark },
-    { label: 'Pages', path: '/pages', icon: FileText },
-    { label: 'Settings', path: '/settings', icon: Settings },
-  ];
+  // Define sidebar items according to the 3 roles from specifications
+  const getNavItemsForRole = () => {
+    switch (role) {
+      case ROLES.ADMIN:
+        return [
+          { label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
+          { label: 'My Tasks', path: '/tasks', icon: CheckSquare },
+          { label: 'Projects', path: '/projects', icon: FolderKanban },
+          { label: 'Calendar', path: '/calendar', icon: Calendar },
+          { label: 'Activity', path: '/activity', icon: Activity },
+          { label: 'Notifications', path: '/notifications', icon: Bell },
+          { label: 'Team Members', path: '/team', icon: Users2 },
+          { label: 'Reports & Analytics', path: '/reports', icon: BarChart3 },
+          { label: 'Workspace Settings', path: '/settings', icon: Settings },
+          { label: 'User Management', path: '/users', icon: ShieldCheck },
+          { label: 'Preferences', path: '/preferences', icon: Sliders },
+        ];
+      case ROLES.PROJECT_MANAGER:
+        return [
+          { label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
+          { label: 'My Tasks', path: '/tasks', icon: CheckSquare },
+          { label: 'Projects', path: '/projects', icon: FolderKanban },
+          { label: 'Calendar', path: '/calendar', icon: Calendar },
+          { label: 'Activity', path: '/activity', icon: Activity },
+          { label: 'Notifications', path: '/notifications', icon: Bell },
+          { label: 'Team Members', path: '/team', icon: Users2 },
+          { label: 'Reports & Analytics', path: '/reports', icon: BarChart3 },
+          { label: 'Preferences', path: '/preferences', icon: Sliders },
+        ];
+      case ROLES.TEAM_MEMBER:
+      default:
+        return [
+          { label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
+          { label: 'My Tasks', path: '/tasks', icon: CheckSquare },
+          { label: 'Projects', path: '/projects', icon: FolderKanban },
+          { label: 'Calendar', path: '/calendar', icon: Calendar },
+          { label: 'Notifications', path: '/notifications', icon: Bell },
+          { label: 'Preferences', path: '/preferences', icon: Sliders },
+        ];
+    }
+  };
 
-  // Teams sub-items
-  const teamsList = [
-    { name: 'Charlie', color: '#579DFF' }, // Soft blue
-    { name: 'Bravo', color: '#F5CD47' },   // Soft amber/orange
-    { name: 'Delta', color: '#BA75FF' },   // Soft purple
-  ];
-
-  const filteredNav = primaryNav.filter((item) =>
+  const navItems = getNavItemsForRole();
+  const filteredNav = navItems.filter((item) =>
     item.label.toLowerCase().includes(searchFilter.toLowerCase())
   );
+
+  const getRoleDisplayName = () => {
+    if (role === ROLES.ADMIN) return '👑 Admin';
+    if (role === ROLES.PROJECT_MANAGER) return '💼 Project Manager';
+    return '👤 Team Member';
+  };
 
   return (
     <div className="relative flex select-none shrink-0 z-30">
@@ -57,14 +89,13 @@ export function AppSidebar6() {
         }`}
       >
         <div className="flex flex-col h-full w-64 p-3.5">
-          {/* Workspace Switcher Header */}
+          {/* Workspace Switcher Header & Active Role Indicator */}
           <div className="pb-3 border-b border-slate-200 dark:border-[#282E33]/70 shrink-0">
             <button
-              onClick={() => toast.info('Workspace: Southern Rescue Services · Taskora')}
+              onClick={() => toast.info(`Current Role: ${getRoleDisplayName()}`)}
               className="flex w-full items-center justify-between p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-[#22272B] transition cursor-pointer group"
             >
               <div className="flex items-center gap-2.5 min-w-0">
-                {/* Soft circular avatar with initial 'S' */}
                 <div className="h-8 w-8 rounded-full bg-[#FCE8E6] text-[#C5221F] font-bold text-sm flex items-center justify-center shrink-0 shadow-xs">
                   S
                 </div>
@@ -72,11 +103,14 @@ export function AppSidebar6() {
                   <h3 className="text-sm font-semibold tracking-tight text-slate-900 dark:text-[#DEE4EA] truncate leading-tight">
                     Southern Rescue Ser...
                   </h3>
-                  <span className="text-[11px] text-slate-500 dark:text-[#738496]">Taskora Space</span>
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    <span className="text-[10px] font-semibold px-1.5 py-0.2 rounded bg-slate-100 dark:bg-[#22272B] text-slate-600 dark:text-[#579DFF] border border-slate-200 dark:border-[#333C44]">
+                      {getRoleDisplayName()}
+                    </span>
+                  </div>
                 </div>
               </div>
 
-              {/* Up-Down selector arrows */}
               <ChevronsUpDown className="h-4 w-4 text-slate-400 dark:text-[#738496] group-hover:text-slate-700 dark:group-hover:text-[#DEE4EA] shrink-0 transition" />
             </button>
           </div>
@@ -100,7 +134,6 @@ export function AppSidebar6() {
             onMouseLeave={() => setHoveredId(null)}
             className="flex-1 overflow-y-auto py-2 space-y-1"
           >
-            {/* Primary Nav Items with Smooth Sliding Pill */}
             {filteredNav.map((item) => {
               const Icon = item.icon;
               const isHovered = hoveredId === item.path;
@@ -118,7 +151,6 @@ export function AppSidebar6() {
                     }`
                   }
                 >
-                  {/* The smooth sliding animation background pill */}
                   <AnimatePresence>
                     {isHovered && (
                       <motion.div
@@ -142,68 +174,11 @@ export function AppSidebar6() {
                 </NavLink>
               );
             })}
-
-            {/* Teams Section */}
-            <div className="pt-4 mt-2 border-t border-slate-200 dark:border-[#282E33]/70">
-              <div className="flex items-center justify-between px-3 pb-2 select-none">
-                <span className="text-sm font-semibold text-slate-900 dark:text-[#DEE4EA]">
-                  Teams
-                </span>
-                <button
-                  onClick={() => toast.success('Add team modal')}
-                  title="Add team"
-                  className="p-1 rounded hover:bg-slate-100 dark:hover:bg-[#22272B] text-slate-400 hover:text-slate-700 dark:text-[#738496] dark:hover:text-[#DEE4EA] transition cursor-pointer"
-                >
-                  <Plus className="h-4 w-4" />
-                </button>
-              </div>
-
-              <div className="space-y-0.5">
-                {teamsList.map((team) => {
-                  const isHovered = hoveredId === team.name;
-
-                  return (
-                    <button
-                      key={team.name}
-                      onMouseEnter={() => setHoveredId(team.name)}
-                      onClick={() => {
-                        toast.info(`Viewing team: ${team.name}`);
-                      }}
-                      className="relative flex w-full items-center gap-3.5 px-3.5 py-2 rounded-xl text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-[#9FADBC] dark:hover:text-[#DEE4EA] transition-colors duration-150 text-left cursor-pointer z-10 group"
-                    >
-                      <AnimatePresence>
-                        {isHovered && (
-                          <motion.div
-                            layoutId="sidebar-hover-pill"
-                            className="absolute inset-0 rounded-xl bg-slate-100 dark:bg-[#22272B] -z-10 shadow-xs border border-slate-200 dark:border-[#333C44]/40"
-                            transition={{
-                              type: 'spring',
-                              stiffness: 420,
-                              damping: 34,
-                              mass: 0.8,
-                            }}
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                          />
-                        )}
-                      </AnimatePresence>
-                      <Users2
-                        className="h-4.5 w-4.5 shrink-0 transition"
-                        style={{ color: team.color }}
-                      />
-                      <span className="truncate group-hover:text-slate-900 dark:group-hover:text-[#DEE4EA]">
-                        {team.name}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
           </div>
         </div>
       </aside>
     </div>
   );
 }
+
 export default AppSidebar6;

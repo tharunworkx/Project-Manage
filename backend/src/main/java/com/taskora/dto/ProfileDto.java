@@ -9,6 +9,7 @@ public class ProfileDto {
     private UUID id;
     private String fullName;
     private String avatarUrl;
+    private String role;
     private Instant createdAt;
     private Instant updatedAt;
 
@@ -21,6 +22,7 @@ public class ProfileDto {
         dto.setId(profile.getId());
         dto.setFullName(profile.getFullName());
         dto.setAvatarUrl(profile.getAvatarUrl());
+        dto.setRole(profile.getRole());
         dto.setCreatedAt(profile.getCreatedAt());
         dto.setUpdatedAt(profile.getUpdatedAt());
         return dto;
@@ -48,6 +50,14 @@ public class ProfileDto {
 
     public void setAvatarUrl(String avatarUrl) {
         this.avatarUrl = avatarUrl;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
     }
 
     public Instant getCreatedAt() {

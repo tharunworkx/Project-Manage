@@ -14,9 +14,17 @@ export const TASK_PRIORITIES = [
   { id: 'urgent', label: 'Urgent', color: 'rose' },
 ];
 
+export const ROLES = {
+  ADMIN: 'admin',
+  PROJECT_MANAGER: 'project_manager',
+  TEAM_MEMBER: 'team_member',
+};
+
 export const WORKSPACE_ROLES = {
   OWNER: 'owner',
   ADMIN: 'admin',
+  PROJECT_MANAGER: 'project_manager',
   MEMBER: 'member',
+  TEAM_MEMBER: 'team_member',
   VIEWER: 'viewer',
 };

@@ -35,7 +35,7 @@ public class ProfileService {
         return ProfileDto.fromEntity(profile);
     }
 
-    public ProfileDto upsertProfile(UUID id, String fullName, String avatarUrl) {
+    public ProfileDto upsertProfile(UUID id, String fullName, String avatarUrl, String role) {
         Profile profile = profileRepository.findById(id).orElseGet(() -> {
             Profile p = new Profile();
             p.setId(id);
@@ -47,6 +47,9 @@ public class ProfileService {
         }
         if (avatarUrl != null) {
             profile.setAvatarUrl(avatarUrl);
+        }
+        if (role != null) {
+            profile.setRole(role);
         }
 
         Profile saved = profileRepository.save(profile);

@@ -18,6 +18,9 @@ public class Profile {
     @Column(name = "avatar_url")
     private String avatarUrl;
 
+    @Column(name = "role")
+    private String role = "team_member";
+
     @Column(name = "created_at", updatable = false)
     private Instant createdAt;
 
@@ -72,6 +75,14 @@ public class Profile {
 
     public void setAvatarUrl(String avatarUrl) {
         this.avatarUrl = avatarUrl;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role != null ? role : "team_member";
     }
 
     public Instant getCreatedAt() {

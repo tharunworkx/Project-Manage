@@ -49,12 +49,12 @@ public class ProfileController {
     }
 
     @PutMapping("/{id}")
-    @Operation(summary = "Update or create profile", description = "Updates full name or avatar URL for user")
+    @Operation(summary = "Update or create profile", description = "Updates full name, avatar URL, or role for user")
     public ResponseEntity<ApiResponse<ProfileDto>> upsertProfile(
             @PathVariable UUID id,
             @RequestBody ProfileDto request
     ) {
-        ProfileDto updated = profileService.upsertProfile(id, request.getFullName(), request.getAvatarUrl());
+        ProfileDto updated = profileService.upsertProfile(id, request.getFullName(), request.getAvatarUrl(), request.getRole());
         return ResponseEntity.ok(ApiResponse.success("Profile updated successfully", updated));
     }
 }

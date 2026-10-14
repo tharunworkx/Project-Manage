@@ -16,6 +16,10 @@ import ViewsPage from '../pages/ViewsPage';
 import PagesPage from '../pages/PagesPage';
 import Reports from '../pages/Reports';
 import Settings from '../pages/Settings';
+import UserManagement from '../pages/UserManagement';
+import TeamMembers from '../pages/TeamMembers';
+import ActivityPage from '../pages/ActivityPage';
+import NotificationsPage from '../pages/NotificationsPage';
 import NotFound from '../pages/NotFound';
 
 import Login from '../pages/auth/Login';
@@ -33,11 +37,11 @@ export function AppRoutes() {
 
       <Route element={<ProtectedRoute />}>
         <Route element={<AppLayout />}>
-          {/* Default Frontpage lands directly on the Work Items / Board */}
-          <Route path="/" element={<Navigate to="/board" replace />} />
+          {/* Default Frontpage lands directly on the Dashboard */}
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/board" element={<KanbanPage />} />
           <Route path="/kanban" element={<KanbanPage />} />
-          <Route path="/dashboard" element={<KanbanPage />} />
           <Route path="/tasks" element={<MyTasks />} />
           <Route path="/cycles" element={<CyclesPage />} />
           <Route path="/modules" element={<ModulesPage />} />
@@ -47,8 +51,13 @@ export function AppRoutes() {
           <Route path="/projects" element={<Projects />} />
           <Route path="/projects/:id" element={<ProjectDetails />} />
           <Route path="/calendar" element={<CalendarPage />} />
+          <Route path="/activity" element={<ActivityPage />} />
+          <Route path="/notifications" element={<NotificationsPage />} />
+          <Route path="/team" element={<TeamMembers />} />
           <Route path="/reports" element={<Reports />} />
+          <Route path="/users" element={<UserManagement />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/preferences" element={<Settings />} />
         </Route>
       </Route>
 
