@@ -106,12 +106,10 @@ export default function KanbanPage() {
             <div className="rounded-2xl border border-slate-200 dark:border-[#282E33] bg-white dark:bg-[#161A1D] overflow-hidden shadow-xs">
               <Table aria-label="Kanban Tasks List">
                 <TableHeader>
-                  <TableRow>
-                    <TableHead id="key">Key</TableHead>
-                    <TableHead id="summary">Summary</TableHead>
-                    <TableHead id="status">Status</TableHead>
-                    <TableHead id="dueDate">Due Date</TableHead>
-                  </TableRow>
+                  <TableHead id="key" isRowHeader>Key</TableHead>
+                  <TableHead id="summary">Summary</TableHead>
+                  <TableHead id="status">Status</TableHead>
+                  <TableHead id="dueDate">Due Date</TableHead>
                 </TableHeader>
                 <TableBody>
                   {tasks.map((t) => (

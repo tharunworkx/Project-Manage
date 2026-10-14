@@ -27,13 +27,25 @@ function Table({ className, ...props }) {
   );
 }
 
-function TableHeader({ className, ...props }) {
+function TableHeader({ className, children, ...props }) {
+  // react-aria-components TableHeader expects Column (TableHead) children directly.
+  // If wrapped in a TableRow or tr, unwrap its children so column count matches cell count.
+  let content = children;
+  if (React.Children.count(children) === 1) {
+    const onlyChild = React.Children.toArray(children)[0];
+    if (React.isValidElement(onlyChild) && onlyChild.props?.children) {
+      content = onlyChild.props.children;
+    }
+  }
+
   return (
     <TableHeaderPrimitive
       data-slot="table-header"
       className={cn("[&_tr]:border-b border-slate-200 dark:border-[#282E33]", className)}
       {...props}
-    />
+    >
+      {content}
+    </TableHeaderPrimitive>
   );
 }
 

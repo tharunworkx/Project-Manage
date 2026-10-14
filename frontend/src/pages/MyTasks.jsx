@@ -31,13 +31,11 @@ export default function MyTasks() {
       <div className="rounded-2xl border border-slate-200 dark:border-[#282E33] bg-white dark:bg-[#161A1D] overflow-hidden shadow-xs">
         <Table aria-label="My Tasks Table">
           <TableHeader>
-            <TableRow>
-              <TableHead id="task">Task</TableHead>
-              <TableHead id="status">Status</TableHead>
-              <TableHead id="priority">Priority</TableHead>
-              <TableHead id="dueDate">Due Date</TableHead>
-              <TableHead id="actions" className="text-right">Actions</TableHead>
-            </TableRow>
+            <TableHead id="task" isRowHeader>Task</TableHead>
+            <TableHead id="status">Status</TableHead>
+            <TableHead id="priority">Priority</TableHead>
+            <TableHead id="dueDate">Due Date</TableHead>
+            <TableHead id="actions" className="text-right">Actions</TableHead>
           </TableHeader>
           <TableBody>
             {tasks.map((task) => (

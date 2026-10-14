@@ -186,14 +186,12 @@ export default function UserManagement() {
 
         <Table aria-label="Users Table">
           <TableHeader>
-            <TableRow>
-              <TableHead id="user">User</TableHead>
-              <TableHead id="email">Email</TableHead>
-              <TableHead id="badge">Role Badge</TableHead>
-              <TableHead id="permissions">Role & Permissions</TableHead>
-              <TableHead id="status">Status</TableHead>
-              <TableHead id="actions" className="text-right">Actions</TableHead>
-            </TableRow>
+            <TableHead id="user" isRowHeader>User</TableHead>
+            <TableHead id="email">Email</TableHead>
+            <TableHead id="badge">Role Badge</TableHead>
+            <TableHead id="permissions">Role & Permissions</TableHead>
+            <TableHead id="status">Status</TableHead>
+            <TableHead id="actions" className="text-right">Actions</TableHead>
           </TableHeader>
           <TableBody>
             {filteredUsers.map((user) => (
