@@ -40,7 +40,7 @@ export default function TeamMembers() {
   };
 
   return (
-    <div className="p-8 space-y-6 max-w-6xl mx-auto">
+    <div className="w-full p-6 space-y-6">
       <div>
         <div className="flex items-center gap-2.5">
           <div className="h-9 w-9 rounded-xl bg-[#0C66E4]/10 dark:bg-[#579DFF]/15 border border-[#0C66E4]/25 flex items-center justify-center text-[#0C66E4] dark:text-[#579DFF]">
@@ -119,7 +119,7 @@ export default function TeamMembers() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => toast.info(`Direct message: ${member.name}`)}
+              onClick={() => window.open(`mailto:${member.email}`)}
               className="w-full text-xs h-8"
             >
               <Mail className="h-3.5 w-3.5 mr-1.5" />

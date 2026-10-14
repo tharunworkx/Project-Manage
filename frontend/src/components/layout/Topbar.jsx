@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import {
   Search,
   Plus,
@@ -9,17 +9,35 @@ import {
   Minimize2,
   PanelLeftClose,
   PanelLeft,
+  Check,
+  ExternalLink,
+  Clock,
 } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { TaskDialog } from '../tasks/TaskDialog';
 import { useTasks } from '../../hooks/useTasks';
 import { useSidebar } from '../../context/SidebarContext';
 import { Profile1 } from '../profile-1';
+
+const INITIAL_NOTIFICATIONS = [
+  { id: '1', title: 'Task assigned to you', desc: 'Design onboarding flow · 2h ago', unread: true },
+  { id: '2', title: 'Project status updated', desc: 'Core Web App moved to Active · 5h ago', unread: true },
+  { id: '3', title: 'New comment from Alex', desc: 'Regarding API authentication filter · 1d ago', unread: false },
+];
 
 export function Topbar() {
   const navigate = useNavigate();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [searchVal, setSearchVal] = useState('');
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [notifications, setNotifications] = useState(INITIAL_NOTIFICATIONS);
   const { createTask } = useTasks();
   const { isDrawerOpen, toggleDrawer } = useSidebar();
 
@@ -35,12 +53,17 @@ export function Topbar() {
     }
   };
 
+  const markAllRead = () => {
+    setNotifications(notifications.map(n => ({ ...n, unread: false })));
+  };
+
+  const unreadCount = notifications.filter(n => n.unread).length;
+
   return (
     <>
       <header className="flex h-14 items-center justify-between border-b border-slate-200 dark:border-[#282E33] bg-white dark:bg-[#1D2125] px-4 select-none text-slate-800 dark:text-[#DEE4EA] z-40 transition-colors duration-150">
         {/* Left: Sidebar Toggle Icon & Taskora Logo */}
         <div className="flex items-center gap-2">
-          {/* Sidebar Toggle Button to collapse/expand static sidebar */}
           <button
             onClick={toggleDrawer}
             title={isDrawerOpen ? 'Collapse sidebar ( [ )' : 'Expand sidebar ( [ )'}
@@ -54,7 +77,7 @@ export function Topbar() {
           </button>
 
           {/* Taskora Logo */}
-          <div className="flex items-center gap-2 px-1 cursor-pointer">
+          <Link to="/dashboard" className="flex items-center gap-2 px-1 cursor-pointer">
             <svg
               className="h-5.5 w-5.5 text-[#0C66E4]"
               viewBox="0 0 24 24"
@@ -65,7 +88,7 @@ export function Topbar() {
             <span className="font-bold text-base tracking-tight text-slate-900 dark:text-[#DEE4EA]">
               Taskora
             </span>
-          </div>
+          </Link>
         </div>
 
         {/* Center: Search & + Create button */}
@@ -90,9 +113,9 @@ export function Topbar() {
           </button>
         </div>
 
-        {/* Right: Fullscreen, Notifications, Help, Avatar */}
+        {/* Right: Fullscreen, Responsive Notifications, Help, Avatar */}
         <div className="flex items-center gap-1.5">
-          {/* Full Screen Button near Notifications */}
+          {/* Full Screen Button */}
           <button
             onClick={handleToggleFullscreen}
             title={isFullscreen ? 'Exit full screen' : 'Full screen'}
@@ -101,13 +124,90 @@ export function Topbar() {
             {isFullscreen ? <Minimize2 className="h-4.5 w-4.5" /> : <Maximize2 className="h-4.5 w-4.5" />}
           </button>
 
-          {/* Notifications */}
-          <button
-            title="Notifications"
-            className="relative flex h-8.5 w-8.5 items-center justify-center rounded-md text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:text-[#9FADBC] dark:hover:bg-[#282E33] dark:hover:text-[#DEE4EA] transition cursor-pointer"
-          >
-            <Bell className="h-4.5 w-4.5" />
-          </button>
+          {/* Fully Responsive Notifications Dropdown Menu */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                title="Notifications"
+                aria-label="Open notifications"
+                className="relative flex h-8.5 w-8.5 items-center justify-center rounded-md text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:text-[#9FADBC] dark:hover:bg-[#282E33] dark:hover:text-[#DEE4EA] transition cursor-pointer focus:outline-none"
+              >
+                <Bell className="h-4.5 w-4.5" />
+                {unreadCount > 0 && (
+                  <span className="absolute top-1 right-1 flex h-2 w-2 rounded-full bg-[#0C66E4] ring-2 ring-white dark:ring-[#1D2125]" />
+                )}
+              </button>
+            </DropdownMenuTrigger>
+
+            <DropdownMenuContent
+              align="end"
+              sideOffset={8}
+              className="w-80 rounded-2xl border border-slate-200 dark:border-[#282E33] bg-white dark:bg-[#161A1D] p-3 text-slate-900 dark:text-[#DEE4EA] shadow-2xl backdrop-blur-md animate-in fade-in-0 zoom-in-95 select-none"
+            >
+              {/* Notifications Header */}
+              <div className="flex items-center justify-between pb-2.5 mb-2 border-b border-slate-100 dark:border-[#282E33]">
+                <div className="flex items-center gap-2">
+                  <h4 className="text-xs font-bold text-slate-900 dark:text-[#DEE4EA]">Notifications</h4>
+                  {unreadCount > 0 && (
+                    <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-[#0C66E4]/10 text-[#0C66E4] dark:bg-[#579DFF]/15 dark:text-[#579DFF]">
+                      {unreadCount} new
+                    </span>
+                  )}
+                </div>
+                {unreadCount > 0 && (
+                  <button
+                    onClick={markAllRead}
+                    className="text-[11px] font-medium text-[#0C66E4] dark:text-[#579DFF] hover:underline cursor-pointer flex items-center gap-1"
+                  >
+                    <Check className="h-3 w-3" />
+                    <span>Mark all read</span>
+                  </button>
+                )}
+              </div>
+
+              {/* Notification Items List */}
+              <div className="space-y-1.5 max-h-72 overflow-y-auto">
+                {notifications.map((n) => (
+                  <div
+                    key={n.id}
+                    onClick={() => {
+                      setNotifications(notifications.map(item => item.id === n.id ? { ...item, unread: false } : item));
+                    }}
+                    className={`p-2.5 rounded-xl transition cursor-pointer ${
+                      n.unread
+                        ? 'bg-blue-50/70 dark:bg-[#1C2B41]/50 border border-[#0C66E4]/20'
+                        : 'hover:bg-slate-50 dark:hover:bg-[#22272B]/60'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="space-y-0.5 min-w-0">
+                        <p className="text-xs font-semibold text-slate-900 dark:text-[#DEE4EA] leading-tight truncate">
+                          {n.title}
+                        </p>
+                        <p className="text-[11px] text-slate-500 dark:text-[#9FADBC] leading-tight">
+                          {n.desc}
+                        </p>
+                      </div>
+                      {n.unread && (
+                        <span className="h-1.5 w-1.5 rounded-full bg-[#0C66E4] dark:bg-[#579DFF] shrink-0 mt-1" />
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <DropdownMenuSeparator className="bg-slate-100 dark:bg-[#282E33] my-2" />
+
+              {/* Footer Link to full notifications page */}
+              <Link
+                to="/notifications"
+                className="flex items-center justify-center gap-1.5 py-1.5 text-xs font-semibold text-[#0C66E4] dark:text-[#579DFF] hover:underline cursor-pointer"
+              >
+                <span>View all notifications</span>
+                <ExternalLink className="h-3 w-3" />
+              </Link>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           {/* Help with 3+ badge */}
           <div className="relative">
@@ -122,7 +222,7 @@ export function Topbar() {
             </span>
           </div>
 
-          {/* Interactive Profile Popup Menu (contains Account Settings) */}
+          {/* Interactive Profile Popup Menu */}
           <Profile1 />
         </div>
       </header>

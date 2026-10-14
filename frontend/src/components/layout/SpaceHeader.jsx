@@ -56,7 +56,6 @@ export function SpaceHeader({ activeTab, onTabChange }) {
 
           {/* Team icon */}
           <button
-            onClick={() => toast.info('Team: 4 members active in this space')}
             title="Team members"
             className="flex h-7 w-7 items-center justify-center rounded hover:bg-slate-200 dark:hover:bg-[#22272B] text-slate-500 hover:text-slate-900 dark:text-[#9FADBC] dark:hover:text-[#DEE4EA] transition cursor-pointer"
           >
@@ -65,7 +64,6 @@ export function SpaceHeader({ activeTab, onTabChange }) {
 
           {/* More options */}
           <button
-            onClick={() => toast.info('Space key: KAN · Lead: Tharun S.')}
             title="More space options"
             className="flex h-7 w-7 items-center justify-center rounded hover:bg-slate-200 dark:hover:bg-[#22272B] text-slate-500 hover:text-slate-900 dark:text-[#9FADBC] dark:hover:text-[#DEE4EA] transition cursor-pointer"
           >
@@ -83,7 +81,6 @@ export function SpaceHeader({ activeTab, onTabChange }) {
             <Share2 className="h-4.5 w-4.5" />
           </button>
           <button
-            onClick={() => toast.info('Automation: Auto-move subtasks when parent closes')}
             title="Automation rules"
             className="flex h-8 w-8 items-center justify-center rounded hover:bg-slate-200 dark:hover:bg-[#22272B] hover:text-slate-900 dark:hover:text-[#DEE4EA] transition cursor-pointer"
           >
@@ -134,7 +131,6 @@ export function SpaceHeader({ activeTab, onTabChange }) {
         })}
 
         <button
-          onClick={() => toast.info('New view presets: Timeline, Form, and Matrix views coming soon')}
           title="Add view"
           className="flex items-center pb-2.5 text-slate-400 hover:text-slate-700 dark:text-[#738496] dark:hover:text-[#DEE4EA] transition cursor-pointer"
         >

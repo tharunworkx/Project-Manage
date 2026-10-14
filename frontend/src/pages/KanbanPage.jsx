@@ -7,6 +7,14 @@ import { useTasks } from '../hooks/useTasks';
 import { CheckSquare, Bookmark, Bug, GitBranch, GitPullRequest, FileText, CheckCircle2 } from 'lucide-react';
 import { formatDate } from '../lib/utils';
 import { ManageProjectsView } from '../components/projects/ManageProjectsView';
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from '@/components/ui/table';
 
 export default function KanbanPage() {
   const [activeTab, setActiveTab] = useState('board');
@@ -61,32 +69,32 @@ export default function KanbanPage() {
 
         {/* Summary Tab */}
         {activeTab === 'summary' && (
-          <div className="max-w-5xl py-4 space-y-6">
+          <div className="w-full py-4 space-y-6">
             <div>
-              <h2 className="text-xl font-bold text-[#DEE4EA]">Project Summary</h2>
-              <p className="text-xs text-[#9FADBC]">High-level status and performance for My Software Team</p>
+              <h2 className="text-xl font-bold text-slate-900 dark:text-[#DEE4EA]">Project Summary</h2>
+              <p className="text-xs text-slate-500 dark:text-[#9FADBC]">High-level status and performance for My Software Team</p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-              <div className="rounded-xl border border-[#282E33] bg-[#161A1D] p-4">
-                <span className="text-xs font-semibold text-[#9FADBC]">Total Issues</span>
-                <p className="text-2xl font-bold text-[#DEE4EA] mt-1">{tasks.length}</p>
+              <div className="rounded-xl border border-slate-200 dark:border-[#282E33] bg-white dark:bg-[#161A1D] p-4">
+                <span className="text-xs font-semibold text-slate-500 dark:text-[#9FADBC]">Total Issues</span>
+                <p className="text-2xl font-bold text-slate-900 dark:text-[#DEE4EA] mt-1">{tasks.length}</p>
               </div>
-              <div className="rounded-xl border border-[#282E33] bg-[#161A1D] p-4">
-                <span className="text-xs font-semibold text-[#9FADBC]">In Progress</span>
-                <p className="text-2xl font-bold text-[#579DFF] mt-1">
+              <div className="rounded-xl border border-slate-200 dark:border-[#282E33] bg-white dark:bg-[#161A1D] p-4">
+                <span className="text-xs font-semibold text-slate-500 dark:text-[#9FADBC]">In Progress</span>
+                <p className="text-2xl font-bold text-[#0C66E4] dark:text-[#579DFF] mt-1">
                   {tasks.filter((t) => t.status === 'in_progress').length}
                 </p>
               </div>
-              <div className="rounded-xl border border-[#282E33] bg-[#161A1D] p-4">
-                <span className="text-xs font-semibold text-[#9FADBC]">Completed</span>
-                <p className="text-2xl font-bold text-[#4BCE97] mt-1">
+              <div className="rounded-xl border border-slate-200 dark:border-[#282E33] bg-white dark:bg-[#161A1D] p-4">
+                <span className="text-xs font-semibold text-slate-500 dark:text-[#9FADBC]">Completed</span>
+                <p className="text-2xl font-bold text-emerald-600 dark:text-[#4BCE97] mt-1">
                   {tasks.filter((t) => t.status === 'done').length}
                 </p>
               </div>
-              <div className="rounded-xl border border-[#282E33] bg-[#161A1D] p-4">
-                <span className="text-xs font-semibold text-[#9FADBC]">Sprint Health</span>
-                <p className="text-2xl font-bold text-[#4BCE97] mt-1">100%</p>
+              <div className="rounded-xl border border-slate-200 dark:border-[#282E33] bg-white dark:bg-[#161A1D] p-4">
+                <span className="text-xs font-semibold text-slate-500 dark:text-[#9FADBC]">Sprint Health</span>
+                <p className="text-2xl font-bold text-emerald-600 dark:text-[#4BCE97] mt-1">100%</p>
               </div>
             </div>
           </div>
@@ -94,28 +102,36 @@ export default function KanbanPage() {
 
         {/* List Tab */}
         {activeTab === 'list' && (
-          <div className="py-4">
-            <div className="rounded-xl border border-[#282E33] bg-[#161A1D] overflow-hidden">
-              <table className="w-full text-left text-xs">
-                <thead className="bg-[#22272B] text-[#9FADBC] uppercase font-bold border-b border-[#282E33]">
-                  <tr>
-                    <th className="px-4 py-3">Key</th>
-                    <th className="px-4 py-3">Summary</th>
-                    <th className="px-4 py-3">Status</th>
-                    <th className="px-4 py-3">Due Date</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[#282E33]">
+          <div className="py-4 w-full">
+            <div className="rounded-2xl border border-slate-200 dark:border-[#282E33] bg-white dark:bg-[#161A1D] overflow-hidden shadow-xs">
+              <Table aria-label="Kanban Tasks List">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead id="key">Key</TableHead>
+                    <TableHead id="summary">Summary</TableHead>
+                    <TableHead id="status">Status</TableHead>
+                    <TableHead id="dueDate">Due Date</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                   {tasks.map((t) => (
-                    <tr key={t.id} className="hover:bg-[#22272B]/60 transition cursor-pointer">
-                      <td className="px-4 py-3 text-[#579DFF] font-semibold">{t.key || `KAN-${t.id}`}</td>
-                      <td className="px-4 py-3 text-[#DEE4EA] font-medium">{t.title}</td>
-                      <td className="px-4 py-3 capitalize text-[#9FADBC]">{t.status.replace('_', ' ')}</td>
-                      <td className="px-4 py-3 text-[#9FADBC]">{formatDate(t.due_date)}</td>
-                    </tr>
+                    <TableRow key={t.id} id={t.id}>
+                      <TableCell className="text-[#0C66E4] dark:text-[#579DFF] font-semibold">
+                        {t.key || `KAN-${t.id}`}
+                      </TableCell>
+                      <TableCell className="text-slate-900 dark:text-[#DEE4EA] font-medium">
+                        {t.title}
+                      </TableCell>
+                      <TableCell className="capitalize text-slate-600 dark:text-[#9FADBC]">
+                        {t.status.replace('_', ' ')}
+                      </TableCell>
+                      <TableCell className="text-slate-500 dark:text-[#9FADBC]">
+                        {formatDate(t.due_date)}
+                      </TableCell>
+                    </TableRow>
                   ))}
-                </tbody>
-              </table>
+                </TableBody>
+              </Table>
             </div>
           </div>
         )}

@@ -21,10 +21,10 @@ import { toast } from 'sonner';
 
 export default function Settings() {
   return (
-    <div className="p-8 max-w-4xl space-y-6">
+    <div className="w-full p-6 space-y-6">
       <div>
-        <h1 className="text-2xl font-extrabold text-[#DEE4EA]">Settings</h1>
-        <p className="text-xs text-[#9FADBC] mt-1">
+        <h1 className="text-2xl font-extrabold text-slate-900 dark:text-[#DEE4EA]">Settings</h1>
+        <p className="text-xs text-slate-500 dark:text-[#9FADBC] mt-1">
           Manage workspace settings, security credentials, and preferences.
         </p>
       </div>

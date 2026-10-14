@@ -74,9 +74,8 @@ export function AppSidebar6() {
         <div className="flex flex-col h-full w-64 p-3.5">
           {/* Workspace Switcher Header & Active Role Indicator */}
           <div className="pb-3 border-b border-slate-200 dark:border-[#282E33]/70 shrink-0">
-            <button
-              onClick={() => toast.info(`Active Role: ${isAdmin ? 'Admin / Project Manager' : 'Team Member'}`)}
-              className="flex w-full items-center justify-between p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-[#22272B] transition cursor-pointer group"
+            <div
+              className="flex w-full items-center justify-between p-2 rounded-xl"
             >
               <div className="flex items-center gap-2.5 min-w-0">
                 <div className="h-8 w-8 rounded-full bg-[#FCE8E6] text-[#C5221F] font-bold text-sm flex items-center justify-center shrink-0 shadow-xs">
@@ -103,8 +102,8 @@ export function AppSidebar6() {
                 </div>
               </div>
 
-              <ChevronsUpDown className="h-4 w-4 text-slate-400 dark:text-[#738496] group-hover:text-slate-700 dark:group-hover:text-[#DEE4EA] shrink-0 transition" />
-            </button>
+              <ChevronsUpDown className="h-4 w-4 text-slate-400 dark:text-[#738496] shrink-0" />
+            </div>
           </div>
 
           {/* Quick Filter Search */}

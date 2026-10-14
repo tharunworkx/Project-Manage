@@ -16,6 +16,9 @@
     --text-primary: #0F172A;
     --text-subtle: #64748B;
     --text-muted: #94A3B8;
+    --foreground: #0F172A;
+    --muted: #F1F5F9;
+    --muted-foreground: #64748B;
     --jira-blue: #0C66E4;
     --jira-blue-hover: #0055CC;
     --jira-blue-active: #0C66E4;
@@ -33,6 +36,9 @@
     --text-primary: #DEE4EA;
     --text-subtle: #9FADBC;
     --text-muted: #738496;
+    --foreground: #DEE4EA;
+    --muted: #22272B;
+    --muted-foreground: #9FADBC;
     --jira-blue: #0C66E4;
     --jira-blue-hover: #0055CC;
     --jira-blue-active: #579DFF;

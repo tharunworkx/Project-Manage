@@ -454,9 +454,7 @@ export function ManageProjectsView() {
                       className="rounded-xl border border-slate-200 dark:border-[#282E33] bg-white dark:bg-[#161A1D] p-1 shadow-lg text-xs"
                     >
                       <DropdownMenuItem
-                        onClick={() =>
-                          toast.info(`Viewing board for ${project.name}`)
-                        }
+                        onClick={() => {}}
                         className="flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer hover:bg-slate-100 dark:hover:bg-[#22272B] text-slate-700 dark:text-[#DEE4EA]"
                       >
                         <ExternalLink className="h-3.5 w-3.5" />

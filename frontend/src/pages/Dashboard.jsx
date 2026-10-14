@@ -25,7 +25,7 @@ export default function Dashboard() {
   const { isAdmin } = useAuthContext();
 
   return (
-    <div className="p-8 space-y-6 max-w-7xl mx-auto">
+    <div className="p-6 space-y-6 w-full">
       {/* Dynamic Role Header with Colored Logo */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -51,9 +51,9 @@ export default function Dashboard() {
           </p>
         </div>
 
-        {/* Quick Role Actions */}
+        {/* Quick Role Actions: ONLY Kanban view (My Work Items removed) */}
         <div className="flex items-center gap-2">
-          {isAdmin ? (
+          {isAdmin && (
             <>
               <Link to="/users">
                 <Button size="sm" variant="outline" className="gap-1.5 text-xs h-9">
@@ -68,13 +68,6 @@ export default function Dashboard() {
                 </Button>
               </Link>
             </>
-          ) : (
-            <Link to="/tasks">
-              <Button size="sm" className="gap-1.5 text-xs h-9 bg-emerald-600 hover:bg-emerald-700 text-white">
-                <CheckSquare className="h-4 w-4" />
-                <span>My Work Items</span>
-              </Button>
-            </Link>
           )}
 
           <Link to="/board">

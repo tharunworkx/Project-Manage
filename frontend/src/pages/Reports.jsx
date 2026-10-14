@@ -5,10 +5,10 @@ import { TrendingUp, Award, Zap } from 'lucide-react';
 
 export default function Reports() {
   return (
-    <div className="p-8 space-y-6 max-w-7xl">
+    <div className="w-full p-6 space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-[#DEE4EA]">Analytics & Reports</h1>
-        <p className="text-sm text-[#9FADBC] mt-1">Sprint velocity, cycle times, and operational performance.</p>
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-[#DEE4EA]">Analytics & Reports</h1>
+        <p className="text-sm text-slate-500 dark:text-[#9FADBC] mt-1">Sprint velocity, cycle times, and operational performance.</p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

@@ -207,7 +207,7 @@ export default function ModulesPage() {
       </div>
 
       {/* Modules Grid */}
-      <div className="px-6 py-6 max-w-6xl space-y-4">
+      <div className="w-full px-6 py-6 space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredModules.map((mod) => {
             const percent =

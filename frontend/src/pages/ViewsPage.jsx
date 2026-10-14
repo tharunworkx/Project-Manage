@@ -98,7 +98,7 @@ export default function ViewsPage() {
       </div>
 
       {/* Views List */}
-      <div className="px-6 py-6 max-w-4xl space-y-3">
+      <div className="w-full px-6 py-6 space-y-3">
         {filteredViews.map((view) => (
           <NavLink
             key={view.id}

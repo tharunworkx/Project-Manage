@@ -5,12 +5,17 @@ import {
   Search,
   Plus,
   MoreVertical,
-  Briefcase,
   Users2,
-  Mail,
-  CheckCircle2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableHead,
+  TableRow,
+  TableCell,
+} from '@/components/ui/table';
 import { toast } from 'sonner';
 
 const INITIAL_USERS = [
@@ -64,7 +69,7 @@ export default function UserManagement() {
   const memberCount = users.filter(u => u.role === 'team_member').length;
 
   return (
-    <div className="p-8 space-y-6 max-w-6xl mx-auto">
+    <div className="p-6 space-y-6 w-full">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -100,7 +105,6 @@ export default function UserManagement() {
               <span className="text-xs text-slate-400">overseeing projects</span>
             </div>
           </div>
-          {/* Coloured Logo Box with Sidebar-style Icon */}
           <div className="h-12 w-12 rounded-2xl bg-[#0C66E4]/10 dark:bg-[#579DFF]/15 border border-[#0C66E4]/30 flex items-center justify-center text-[#0C66E4] dark:text-[#579DFF] shadow-xs">
             <ShieldCheck className="h-6 w-6 stroke-[2]" />
           </div>
@@ -119,7 +123,6 @@ export default function UserManagement() {
               <span className="text-xs text-slate-400">working on tasks</span>
             </div>
           </div>
-          {/* Coloured Logo Box with Sidebar-style Icon */}
           <div className="h-12 w-12 rounded-2xl bg-emerald-500/10 dark:bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shadow-xs">
             <UserCheck className="h-6 w-6 stroke-[2]" />
           </div>
@@ -165,7 +168,7 @@ export default function UserManagement() {
         </div>
       )}
 
-      {/* Search and Table */}
+      {/* Search and Table using Table component */}
       <div className="rounded-2xl border border-slate-200 dark:border-[#282E33] bg-white dark:bg-[#161A1D] overflow-hidden shadow-xs">
         <div className="p-4 border-b border-slate-200 dark:border-[#282E33] flex items-center justify-between">
           <div className="relative w-72">
@@ -181,90 +184,83 @@ export default function UserManagement() {
           <span className="text-xs text-slate-500 dark:text-[#738496]">{filteredUsers.length} total users</span>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-slate-50 dark:bg-[#1C2125] text-slate-600 dark:text-[#9FADBC] border-b border-slate-200 dark:border-[#282E33]">
-              <tr>
-                <th className="py-3 px-4 font-semibold">User</th>
-                <th className="py-3 px-4 font-semibold">Email</th>
-                <th className="py-3 px-4 font-semibold">Role Badge</th>
-                <th className="py-3 px-4 font-semibold">Role & Permissions</th>
-                <th className="py-3 px-4 font-semibold">Status</th>
-                <th className="py-3 px-4 font-semibold text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-[#282E33]">
-              {filteredUsers.map((user) => (
-                <tr key={user.id} className="hover:bg-slate-50/70 dark:hover:bg-[#22272B]/50 transition-colors">
-                  <td className="py-3 px-4">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className="h-8.5 w-8.5 rounded-full text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-xs"
-                        style={{ backgroundColor: user.color || '#0C66E4' }}
-                      >
-                        {user.avatar}
-                      </div>
-                      <div>
-                        <span className="font-semibold text-slate-900 dark:text-[#DEE4EA]">{user.name}</span>
-                        {user.id === '1' && (
-                          <span className="ml-1.5 text-[10px] text-slate-400">(You)</span>
-                        )}
-                      </div>
+        <Table aria-label="Users Table">
+          <TableHeader>
+            <TableRow>
+              <TableHead id="user">User</TableHead>
+              <TableHead id="email">Email</TableHead>
+              <TableHead id="badge">Role Badge</TableHead>
+              <TableHead id="permissions">Role & Permissions</TableHead>
+              <TableHead id="status">Status</TableHead>
+              <TableHead id="actions" className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filteredUsers.map((user) => (
+              <TableRow key={user.id} id={user.id}>
+                <TableCell>
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="h-8.5 w-8.5 rounded-full text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-xs"
+                      style={{ backgroundColor: user.color || '#0C66E4' }}
+                    >
+                      {user.avatar}
                     </div>
-                  </td>
-                  <td className="py-3 px-4 text-slate-600 dark:text-[#9FADBC]">{user.email}</td>
-
-                  {/* Coloured Badge with Lucide Icon */}
-                  <td className="py-3 px-4">
-                    {user.role === 'admin' ? (
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-[#0C66E4]/10 dark:bg-[#579DFF]/15 text-[#0C66E4] dark:text-[#579DFF] border border-[#0C66E4]/30">
-                        <ShieldCheck className="h-3.5 w-3.5 stroke-[2.2]" />
-                        <span>Admin / Project Manager</span>
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
-                        <UserCheck className="h-3.5 w-3.5 stroke-[2.2]" />
-                        <span>Team Member</span>
-                      </span>
-                    )}
-                  </td>
-
-                  {/* Editable Role Dropdown */}
-                  <td className="py-3 px-4">
-                    <select
-                      value={user.role === 'admin' ? 'admin' : 'team_member'}
-                      onChange={(e) => handleRoleChange(user.id, e.target.value)}
-                      className="px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-[#333C44] bg-white dark:bg-[#22272B] text-xs text-slate-900 dark:text-[#DEE4EA] font-semibold cursor-pointer focus:outline-none"
-                    >
-                      <option value="admin">Admin / Project Manager</option>
-                      <option value="team_member">Team Member</option>
-                    </select>
-                  </td>
-
-                  <td className="py-3 px-4">
-                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium ${
-                      user.status === 'Active'
-                        ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-                        : 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
-                    }`}>
-                      <span className="h-1.5 w-1.5 rounded-full bg-current" />
-                      {user.status}
+                    <div>
+                      <span className="font-semibold text-slate-900 dark:text-[#DEE4EA]">{user.name}</span>
+                      {user.id === '1' && (
+                        <span className="ml-1.5 text-[10px] text-slate-400">(You)</span>
+                      )}
+                    </div>
+                  </div>
+                </TableCell>
+                <TableCell className="text-slate-600 dark:text-[#9FADBC]">
+                  {user.email}
+                </TableCell>
+                <TableCell>
+                  {user.role === 'admin' ? (
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-[#0C66E4]/10 dark:bg-[#579DFF]/15 text-[#0C66E4] dark:text-[#579DFF] border border-[#0C66E4]/30">
+                      <ShieldCheck className="h-3.5 w-3.5 stroke-[2.2]" />
+                      <span>Admin / Project Manager</span>
                     </span>
-                  </td>
-
-                  <td className="py-3 px-4 text-right">
-                    <button
-                      onClick={() => toast.info(`Viewing profile and permissions for ${user.name}`)}
-                      className="p-1 rounded hover:bg-slate-100 dark:hover:bg-[#282E33] text-slate-400 hover:text-slate-700 dark:text-[#738496] cursor-pointer"
-                    >
-                      <MoreVertical className="h-4 w-4" />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                  ) : (
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
+                      <UserCheck className="h-3.5 w-3.5 stroke-[2.2]" />
+                      <span>Team Member</span>
+                    </span>
+                  )}
+                </TableCell>
+                <TableCell>
+                  <select
+                    value={user.role === 'admin' ? 'admin' : 'team_member'}
+                    onChange={(e) => handleRoleChange(user.id, e.target.value)}
+                    className="px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-[#333C44] bg-white dark:bg-[#22272B] text-xs text-slate-900 dark:text-[#DEE4EA] font-semibold cursor-pointer focus:outline-none"
+                  >
+                    <option value="admin">Admin / Project Manager</option>
+                    <option value="team_member">Team Member</option>
+                  </select>
+                </TableCell>
+                <TableCell>
+                  <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium ${
+                    user.status === 'Active'
+                      ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                      : 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
+                  }`}>
+                    <span className="h-1.5 w-1.5 rounded-full bg-current" />
+                    {user.status}
+                  </span>
+                </TableCell>
+                <TableCell className="text-right">
+                  <button
+                    className="p-1 rounded hover:bg-slate-100 dark:hover:bg-[#282E33] text-slate-400 hover:text-slate-700 dark:text-[#738496] cursor-pointer"
+                  >
+                    <MoreVertical className="h-4 w-4" />
+                  </button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       </div>
     </div>
   );

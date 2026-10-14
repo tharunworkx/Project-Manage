@@ -271,20 +271,20 @@ export function CalendarComponent() {
           {/* Grouped Nav: < Today > */}
           <div className="flex items-center rounded-lg border border-[#282E33] bg-[#22272B] overflow-hidden shadow-xs">
             <button
-              onClick={() => toast.info('Previous month')}
+              onClick={() => {}}
               title="Previous"
               className="flex h-8.5 w-8 items-center justify-center text-[#9FADBC] hover:bg-[#282E33] hover:text-[#DEE4EA] transition cursor-pointer border-r border-[#282E33]"
             >
               <ChevronLeft className="h-4 w-4" />
             </button>
             <button
-              onClick={() => toast.success('Viewing Today (Oct 13)')}
+              onClick={() => {}}
               className="px-3.5 h-8.5 text-xs font-semibold text-[#DEE4EA] hover:bg-[#282E33] transition cursor-pointer"
             >
               Today
             </button>
             <button
-              onClick={() => toast.info('Next month')}
+              onClick={() => {}}
               title="Next"
               className="flex h-8.5 w-8 items-center justify-center text-[#9FADBC] hover:bg-[#282E33] hover:text-[#DEE4EA] transition cursor-pointer border-l border-[#282E33]"
             >

@@ -12,7 +12,7 @@ const ACTIVITIES = [
 
 export default function ActivityPage() {
   return (
-    <div className="p-8 space-y-6 max-w-4xl mx-auto">
+    <div className="w-full p-6 space-y-6">
       <div>
         <div className="flex items-center gap-2.5">
           <Activity className="h-6 w-6 text-[#0C66E4] dark:text-[#579DFF]" />

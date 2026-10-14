@@ -211,7 +211,7 @@ export default function CyclesPage() {
       </div>
 
       {/* Main Content Area */}
-      <div className="px-6 py-6 space-y-6 max-w-6xl">
+      <div className="w-full px-6 py-6 space-y-6">
         {/* Active Cycle Spotlight Hero */}
         {activeCycle && (filter === 'all' || filter === 'active') && (
           <div className="rounded-xl border border-[#282E33] bg-[#161A1D] p-5 shadow-sm space-y-4">

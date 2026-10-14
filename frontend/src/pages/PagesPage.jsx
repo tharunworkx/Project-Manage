@@ -108,11 +108,11 @@ export default function PagesPage() {
       </div>
 
       {/* Pages List */}
-      <div className="px-6 py-6 max-w-5xl space-y-3">
+      <div className="w-full px-6 py-6 space-y-3">
         {filteredDocs.map((doc) => (
           <div
             key={doc.id}
-            onClick={() => toast.info(`Viewing: ${doc.title}`)}
+            onClick={() => {}}
             className="flex items-center justify-between p-4.5 rounded-xl border border-[#282E33] bg-[#161A1D] hover:border-[#388BFF]/60 hover:bg-[#1C2127] transition group cursor-pointer"
           >
             <div className="flex items-start gap-3.5">
