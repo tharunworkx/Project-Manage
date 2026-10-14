@@ -4,9 +4,8 @@ import { SidebarItem } from './SidebarItem';
 import { WorkspaceSwitcher } from './WorkspaceSwitcher';
 
 const NAV_ITEMS = [
-  { label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
-  { label: 'My Tasks', path: '/tasks', icon: CheckSquare },
   { label: 'Kanban Board', path: '/kanban', icon: Columns3 },
+  { label: 'My Tasks', path: '/tasks', icon: CheckSquare },
   { label: 'Projects', path: '/projects', icon: FolderKanban },
   { label: 'Calendar', path: '/calendar', icon: Calendar },
   { label: 'Reports', path: '/reports', icon: BarChart3 },

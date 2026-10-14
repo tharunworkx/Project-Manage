@@ -37,9 +37,9 @@ export function AppRoutes() {
 
       <Route element={<ProtectedRoute />}>
         <Route element={<AppLayout />}>
-          {/* Default Frontpage lands directly on the Dashboard */}
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
-          <Route path="/dashboard" element={<Dashboard />} />
+          {/* Default Frontpage lands directly on Kanban View (Dashboard removed) */}
+          <Route path="/" element={<Navigate to="/kanban" replace />} />
+          <Route path="/dashboard" element={<Navigate to="/kanban" replace />} />
           <Route path="/board" element={<KanbanPage />} />
           <Route path="/kanban" element={<KanbanPage />} />
           <Route path="/tasks" element={<MyTasks />} />

@@ -77,7 +77,7 @@ export function Topbar() {
           </button>
 
           {/* Taskora Logo */}
-          <Link to="/dashboard" className="flex items-center gap-2 px-1 cursor-pointer">
+          <Link to="/kanban" className="flex items-center gap-2 px-1 cursor-pointer">
             <svg
               className="h-5.5 w-5.5 text-[#0C66E4]"
               viewBox="0 0 24 24"

@@ -8,7 +8,7 @@ export function Breadcrumbs() {
 
   return (
     <nav className="hidden sm:flex items-center text-xs font-medium text-slate-500">
-      <Link to="/dashboard" className="hover:text-slate-800 dark:hover:text-slate-200">
+      <Link to="/kanban" className="hover:text-slate-800 dark:hover:text-slate-200">
         Workspace
       </Link>
       {pathnames.map((name, index) => {

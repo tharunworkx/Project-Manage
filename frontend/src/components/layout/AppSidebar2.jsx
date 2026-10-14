@@ -23,13 +23,13 @@ export function AppSidebar2() {
 
   const navItems = [
     {
-      id: 'dashboard',
+      id: 'kanban',
       icon: Gauge,
-      label: 'Dashboard',
-      subtitle: 'Overview & telemetry',
-      path: '/dashboard',
+      label: 'Kanban Board',
+      subtitle: 'Active space & board',
+      path: '/kanban',
       links: [
-        { label: 'Executive Overview', path: '/dashboard' },
+        { label: 'Kanban Board', path: '/kanban' },
         { label: 'Task Velocity', path: '/reports' },
         { label: 'Sprint Analytics', path: '/reports' },
       ],

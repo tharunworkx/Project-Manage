@@ -23,7 +23,7 @@ export default function Login() {
     try {
       await signIn(data.email, data.password);
       toast.success('Signed in successfully');
-      navigate('/dashboard');
+      navigate('/kanban');
     } catch (err) {
       toast.error(err.message || 'Failed to sign in');
     }

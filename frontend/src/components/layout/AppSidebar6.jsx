@@ -28,14 +28,14 @@ export function AppSidebar6() {
   const [searchFilter, setSearchFilter] = useState('');
   const [hoveredId, setHoveredId] = useState(null);
 
-  // Navigation items for the 2 user roles
+  // Navigation items for the 2 user roles (Dashboard removed, Kanban is primary)
   const getNavItemsForRole = () => {
     if (isAdmin) {
-      // User 1 — Admin / Project Manager (11 items)
+      // User 1 — Admin / Project Manager (10 items)
       return [
-        { label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
+        { label: 'Kanban Board', path: '/kanban', icon: FolderKanban },
         { label: 'My Tasks', path: '/tasks', icon: CheckSquare },
-        { label: 'Projects', path: '/projects', icon: FolderKanban },
+        { label: 'Projects', path: '/projects', icon: LayoutDashboard },
         { label: 'Calendar', path: '/calendar', icon: Calendar },
         { label: 'Activity', path: '/activity', icon: Activity },
         { label: 'Notifications', path: '/notifications', icon: Bell },
@@ -48,9 +48,9 @@ export function AppSidebar6() {
     } else {
       // User 2 — Team Member (6 items)
       return [
-        { label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
+        { label: 'Kanban Board', path: '/kanban', icon: FolderKanban },
         { label: 'My Tasks', path: '/tasks', icon: CheckSquare },
-        { label: 'Projects', path: '/projects', icon: FolderKanban },
+        { label: 'Projects', path: '/projects', icon: LayoutDashboard },
         { label: 'Calendar', path: '/calendar', icon: Calendar },
         { label: 'Notifications', path: '/notifications', icon: Bell },
         { label: 'Preferences', path: '/preferences', icon: Sliders },

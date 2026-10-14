@@ -45,11 +45,11 @@ export class ErrorBoundary extends React.Component {
               <button
                 onClick={() => {
                   this.setState({ hasError: false, error: null, errorInfo: null });
-                  window.location.href = '/dashboard';
+                  window.location.href = '/kanban';
                 }}
                 className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold rounded-xl transition cursor-pointer"
               >
-                Return to Dashboard
+                Return to Kanban Board
               </button>
             </div>
           </div>
