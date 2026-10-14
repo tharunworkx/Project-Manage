@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 40" fill="none">
+  <rect x="2" y="4" width="32" height="32" rx="8" fill="#4F46E5"/>
+  <path d="M11 20.5L16 25.5L25 14.5" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="44" y="27" font-family="'Plus Jakarta Sans', sans-serif" font-size="20" font-weight="700" fill="#0F172A">Taskflow</text>
+  <circle cx="132" cy="18" r="4" fill="#6366F1"/>
+</svg>

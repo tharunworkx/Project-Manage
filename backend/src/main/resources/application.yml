@@ -1,0 +1,54 @@
+spring:
+  application:
+    name: taskora-backend
+
+  datasource:
+    # Supabase Connection URL options:
+    # 1. Direct connection (IPv6 / standard): jdbc:postgresql://db.<PROJECT-REF>.supabase.co:5432/postgres
+    # 2. Connection Pooler (Session mode / IPv4): jdbc:postgresql://aws-0-<REGION>.pooler.supabase.com:5432/postgres?sslmode=require
+    # 3. Connection Pooler (Transaction mode): jdbc:postgresql://aws-0-<REGION>.pooler.supabase.com:6543/postgres?sslmode=require
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/postgres}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      idle-timeout: 300000
+      connection-timeout: 20000
+      max-lifetime: 1200000
+
+  jpa:
+    hibernate:
+      # Use 'none' or 'validate' if tables are already managed by Supabase migrations
+      ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:update}
+    show-sql: ${SPRING_JPA_SHOW_SQL:false}
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        jdbc:
+          lob:
+            non_contextual_creation: true
+
+server:
+  port: ${PORT:8080}
+  error:
+    include-message: always
+    include-binding-errors: always
+
+# Supabase Authentication & Service settings
+supabase:
+  url: ${SUPABASE_URL:https://placeholder.supabase.co}
+  jwt:
+    # Obtain this from Supabase Dashboard -> Project Settings -> API -> JWT Secret
+    secret: ${SUPABASE_JWT_SECRET:}
+
+# OpenAPI / Swagger configuration
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
