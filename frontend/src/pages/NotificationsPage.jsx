@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Bell, Check, Trash2, Clock, Inbox } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
-import { toast } from 'sonner';
 
 const INITIAL_NOTIFICATIONS = [
   { id: '1', title: 'Task Assigned', message: 'You have been assigned to "Design Mobile Sidebar Layout"', time: '20 minutes ago', unread: true },
@@ -15,12 +14,10 @@ export default function NotificationsPage() {
 
   const markAllRead = () => {
     setNotifications(notifications.map(n => ({ ...n, unread: false })));
-    toast.success('All notifications marked as read');
   };
 
   const clearAll = () => {
     setNotifications([]);
-    toast.success('All notifications cleared');
   };
 
   return (

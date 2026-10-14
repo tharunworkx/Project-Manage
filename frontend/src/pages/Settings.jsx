@@ -17,7 +17,6 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/label';
-import { toast } from 'sonner';
 
 export default function Settings() {
   return (
@@ -64,7 +63,7 @@ export default function Settings() {
                   </div>
                 </CardContent>
                 <CardFooter>
-                  <Button onClick={() => toast.success('Profile updated successfully')}>
+                  <Button onClick={() => {}}>
                     Save changes
                   </Button>
                 </CardFooter>
@@ -89,7 +88,7 @@ export default function Settings() {
                   </div>
                 </CardContent>
                 <CardFooter>
-                  <Button onClick={() => toast.success('Password updated successfully')}>
+                  <Button onClick={() => {}}>
                     Save password
                   </Button>
                 </CardFooter>
@@ -114,7 +113,7 @@ export default function Settings() {
                   </div>
                 </CardContent>
                 <CardFooter>
-                  <Button onClick={() => toast.success('Workspace updated')}>
+                  <Button onClick={() => {}}>
                     Save Workspace
                   </Button>
                 </CardFooter>

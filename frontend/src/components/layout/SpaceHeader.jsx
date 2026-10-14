@@ -14,7 +14,6 @@ import {
   MoreHorizontal,
   Users2,
 } from 'lucide-react';
-import { toast } from 'sonner';
 
 export function SpaceHeader({ activeTab, onTabChange }) {
 
@@ -29,7 +28,6 @@ export function SpaceHeader({ activeTab, onTabChange }) {
 
   const handleShare = () => {
     navigator.clipboard.writeText(window.location.href);
-    toast.success('Board link copied to clipboard');
   };
 
   return (
@@ -45,9 +43,8 @@ export function SpaceHeader({ activeTab, onTabChange }) {
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           {/* Space Icon */}
-          <div className="h-7 w-7 rounded-md bg-[#1D7AFC] flex items-center justify-center text-white text-sm font-bold shrink-0 relative shadow-sm">
-            <div className="h-2 w-2 rounded-full bg-[#E5493A] absolute -top-0.5 -right-0.5 ring-1 ring-white dark:ring-[#101214]" />
-            <span>📱</span>
+          <div className="h-7 w-7 rounded-md bg-slate-100 dark:bg-[#22272B] border border-slate-200 dark:border-[#333C44] flex items-center justify-center text-slate-700 dark:text-[#DEE4EA] shrink-0 shadow-2xs">
+            <FolderKanban className="h-4 w-4 stroke-[1.8]" />
           </div>
 
           <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-[#DEE4EA]">

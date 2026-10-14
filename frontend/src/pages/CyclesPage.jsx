@@ -17,7 +17,6 @@ import {
   CheckSquare,
 } from 'lucide-react';
 import { Modal } from '../components/ui/Modal';
-import { toast } from 'sonner';
 import { DatePicker } from '../components/ui/date-picker';
 
 export default function CyclesPage() {
@@ -116,7 +115,6 @@ export default function CyclesPage() {
     setIsCreateOpen(false);
     setNewCycleName('');
     setNewCycleDesc('');
-    toast.success('Cycle created successfully!');
   };
 
   const filteredCycles = cycles.filter((c) => {

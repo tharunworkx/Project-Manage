@@ -47,14 +47,12 @@ export function TaskDetailsDrawer({ task, isOpen, onClose, onUpdate, onDelete })
       { id: Date.now(), author: 'TR', text: newComment.trim(), time: 'Just now' },
     ]);
     setNewComment('');
-    toast.success('Comment added');
   };
 
   const handleDelete = () => {
     if (confirm('Delete this issue?')) {
       onDelete && onDelete(task.id);
       onClose();
-      toast.success('Issue deleted');
     }
   };
 
@@ -89,7 +87,6 @@ export function TaskDetailsDrawer({ task, isOpen, onClose, onUpdate, onDelete })
             <button
               onClick={() => {
                 navigator.clipboard.writeText(window.location.href);
-                toast.success('Issue link copied to clipboard');
               }}
               title="Share"
               className="p-1.5 rounded hover:bg-[#282E33] hover:text-[#DEE4EA] cursor-pointer"
@@ -144,7 +141,6 @@ export function TaskDetailsDrawer({ task, isOpen, onClose, onUpdate, onDelete })
                 onChange={(e) => {
                   setStatus(e.target.value);
                   handleFieldChange('status', e.target.value);
-                  toast.success(`Moved to ${e.target.value.replace('_', ' ')}`);
                 }}
                 className="w-full rounded bg-[#22272B] border border-[#333C44] px-2 py-1 text-xs font-semibold text-[#DEE4EA] focus:outline-none focus:border-[#579DFF]"
               >
@@ -169,9 +165,9 @@ export function TaskDetailsDrawer({ task, isOpen, onClose, onUpdate, onDelete })
                   !canManageTaskMetadata ? 'opacity-70 cursor-not-allowed' : ''
                 }`}
               >
-                <option value="task">✓ Task</option>
-                <option value="story">🔖 Story</option>
-                <option value="bug">● Bug</option>
+                <option value="task">Task</option>
+                <option value="story">Story</option>
+                <option value="bug">Bug</option>
               </select>
             </div>
 

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CheckSquare, Bookmark, Bug } from 'lucide-react';
+import { CheckSquare, Bookmark, Bug, FolderKanban } from 'lucide-react';
 import { TASK_STATUSES } from '../../lib/constants';
 import { DatePicker } from '../ui/date-picker';
 
@@ -32,7 +32,7 @@ export function TaskForm({ initialData, onSubmit, onCancel }) {
             Project
           </label>
           <div className="flex items-center gap-2 px-3 py-2 rounded-md bg-[#1D2125] border border-[#333C44] text-xs font-medium text-[#DEE4EA]">
-            <span>📱</span>
+            <FolderKanban className="h-4 w-4 text-slate-400 stroke-[1.8]" />
             <span className="truncate">My Software Team (KAN)</span>
           </div>
         </div>
@@ -46,9 +46,9 @@ export function TaskForm({ initialData, onSubmit, onCancel }) {
             onChange={(e) => setType(e.target.value)}
             className="w-full rounded-md bg-[#1D2125] border border-[#333C44] px-3 py-2 text-xs font-medium text-[#DEE4EA] focus:outline-none focus:border-[#579DFF]"
           >
-            <option value="task">✓ Task</option>
-            <option value="story">🔖 Story</option>
-            <option value="bug">● Bug</option>
+            <option value="task">Task</option>
+            <option value="story">Story</option>
+            <option value="bug">Bug</option>
           </select>
         </div>
       </div>

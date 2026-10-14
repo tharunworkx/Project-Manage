@@ -25,7 +25,6 @@ export function AppProviders({ children }) {
             <SidebarProvider>
               <BrowserRouter>
                 {children}
-                <Toaster position="top-right" richColors />
               </BrowserRouter>
             </SidebarProvider>
           </WorkspaceProvider>

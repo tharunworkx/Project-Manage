@@ -10,7 +10,6 @@ import {
   User,
   Star,
 } from 'lucide-react';
-import { toast } from 'sonner';
 
 export default function PagesPage() {
   const [searchVal, setSearchVal] = useState('');
@@ -85,7 +84,7 @@ export default function PagesPage() {
 
           <div className="flex items-center gap-2">
             <button
-              onClick={() => toast.success('New document created!')}
+              onClick={() => {}}
               className="flex h-9 items-center gap-1.5 rounded-md bg-[#0C66E4] hover:bg-[#0055CC] px-3.5 text-xs font-semibold text-white shadow-xs transition cursor-pointer"
             >
               <Plus className="h-4 w-4" />

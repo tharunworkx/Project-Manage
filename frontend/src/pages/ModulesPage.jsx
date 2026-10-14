@@ -15,7 +15,6 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { Modal } from '../components/ui/Modal';
-import { toast } from 'sonner';
 import { DatePicker } from '../components/ui/date-picker';
 
 export default function ModulesPage() {
@@ -113,7 +112,6 @@ export default function ModulesPage() {
     setIsCreateOpen(false);
     setNewModName('');
     setNewModDesc('');
-    toast.success('Module created successfully!');
   };
 
   const filteredModules = modules.filter((m) => {

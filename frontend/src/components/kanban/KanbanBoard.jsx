@@ -104,21 +104,21 @@ export function KanbanBoard({ tasks = [], onTaskUpdate, onTaskCreate, onTaskDele
   const renderTypeIcon = (type) => {
     if (type === 'story') {
       return (
-        <span title="Story" className="text-[#4BCE97] flex items-center shrink-0">
-          <Bookmark className="h-4 w-4 fill-[#4BCE97]" />
+        <span title="Story" className="text-slate-400 dark:text-[#9FADBC] flex items-center shrink-0">
+          <Bookmark className="h-4 w-4 stroke-[1.8]" />
         </span>
       );
     }
     if (type === 'bug') {
       return (
-        <span title="Bug" className="text-[#F87168] flex items-center shrink-0">
-          <Bug className="h-4 w-4" />
+        <span title="Bug" className="text-slate-400 dark:text-[#9FADBC] flex items-center shrink-0">
+          <Bug className="h-4 w-4 stroke-[1.8]" />
         </span>
       );
     }
     return (
-      <span title="Task" className="text-[#579DFF] flex items-center shrink-0">
-        <CheckSquare className="h-4 w-4 fill-[#579DFF]/20" />
+      <span title="Task" className="text-slate-400 dark:text-[#9FADBC] flex items-center shrink-0">
+        <CheckSquare className="h-4 w-4 stroke-[1.8]" />
       </span>
     );
   };

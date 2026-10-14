@@ -12,7 +12,6 @@ import {
   Filter,
 } from 'lucide-react';
 import { Modal } from '../ui/Modal';
-import { toast } from 'sonner';
 import { DatePicker } from '../ui/date-picker';
 
 // Sample events exactly matching the provided calendar screenshot
@@ -182,13 +181,11 @@ export function CalendarComponent() {
     setEvents([...events, newEvent]);
     setIsAddEventOpen(false);
     setNewEventTitle('');
-    toast.success('Event added successfully!');
   };
 
   const handleDeleteEvent = (id) => {
     setEvents(events.filter((e) => e.id !== id));
     setSelectedEvent(null);
-    toast.success('Event deleted');
   };
 
   const toggleExpand = (dateStr) => {

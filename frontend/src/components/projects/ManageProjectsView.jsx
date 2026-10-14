@@ -20,7 +20,6 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { DatePicker } from '../ui/date-picker';
 import { useAuthContext } from '../../context/AuthContext';
-import { toast } from 'sonner';
 
 const INITIAL_PROJECTS = [
   {
@@ -267,11 +266,9 @@ export function ManageProjectsView() {
   const handleCreateProject = (e) => {
     e.preventDefault();
     if (!canCreateProjects) {
-      toast.error('Permission denied: Only Admin and Project Managers can create projects.');
       return;
     }
     if (!newProjectName.trim()) {
-      toast.error('Please enter a project title');
       return;
     }
 
@@ -294,16 +291,13 @@ export function ManageProjectsView() {
     saveProjects([created, ...projects]);
     setIsNewProjectOpen(false);
     setNewProjectName('');
-    toast.success(`Project "${created.name}" created successfully!`);
   };
 
   const handleDeleteProject = (id, name) => {
     if (!canManageProjects) {
-      toast.error('Permission denied: You do not have permission to delete projects.');
       return;
     }
     saveProjects(projects.filter((p) => p.id !== id));
-    toast.success(`Project "${name}" removed`);
   };
 
   // Filter and sort logic
@@ -509,7 +503,7 @@ export function ManageProjectsView() {
               {/* Card Footer: Key + Duration on Left, Avatars on Right matching Column View */}
               <div className="mt-4 pt-3 border-t border-slate-100 dark:border-[#282E33]/60 flex items-center justify-between">
                 <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 dark:text-[#9FADBC]">
-                  <Bookmark className="h-3.5 w-3.5 text-[#4BCE97] fill-[#4BCE97]" />
+                  <Bookmark className="h-3.5 w-3.5 text-slate-400 dark:text-[#738496] stroke-[1.8]" />
                   <span>{project.key}</span>
                   <span className="text-slate-300 dark:text-[#333C44]">·</span>
                   <div className="flex items-center gap-1 font-normal text-slate-500 dark:text-[#9FADBC]">

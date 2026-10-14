@@ -3,23 +3,18 @@ import { motion, AnimatePresence } from 'motion/react';
 import { SpaceHeader } from '../components/layout/SpaceHeader';
 import { KanbanBoard } from '../components/kanban/KanbanBoard';
 import { TaskDialog } from '../components/tasks/TaskDialog';
+import { TaskDetailsDrawer } from '../components/tasks/TaskDetailsDrawer';
+import { JiraListView } from '../components/kanban/JiraListView';
 import { useTasks } from '../hooks/useTasks';
 import { CheckSquare, Bookmark, Bug, GitBranch, GitPullRequest, FileText, CheckCircle2 } from 'lucide-react';
 import { formatDate } from '../lib/utils';
 import { ManageProjectsView } from '../components/projects/ManageProjectsView';
-import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableRow,
-  TableHead,
-  TableCell,
-} from '@/components/ui/table';
 
 export default function KanbanPage() {
   const [activeTab, setActiveTab] = useState('board');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
+  const [drawerTask, setDrawerTask] = useState(null);
 
   const { tasks, updateTask, createTask, deleteTask } = useTasks('p1');
 
@@ -102,35 +97,14 @@ export default function KanbanPage() {
 
         {/* List Tab */}
         {activeTab === 'list' && (
-          <div className="py-4 w-full">
-            <div className="rounded-2xl border border-slate-200 dark:border-[#282E33] bg-white dark:bg-[#161A1D] overflow-hidden shadow-xs">
-              <Table aria-label="Kanban Tasks List">
-                <TableHeader>
-                  <TableHead id="key" isRowHeader>Key</TableHead>
-                  <TableHead id="summary">Summary</TableHead>
-                  <TableHead id="status">Status</TableHead>
-                  <TableHead id="dueDate">Due Date</TableHead>
-                </TableHeader>
-                <TableBody>
-                  {tasks.map((t) => (
-                    <TableRow key={t.id} id={t.id}>
-                      <TableCell className="text-[#0C66E4] dark:text-[#579DFF] font-semibold">
-                        {t.key || `KAN-${t.id}`}
-                      </TableCell>
-                      <TableCell className="text-slate-900 dark:text-[#DEE4EA] font-medium">
-                        {t.title}
-                      </TableCell>
-                      <TableCell className="capitalize text-slate-600 dark:text-[#9FADBC]">
-                        {t.status.replace('_', ' ')}
-                      </TableCell>
-                      <TableCell className="text-slate-500 dark:text-[#9FADBC]">
-                        {formatDate(t.due_date)}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+          <div className="py-2 w-full">
+            <JiraListView
+              tasks={tasks}
+              onTaskUpdate={({ id, updates }) => updateTask({ id, updates })}
+              onTaskCreate={() => setDialogOpen(true)}
+              onTaskDelete={(taskId) => deleteTask(taskId)}
+              onSelectTask={(task) => setDrawerTask(task)}
+            />
           </div>
         )}
 
@@ -157,6 +131,22 @@ export default function KanbanPage() {
         )}
           </motion.div>
       </div>
+
+      {/* Task Details Drawer for List View */}
+      {drawerTask && (
+        <TaskDetailsDrawer
+          task={drawerTask}
+          onClose={() => setDrawerTask(null)}
+          onUpdate={(updates) => {
+            updateTask({ id: drawerTask.id, updates });
+            setDrawerTask((prev) => (prev ? { ...prev, ...updates } : null));
+          }}
+          onDelete={(id) => {
+            deleteTask(id);
+            setDrawerTask(null);
+          }}
+        />
+      )}
 
       {/* Create / Edit Dialog */}
       <TaskDialog

@@ -32,7 +32,6 @@ export function Profile1({ className }) {
     try {
       await signOut?.();
     } catch {}
-    toast.success('Logged out successfully');
     navigate('/login');
   };
 
@@ -42,7 +41,7 @@ export function Profile1({ className }) {
         <button
           aria-label="Profile (Tharun R)"
           title="Profile (TR)"
-          className="focus:outline-none cursor-pointer rounded-full transition-transform active:scale-95 hover:ring-2 hover:ring-[#0C66E4]/40 dark:hover:ring-[#579DFF]/40 ml-1"
+          className="focus:outline-none cursor-pointer rounded-full transition-transform active:scale-95 hover:ring-2 hover:ring-slate-300 dark:hover:ring-[#333C44] ml-1"
         >
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#E8831D] text-[#0C162D] font-bold text-xs ring-1 ring-slate-200 dark:ring-[#1D2125] select-none hover:opacity-90 shadow-xs">
             TR
@@ -69,20 +68,20 @@ export function Profile1({ className }) {
             </span>
             <div className="mt-1">
               {isAdmin && (
-                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-purple-500/10 dark:bg-purple-500/15 text-purple-600 dark:text-purple-400 border border-purple-500/25">
-                  <ShieldCheck className="h-3 w-3 stroke-[2.2]" />
+                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-slate-100 dark:bg-[#282E33] text-slate-700 dark:text-[#DEE4EA] border border-slate-200 dark:border-[#333C44]">
+                  <ShieldCheck className="h-3 w-3 stroke-[2]" />
                   <span>Admin</span>
                 </span>
               )}
               {isProjectManager && (
-                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-[#0C66E4]/10 dark:bg-[#579DFF]/15 text-[#0C66E4] dark:text-[#579DFF] border border-[#0C66E4]/25">
-                  <Briefcase className="h-3 w-3 stroke-[2.2]" />
+                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-slate-100 dark:bg-[#282E33] text-slate-700 dark:text-[#DEE4EA] border border-slate-200 dark:border-[#333C44]">
+                  <Briefcase className="h-3 w-3 stroke-[2]" />
                   <span>Project Manager</span>
                 </span>
               )}
               {isTeamMember && (
-                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25">
-                  <UserCheck className="h-3 w-3 stroke-[2.2]" />
+                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-slate-100 dark:bg-[#282E33] text-slate-700 dark:text-[#DEE4EA] border border-slate-200 dark:border-[#333C44]">
+                  <UserCheck className="h-3 w-3 stroke-[2]" />
                   <span>Team Member</span>
                 </span>
               )}
@@ -90,7 +89,7 @@ export function Profile1({ className }) {
           </div>
         </div>
 
-        {/* 3-Role Switcher (Live Role Toggle) with Coloured Logos */}
+        {/* 3-Role Switcher (Live Role Toggle) with Normal Clean Icons */}
         <div className="px-2 py-2 mb-2 rounded-xl bg-slate-100/70 dark:bg-[#22272B]/70 border border-slate-200/60 dark:border-[#333C44]/40">
           <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-[#738496] block mb-1.5 px-1">
             Active Role Mode
@@ -101,16 +100,15 @@ export function Profile1({ className }) {
               type="button"
               onClick={() => {
                 setRole(ROLES.ADMIN);
-                toast.success('Switched to Admin role');
               }}
               className={`p-1.5 rounded-xl text-xs font-semibold transition cursor-pointer flex flex-col items-center gap-1 text-center ${
                 isAdmin
-                  ? 'bg-white dark:bg-[#161A1D] text-purple-600 dark:text-purple-400 shadow-xs border border-purple-500/30'
+                  ? 'bg-white dark:bg-[#161A1D] text-slate-900 dark:text-[#DEE4EA] shadow-xs border border-slate-300 dark:border-[#4B5663]'
                   : 'text-slate-600 hover:text-slate-900 dark:text-[#9FADBC] dark:hover:text-[#DEE4EA]'
               }`}
             >
-              <div className="h-6 w-6 rounded-lg bg-purple-500/10 dark:bg-purple-500/15 flex items-center justify-center text-purple-600 dark:text-purple-400 shrink-0">
-                <ShieldCheck className="h-3.5 w-3.5 stroke-[2.2]" />
+              <div className="h-6 w-6 rounded-lg bg-slate-100 dark:bg-[#282E33] flex items-center justify-center text-slate-600 dark:text-[#9FADBC] shrink-0">
+                <ShieldCheck className="h-3.5 w-3.5 stroke-[1.8]" />
               </div>
               <span className="block text-[10px] font-bold leading-tight truncate">Admin</span>
             </button>
@@ -120,16 +118,15 @@ export function Profile1({ className }) {
               type="button"
               onClick={() => {
                 setRole(ROLES.PROJECT_MANAGER);
-                toast.success('Switched to Project Manager role');
               }}
               className={`p-1.5 rounded-xl text-xs font-semibold transition cursor-pointer flex flex-col items-center gap-1 text-center ${
                 isProjectManager
-                  ? 'bg-white dark:bg-[#161A1D] text-[#0C66E4] dark:text-[#579DFF] shadow-xs border border-[#0C66E4]/30'
+                  ? 'bg-white dark:bg-[#161A1D] text-slate-900 dark:text-[#DEE4EA] shadow-xs border border-slate-300 dark:border-[#4B5663]'
                   : 'text-slate-600 hover:text-slate-900 dark:text-[#9FADBC] dark:hover:text-[#DEE4EA]'
               }`}
             >
-              <div className="h-6 w-6 rounded-lg bg-[#0C66E4]/10 dark:bg-[#579DFF]/15 flex items-center justify-center text-[#0C66E4] dark:text-[#579DFF] shrink-0">
-                <Briefcase className="h-3.5 w-3.5 stroke-[2.2]" />
+              <div className="h-6 w-6 rounded-lg bg-slate-100 dark:bg-[#282E33] flex items-center justify-center text-slate-600 dark:text-[#9FADBC] shrink-0">
+                <Briefcase className="h-3.5 w-3.5 stroke-[1.8]" />
               </div>
               <span className="block text-[10px] font-bold leading-tight truncate">Manager</span>
             </button>
@@ -139,16 +136,15 @@ export function Profile1({ className }) {
               type="button"
               onClick={() => {
                 setRole(ROLES.TEAM_MEMBER);
-                toast.success('Switched to Team Member role');
               }}
               className={`p-1.5 rounded-xl text-xs font-semibold transition cursor-pointer flex flex-col items-center gap-1 text-center ${
                 isTeamMember
-                  ? 'bg-white dark:bg-[#161A1D] text-emerald-600 dark:text-emerald-400 shadow-xs border border-emerald-500/30'
+                  ? 'bg-white dark:bg-[#161A1D] text-slate-900 dark:text-[#DEE4EA] shadow-xs border border-slate-300 dark:border-[#4B5663]'
                   : 'text-slate-600 hover:text-slate-900 dark:text-[#9FADBC] dark:hover:text-[#DEE4EA]'
               }`}
             >
-              <div className="h-6 w-6 rounded-lg bg-emerald-500/10 dark:bg-emerald-500/15 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0">
-                <UserCheck className="h-3.5 w-3.5 stroke-[2.2]" />
+              <div className="h-6 w-6 rounded-lg bg-slate-100 dark:bg-[#282E33] flex items-center justify-center text-slate-600 dark:text-[#9FADBC] shrink-0">
+                <UserCheck className="h-3.5 w-3.5 stroke-[1.8]" />
               </div>
               <span className="block text-[10px] font-bold leading-tight truncate">Member</span>
             </button>

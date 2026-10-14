@@ -23,7 +23,6 @@ import {
   TableRow,
   TableCell,
 } from '@/components/ui/table';
-import { toast } from 'sonner';
 
 const INITIAL_USERS = [
   { id: '1', name: 'Tharun R', email: 'tharun.workx@gmail.com', role: 'admin', status: 'Active', avatar: 'TR', color: '#7C3AED' },
@@ -48,19 +47,12 @@ export default function UserManagement() {
 
   const handleRoleChange = (userId, newRole) => {
     setUsers(users.map(u => u.id === userId ? { ...u, role: newRole } : u));
-    const roleLabels = {
-      admin: 'Admin',
-      project_manager: 'Project Manager',
-      team_member: 'Team Member',
-    };
-    toast.success(`Role updated to ${roleLabels[newRole] || newRole}`);
   };
 
   const handleToggleStatus = (userId) => {
     setUsers(users.map(u => {
       if (u.id === userId) {
         const nextStatus = u.status === 'Active' ? 'Deactivated' : 'Active';
-        toast.success(`Employee account marked as ${nextStatus}`);
         return { ...u, status: nextStatus };
       }
       return u;
@@ -72,7 +64,6 @@ export default function UserManagement() {
     setUsers(users.map(u => u.id === userId ? { ...u, name: editName } : u));
     setEditingUserId(null);
     setEditName('');
-    toast.success('Employee account updated successfully');
   };
 
   const handleInvite = (e) => {
@@ -96,7 +87,6 @@ export default function UserManagement() {
     setInviteEmail('');
     setInviteName('');
     setIsInviteOpen(false);
-    toast.success(`Employee account created for ${inviteEmail}`);
   };
 
   const filteredUsers = users.filter(u => {
@@ -118,8 +108,8 @@ export default function UserManagement() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <div className="flex items-center gap-2.5">
-            <div className="h-9 w-9 rounded-xl bg-purple-500/10 dark:bg-purple-500/15 border border-purple-500/25 flex items-center justify-center text-purple-600 dark:text-purple-400">
-              <ShieldCheck className="h-5 w-5" />
+            <div className="h-9 w-9 rounded-xl bg-slate-100 dark:bg-[#22272B] border border-slate-200 dark:border-[#333C44] flex items-center justify-center text-slate-700 dark:text-[#DEE4EA]">
+              <ShieldCheck className="h-5 w-5 stroke-[1.8]" />
             </div>
             <h1 className="text-2xl font-extrabold text-slate-900 dark:text-[#DEE4EA]">Employee Accounts & Roles</h1>
           </div>
@@ -128,21 +118,21 @@ export default function UserManagement() {
           </p>
         </div>
 
-        <Button onClick={() => setIsInviteOpen(true)} className="gap-2 bg-purple-600 hover:bg-purple-700 text-white shadow-xs">
+        <Button onClick={() => setIsInviteOpen(true)} className="gap-2 bg-[#0C66E4] hover:bg-[#0055CC] text-white shadow-xs">
           <Plus className="h-4 w-4" />
           <span>Add Employee Account</span>
         </Button>
       </div>
 
-      {/* 3 Role Summary Cards with Coloured Lucide Logos */}
+      {/* 3 Role Summary Cards with Normal Clean Icons */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {/* Card 1: Administrators */}
         <div
           onClick={() => setRoleFilter(roleFilter === 'admin' ? 'all' : 'admin')}
           className={`cursor-pointer rounded-2xl border bg-white dark:bg-[#161A1D] p-5 flex items-center justify-between shadow-xs transition-all ${
             roleFilter === 'admin'
-              ? 'border-purple-500 ring-2 ring-purple-500/20'
-              : 'border-slate-200 dark:border-[#282E33] hover:border-purple-500/40'
+              ? 'border-slate-400 dark:border-[#579DFF] ring-2 ring-slate-300 dark:ring-[#579DFF]/20'
+              : 'border-slate-200 dark:border-[#282E33] hover:border-slate-300 dark:hover:border-[#333C44]'
           }`}
         >
           <div className="space-y-1">
@@ -153,11 +143,11 @@ export default function UserManagement() {
               <p className="text-3xl font-extrabold text-slate-900 dark:text-[#DEE4EA]">
                 {adminCount}
               </p>
-              <span className="text-xs text-purple-600 dark:text-purple-400 font-medium">Full access</span>
+              <span className="text-xs text-slate-500 dark:text-[#9FADBC] font-medium">Full access</span>
             </div>
           </div>
-          <div className="h-12 w-12 rounded-2xl bg-purple-500/10 dark:bg-purple-500/15 border border-purple-500/30 flex items-center justify-center text-purple-600 dark:text-purple-400 shadow-xs">
-            <ShieldCheck className="h-6 w-6 stroke-[2]" />
+          <div className="h-12 w-12 rounded-2xl bg-slate-100 dark:bg-[#22272B] border border-slate-200 dark:border-[#333C44] flex items-center justify-center text-slate-700 dark:text-[#DEE4EA] shadow-xs">
+            <ShieldCheck className="h-6 w-6 stroke-[1.8]" />
           </div>
         </div>
 
@@ -166,8 +156,8 @@ export default function UserManagement() {
           onClick={() => setRoleFilter(roleFilter === 'project_manager' ? 'all' : 'project_manager')}
           className={`cursor-pointer rounded-2xl border bg-white dark:bg-[#161A1D] p-5 flex items-center justify-between shadow-xs transition-all ${
             roleFilter === 'project_manager'
-              ? 'border-[#0C66E4] ring-2 ring-[#0C66E4]/20'
-              : 'border-slate-200 dark:border-[#282E33] hover:border-[#0C66E4]/40'
+              ? 'border-slate-400 dark:border-[#579DFF] ring-2 ring-slate-300 dark:ring-[#579DFF]/20'
+              : 'border-slate-200 dark:border-[#282E33] hover:border-slate-300 dark:hover:border-[#333C44]'
           }`}
         >
           <div className="space-y-1">
@@ -178,11 +168,11 @@ export default function UserManagement() {
               <p className="text-3xl font-extrabold text-slate-900 dark:text-[#DEE4EA]">
                 {pmCount}
               </p>
-              <span className="text-xs text-[#0C66E4] dark:text-[#579DFF] font-medium">Projects & teams</span>
+              <span className="text-xs text-slate-500 dark:text-[#9FADBC] font-medium">Projects & teams</span>
             </div>
           </div>
-          <div className="h-12 w-12 rounded-2xl bg-[#0C66E4]/10 dark:bg-[#579DFF]/15 border border-[#0C66E4]/30 flex items-center justify-center text-[#0C66E4] dark:text-[#579DFF] shadow-xs">
-            <Briefcase className="h-6 w-6 stroke-[2]" />
+          <div className="h-12 w-12 rounded-2xl bg-slate-100 dark:bg-[#22272B] border border-slate-200 dark:border-[#333C44] flex items-center justify-center text-slate-700 dark:text-[#DEE4EA] shadow-xs">
+            <Briefcase className="h-6 w-6 stroke-[1.8]" />
           </div>
         </div>
 
@@ -191,8 +181,8 @@ export default function UserManagement() {
           onClick={() => setRoleFilter(roleFilter === 'team_member' ? 'all' : 'team_member')}
           className={`cursor-pointer rounded-2xl border bg-white dark:bg-[#161A1D] p-5 flex items-center justify-between shadow-xs transition-all ${
             roleFilter === 'team_member'
-              ? 'border-emerald-500 ring-2 ring-emerald-500/20'
-              : 'border-slate-200 dark:border-[#282E33] hover:border-emerald-500/40'
+              ? 'border-slate-400 dark:border-[#579DFF] ring-2 ring-slate-300 dark:ring-[#579DFF]/20'
+              : 'border-slate-200 dark:border-[#282E33] hover:border-slate-300 dark:hover:border-[#333C44]'
           }`}
         >
           <div className="space-y-1">
@@ -203,11 +193,11 @@ export default function UserManagement() {
               <p className="text-3xl font-extrabold text-slate-900 dark:text-[#DEE4EA]">
                 {memberCount}
               </p>
-              <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">Tasks & progress</span>
+              <span className="text-xs text-slate-500 dark:text-[#9FADBC] font-medium">Tasks & progress</span>
             </div>
           </div>
-          <div className="h-12 w-12 rounded-2xl bg-emerald-500/10 dark:bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shadow-xs">
-            <UserCheck className="h-6 w-6 stroke-[2]" />
+          <div className="h-12 w-12 rounded-2xl bg-slate-100 dark:bg-[#22272B] border border-slate-200 dark:border-[#333C44] flex items-center justify-center text-slate-700 dark:text-[#DEE4EA] shadow-xs">
+            <UserCheck className="h-6 w-6 stroke-[1.8]" />
           </div>
         </div>
       </div>
@@ -349,20 +339,20 @@ export default function UserManagement() {
                 </TableCell>
                 <TableCell>
                   {user.role === 'admin' && (
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-purple-500/10 dark:bg-purple-500/15 text-purple-600 dark:text-purple-400 border border-purple-500/30">
-                      <ShieldCheck className="h-3.5 w-3.5 stroke-[2.2]" />
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-100 dark:bg-[#282E33] text-slate-700 dark:text-[#DEE4EA] border border-slate-200 dark:border-[#333C44]">
+                      <ShieldCheck className="h-3.5 w-3.5 stroke-[1.8]" />
                       <span>Admin</span>
                     </span>
                   )}
                   {user.role === 'project_manager' && (
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-[#0C66E4]/10 dark:bg-[#579DFF]/15 text-[#0C66E4] dark:text-[#579DFF] border border-[#0C66E4]/30">
-                      <Briefcase className="h-3.5 w-3.5 stroke-[2.2]" />
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-100 dark:bg-[#282E33] text-slate-700 dark:text-[#DEE4EA] border border-slate-200 dark:border-[#333C44]">
+                      <Briefcase className="h-3.5 w-3.5 stroke-[1.8]" />
                       <span>Project Manager</span>
                     </span>
                   )}
                   {user.role === 'team_member' && (
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
-                      <UserCheck className="h-3.5 w-3.5 stroke-[2.2]" />
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-100 dark:bg-[#282E33] text-slate-700 dark:text-[#DEE4EA] border border-slate-200 dark:border-[#333C44]">
+                      <UserCheck className="h-3.5 w-3.5 stroke-[1.8]" />
                       <span>Team Member</span>
                     </span>
                   )}

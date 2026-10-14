@@ -21,7 +21,6 @@ import {
 import { useSidebar } from '../../context/SidebarContext';
 import { useAuthContext } from '../../context/AuthContext';
 import { ROLES } from '../../lib/constants';
-import { toast } from 'sonner';
 
 export function AppSidebar6() {
   const { isOpen } = useSidebar();
@@ -90,7 +89,7 @@ export function AppSidebar6() {
               className="flex w-full items-center justify-between p-2 rounded-xl"
             >
               <div className="flex items-center gap-2.5 min-w-0">
-                <div className="h-8 w-8 rounded-full bg-[#FCE8E6] text-[#C5221F] font-bold text-sm flex items-center justify-center shrink-0 shadow-xs">
+                <div className="h-8 w-8 rounded-lg bg-slate-100 dark:bg-[#22272B] border border-slate-200 dark:border-[#333C44] text-slate-700 dark:text-[#DEE4EA] font-bold text-sm flex items-center justify-center shrink-0 shadow-2xs">
                   S
                 </div>
                 <div className="min-w-0 text-left">
@@ -98,22 +97,22 @@ export function AppSidebar6() {
                     Southern Rescue Ser...
                   </h3>
                   <div className="flex items-center gap-1.5 mt-0.5">
-                    {/* Coloured Logo Badge with Sidebar-style Icon */}
+                    {/* Normal Role Badge */}
                     {isAdmin && (
-                      <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-md bg-purple-500/10 dark:bg-purple-500/15 text-purple-600 dark:text-purple-400 border border-purple-500/25">
-                        <ShieldCheck className="h-3 w-3 stroke-[2.2]" />
+                      <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-[#282E33] text-slate-700 dark:text-[#DEE4EA] border border-slate-200 dark:border-[#333C44]">
+                        <ShieldCheck className="h-3 w-3 stroke-[1.8]" />
                         <span>Admin</span>
                       </span>
                     )}
                     {isProjectManager && (
-                      <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-md bg-[#0C66E4]/10 dark:bg-[#579DFF]/15 text-[#0C66E4] dark:text-[#579DFF] border border-[#0C66E4]/25">
-                        <Briefcase className="h-3 w-3 stroke-[2.2]" />
+                      <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-[#282E33] text-slate-700 dark:text-[#DEE4EA] border border-slate-200 dark:border-[#333C44]">
+                        <Briefcase className="h-3 w-3 stroke-[1.8]" />
                         <span>Project Manager</span>
                       </span>
                     )}
                     {isTeamMember && (
-                      <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-md bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25">
-                        <UserCheck className="h-3 w-3 stroke-[2.2]" />
+                      <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-[#282E33] text-slate-700 dark:text-[#DEE4EA] border border-slate-200 dark:border-[#333C44]">
+                        <UserCheck className="h-3 w-3 stroke-[1.8]" />
                         <span>Team Member</span>
                       </span>
                     )}
