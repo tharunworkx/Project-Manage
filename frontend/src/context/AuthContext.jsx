@@ -9,17 +9,20 @@ export function AuthProvider({ children }) {
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Role state: 'admin' (Admin / Project Manager) or 'team_member' (Team Member)
+  // Role state: 'admin', 'project_manager', or 'team_member'
   const [role, setRoleState] = useState(() => {
     const saved = localStorage.getItem('taskora_role');
-    if (saved === 'team_member') return ROLES.TEAM_MEMBER;
+    if (saved === ROLES.PROJECT_MANAGER) return ROLES.PROJECT_MANAGER;
+    if (saved === ROLES.TEAM_MEMBER) return ROLES.TEAM_MEMBER;
     return ROLES.ADMIN;
   });
 
   const setRole = (newRole) => {
-    const targetRole = newRole === 'team_member' ? ROLES.TEAM_MEMBER : ROLES.ADMIN;
-    setRoleState(targetRole);
-    localStorage.setItem('taskora_role', targetRole);
+    let target = ROLES.TEAM_MEMBER;
+    if (newRole === ROLES.ADMIN) target = ROLES.ADMIN;
+    else if (newRole === ROLES.PROJECT_MANAGER) target = ROLES.PROJECT_MANAGER;
+    setRoleState(target);
+    localStorage.setItem('taskora_role', target);
   };
 
   useEffect(() => {
@@ -34,7 +37,9 @@ export function AuthProvider({ children }) {
 
         if (userEmail.includes('tharun')) {
           setRole(ROLES.ADMIN);
-        } else if (metaRole === 'admin' || metaRole === 'project_manager') {
+        } else if (metaRole === 'project_manager') {
+          setRole(ROLES.PROJECT_MANAGER);
+        } else if (metaRole === 'admin') {
           setRole(ROLES.ADMIN);
         } else {
           setRole(ROLES.TEAM_MEMBER);
@@ -53,7 +58,9 @@ export function AuthProvider({ children }) {
         const metaRole = currentUser.user_metadata?.role;
         if (userEmail.includes('tharun')) {
           setRole(ROLES.ADMIN);
-        } else if (metaRole === 'admin' || metaRole === 'project_manager') {
+        } else if (metaRole === 'project_manager') {
+          setRole(ROLES.PROJECT_MANAGER);
+        } else if (metaRole === 'admin') {
           setRole(ROLES.ADMIN);
         } else {
           setRole(ROLES.TEAM_MEMBER);
@@ -83,15 +90,32 @@ export function AuthProvider({ children }) {
 
   const signOut = () => supabase.auth.signOut();
 
+  const isAdmin = role === ROLES.ADMIN;
+  const isProjectManager = role === ROLES.PROJECT_MANAGER;
+  const isTeamMember = role === ROLES.TEAM_MEMBER;
+
   const value = {
     user,
     session,
     loading,
     role,
     setRole,
-    isAdmin: role === ROLES.ADMIN,
-    isProjectManager: role === ROLES.ADMIN, // Admin / Project Manager are unified
-    isTeamMember: role === ROLES.TEAM_MEMBER,
+    isAdmin,
+    isProjectManager,
+    isTeamMember,
+    // Granular permission helpers
+    canManageUsers: isAdmin,
+    canManageWorkspace: isAdmin,
+    canViewAllProjects: isAdmin,
+    canAssignProjectManagers: isAdmin,
+    canViewCompanyReports: isAdmin,
+    canCreateProjects: isAdmin || isProjectManager,
+    canManageProjects: isAdmin || isProjectManager,
+    canCreateTasks: isAdmin || isProjectManager,
+    canManageTaskMetadata: isAdmin || isProjectManager,
+    canDeleteTasks: isAdmin || isProjectManager,
+    canUpdateTaskStatus: true, // Admin, PM, and Team Member can all update status
+    canManageMembers: isAdmin || isProjectManager,
     signIn,
     signUp,
     signOut,

@@ -15,19 +15,27 @@ export const TASK_PRIORITIES = [
 ];
 
 export const ROLES = {
-  ADMIN: 'admin', // Admin / Project Manager
-  PROJECT_MANAGER: 'admin', // Aliased to Admin
-  TEAM_MEMBER: 'team_member', // Team Member
+  ADMIN: 'admin',
+  PROJECT_MANAGER: 'project_manager',
+  TEAM_MEMBER: 'team_member',
 };
 
 export const ROLE_LABELS = {
-  admin: 'Admin / Project Manager',
+  admin: 'Admin',
+  project_manager: 'Project Manager',
   team_member: 'Team Member',
+};
+
+export const ROLE_COLORS = {
+  admin: 'purple',
+  project_manager: 'blue',
+  team_member: 'emerald',
 };
 
 export const WORKSPACE_ROLES = {
   OWNER: 'admin',
   ADMIN: 'admin',
+  PROJECT_MANAGER: 'project_manager',
   MEMBER: 'team_member',
   TEAM_MEMBER: 'team_member',
 };

@@ -15,9 +15,12 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { DatePicker } from '../ui/date-picker';
+import { useAuthContext } from '../../context/AuthContext';
 
 export function TaskDetailsDrawer({ task, isOpen, onClose, onUpdate, onDelete }) {
   if (!isOpen || !task) return null;
+
+  const { canDeleteTasks, canManageTaskMetadata } = useAuthContext();
 
   const [title, setTitle] = useState(task.title || '');
   const [description, setDescription] = useState(task.description || '');
@@ -93,13 +96,15 @@ export function TaskDetailsDrawer({ task, isOpen, onClose, onUpdate, onDelete })
             >
               <Share2 className="h-4 w-4" />
             </button>
-            <button
-              onClick={handleDelete}
-              title="Delete issue"
-              className="p-1.5 rounded hover:bg-[#282E33] hover:text-rose-400 cursor-pointer"
-            >
-              <Trash2 className="h-4 w-4" />
-            </button>
+            {canDeleteTasks && (
+              <button
+                onClick={handleDelete}
+                title="Delete issue"
+                className="p-1.5 rounded hover:bg-[#282E33] hover:text-rose-400 cursor-pointer"
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
+            )}
             <button
               onClick={onClose}
               title="Close drawer"
@@ -117,17 +122,21 @@ export function TaskDetailsDrawer({ task, isOpen, onClose, onUpdate, onDelete })
             <input
               type="text"
               value={title}
+              readOnly={!canManageTaskMetadata}
               onChange={(e) => {
+                if (!canManageTaskMetadata) return;
                 setTitle(e.target.value);
                 handleFieldChange('title', e.target.value);
               }}
-              className="w-full text-xl font-bold bg-transparent text-[#DEE4EA] border border-transparent hover:border-[#333C44] focus:border-[#579DFF] focus:bg-[#22272B] rounded-md px-2 py-1 focus:outline-none transition"
+              className={`w-full text-xl font-bold bg-transparent text-[#DEE4EA] border border-transparent ${
+                canManageTaskMetadata ? 'hover:border-[#333C44] focus:border-[#579DFF] focus:bg-[#22272B]' : 'cursor-default'
+              } rounded-md px-2 py-1 focus:outline-none transition`}
             />
           </div>
 
           {/* Quick Details Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3.5 rounded-xl bg-[#161A1D] border border-[#282E33] text-xs">
-            {/* Status Dropdown */}
+            {/* Status Dropdown - Available to all roles including Team Members */}
             <div>
               <span className="text-[11px] font-semibold text-[#738496] block mb-1">Status</span>
               <select
@@ -150,12 +159,15 @@ export function TaskDetailsDrawer({ task, isOpen, onClose, onUpdate, onDelete })
             <div>
               <span className="text-[11px] font-semibold text-[#738496] block mb-1">Issue Type</span>
               <select
+                disabled={!canManageTaskMetadata}
                 value={type}
                 onChange={(e) => {
                   setType(e.target.value);
                   handleFieldChange('type', e.target.value);
                 }}
-                className="w-full rounded bg-[#22272B] border border-[#333C44] px-2 py-1 text-xs font-medium text-[#DEE4EA] focus:outline-none focus:border-[#579DFF]"
+                className={`w-full rounded bg-[#22272B] border border-[#333C44] px-2 py-1 text-xs font-medium text-[#DEE4EA] focus:outline-none focus:border-[#579DFF] ${
+                  !canManageTaskMetadata ? 'opacity-70 cursor-not-allowed' : ''
+                }`}
               >
                 <option value="task">✓ Task</option>
                 <option value="story">🔖 Story</option>
@@ -167,12 +179,15 @@ export function TaskDetailsDrawer({ task, isOpen, onClose, onUpdate, onDelete })
             <div>
               <span className="text-[11px] font-semibold text-[#738496] block mb-1">Assignee</span>
               <select
+                disabled={!canManageTaskMetadata}
                 value={assignee}
                 onChange={(e) => {
                   setAssignee(e.target.value);
                   handleFieldChange('assignee', e.target.value);
                 }}
-                className="w-full rounded bg-[#22272B] border border-[#333C44] px-2 py-1 text-xs font-medium text-[#DEE4EA] focus:outline-none focus:border-[#579DFF]"
+                className={`w-full rounded bg-[#22272B] border border-[#333C44] px-2 py-1 text-xs font-medium text-[#DEE4EA] focus:outline-none focus:border-[#579DFF] ${
+                  !canManageTaskMetadata ? 'opacity-70 cursor-not-allowed' : ''
+                }`}
               >
                 <option value="Unassigned">Unassigned</option>
                 <option value="TR">TR (Tharun S.)</option>
@@ -183,12 +198,15 @@ export function TaskDetailsDrawer({ task, isOpen, onClose, onUpdate, onDelete })
             <div>
               <span className="text-[11px] font-semibold text-[#738496] block mb-1">Priority</span>
               <select
+                disabled={!canManageTaskMetadata}
                 value={priority}
                 onChange={(e) => {
                   setPriority(e.target.value);
                   handleFieldChange('priority', e.target.value);
                 }}
-                className="w-full rounded bg-[#22272B] border border-[#333C44] px-2 py-1 text-xs font-medium text-[#DEE4EA] capitalize focus:outline-none focus:border-[#579DFF]"
+                className={`w-full rounded bg-[#22272B] border border-[#333C44] px-2 py-1 text-xs font-medium text-[#DEE4EA] capitalize focus:outline-none focus:border-[#579DFF] ${
+                  !canManageTaskMetadata ? 'opacity-70 cursor-not-allowed' : ''
+                }`}
               >
                 <option value="low">Low</option>
                 <option value="medium">Medium</option>
@@ -203,8 +221,10 @@ export function TaskDetailsDrawer({ task, isOpen, onClose, onUpdate, onDelete })
             <span className="text-xs font-semibold text-[#738496] w-20 shrink-0">Due Date:</span>
             <div className="w-48">
               <DatePicker
+                disabled={!canManageTaskMetadata}
                 value={dueDate}
                 onChange={(val) => {
+                  if (!canManageTaskMetadata) return;
                   setDueDate(val);
                   handleFieldChange('due_date', val);
                 }}

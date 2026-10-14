@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   ShieldCheck,
+  Briefcase,
   UserCheck,
   Settings,
   LogOut,
@@ -25,7 +26,7 @@ import { toast } from 'sonner';
 export function Profile1({ className }) {
   const navigate = useNavigate();
   const { theme, toggleTheme } = useThemeContext();
-  const { role, setRole, isAdmin, signOut } = useAuthContext();
+  const { role, setRole, isAdmin, isProjectManager, isTeamMember, signOut } = useAuthContext();
 
   const handleLogout = async () => {
     try {
@@ -67,12 +68,19 @@ export function Profile1({ className }) {
               tharun.workx@gmail.com
             </span>
             <div className="mt-1">
-              {isAdmin ? (
-                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-[#0C66E4]/10 dark:bg-[#579DFF]/15 text-[#0C66E4] dark:text-[#579DFF] border border-[#0C66E4]/25">
+              {isAdmin && (
+                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-purple-500/10 dark:bg-purple-500/15 text-purple-600 dark:text-purple-400 border border-purple-500/25">
                   <ShieldCheck className="h-3 w-3 stroke-[2.2]" />
-                  <span>Admin / Project Manager</span>
+                  <span>Admin</span>
                 </span>
-              ) : (
+              )}
+              {isProjectManager && (
+                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-[#0C66E4]/10 dark:bg-[#579DFF]/15 text-[#0C66E4] dark:text-[#579DFF] border border-[#0C66E4]/25">
+                  <Briefcase className="h-3 w-3 stroke-[2.2]" />
+                  <span>Project Manager</span>
+                </span>
+              )}
+              {isTeamMember && (
                 <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25">
                   <UserCheck className="h-3 w-3 stroke-[2.2]" />
                   <span>Team Member</span>
@@ -82,39 +90,59 @@ export function Profile1({ className }) {
           </div>
         </div>
 
-        {/* 2-Role Switcher (Demo & Live Toggle) with Coloured Logos */}
+        {/* 3-Role Switcher (Live Role Toggle) with Coloured Logos */}
         <div className="px-2 py-2 mb-2 rounded-xl bg-slate-100/70 dark:bg-[#22272B]/70 border border-slate-200/60 dark:border-[#333C44]/40">
           <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-[#738496] block mb-1.5 px-1">
             Active Role Mode
           </span>
-          <div className="grid grid-cols-2 gap-1.5">
-            {/* Option 1: Admin / Project Manager */}
+          <div className="grid grid-cols-3 gap-1">
+            {/* Option 1: Admin */}
             <button
+              type="button"
               onClick={() => {
                 setRole(ROLES.ADMIN);
+                toast.success('Switched to Admin role');
               }}
-              className={`p-2 rounded-xl text-xs font-semibold transition cursor-pointer flex items-center gap-2 ${
+              className={`p-1.5 rounded-xl text-xs font-semibold transition cursor-pointer flex flex-col items-center gap-1 text-center ${
                 isAdmin
+                  ? 'bg-white dark:bg-[#161A1D] text-purple-600 dark:text-purple-400 shadow-xs border border-purple-500/30'
+                  : 'text-slate-600 hover:text-slate-900 dark:text-[#9FADBC] dark:hover:text-[#DEE4EA]'
+              }`}
+            >
+              <div className="h-6 w-6 rounded-lg bg-purple-500/10 dark:bg-purple-500/15 flex items-center justify-center text-purple-600 dark:text-purple-400 shrink-0">
+                <ShieldCheck className="h-3.5 w-3.5 stroke-[2.2]" />
+              </div>
+              <span className="block text-[10px] font-bold leading-tight truncate">Admin</span>
+            </button>
+
+            {/* Option 2: Project Manager */}
+            <button
+              type="button"
+              onClick={() => {
+                setRole(ROLES.PROJECT_MANAGER);
+                toast.success('Switched to Project Manager role');
+              }}
+              className={`p-1.5 rounded-xl text-xs font-semibold transition cursor-pointer flex flex-col items-center gap-1 text-center ${
+                isProjectManager
                   ? 'bg-white dark:bg-[#161A1D] text-[#0C66E4] dark:text-[#579DFF] shadow-xs border border-[#0C66E4]/30'
                   : 'text-slate-600 hover:text-slate-900 dark:text-[#9FADBC] dark:hover:text-[#DEE4EA]'
               }`}
             >
               <div className="h-6 w-6 rounded-lg bg-[#0C66E4]/10 dark:bg-[#579DFF]/15 flex items-center justify-center text-[#0C66E4] dark:text-[#579DFF] shrink-0">
-                <ShieldCheck className="h-3.5 w-3.5 stroke-[2.2]" />
+                <Briefcase className="h-3.5 w-3.5 stroke-[2.2]" />
               </div>
-              <div className="text-left min-w-0">
-                <span className="block text-[11px] font-bold leading-tight truncate">Admin / PM</span>
-                <span className="text-[9px] text-slate-400 font-normal">Full control</span>
-              </div>
+              <span className="block text-[10px] font-bold leading-tight truncate">Manager</span>
             </button>
 
-            {/* Option 2: Team Member */}
+            {/* Option 3: Team Member */}
             <button
+              type="button"
               onClick={() => {
                 setRole(ROLES.TEAM_MEMBER);
+                toast.success('Switched to Team Member role');
               }}
-              className={`p-2 rounded-xl text-xs font-semibold transition cursor-pointer flex items-center gap-2 ${
-                !isAdmin
+              className={`p-1.5 rounded-xl text-xs font-semibold transition cursor-pointer flex flex-col items-center gap-1 text-center ${
+                isTeamMember
                   ? 'bg-white dark:bg-[#161A1D] text-emerald-600 dark:text-emerald-400 shadow-xs border border-emerald-500/30'
                   : 'text-slate-600 hover:text-slate-900 dark:text-[#9FADBC] dark:hover:text-[#DEE4EA]'
               }`}
@@ -122,10 +150,7 @@ export function Profile1({ className }) {
               <div className="h-6 w-6 rounded-lg bg-emerald-500/10 dark:bg-emerald-500/15 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0">
                 <UserCheck className="h-3.5 w-3.5 stroke-[2.2]" />
               </div>
-              <div className="text-left min-w-0">
-                <span className="block text-[11px] font-bold leading-tight truncate">Team Member</span>
-                <span className="text-[9px] text-slate-400 font-normal">Tasks & works</span>
-              </div>
+              <span className="block text-[10px] font-bold leading-tight truncate">Member</span>
             </button>
           </div>
         </div>

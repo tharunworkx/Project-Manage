@@ -16,6 +16,9 @@ public class Project {
     @Column(name = "workspace_id", nullable = false)
     private UUID workspaceId;
 
+    @Column(name = "project_manager_id")
+    private UUID projectManagerId;
+
     @Column(name = "name", nullable = false)
     private String name;
 
@@ -72,6 +75,14 @@ public class Project {
 
     public void setWorkspaceId(UUID workspaceId) {
         this.workspaceId = workspaceId;
+    }
+
+    public UUID getProjectManagerId() {
+        return projectManagerId;
+    }
+
+    public void setProjectManagerId(UUID projectManagerId) {
+        this.projectManagerId = projectManagerId;
     }
 
     public String getName() {

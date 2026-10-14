@@ -13,10 +13,19 @@ public class CreateProjectRequest {
     @NotBlank(message = "name is required")
     private String name;
 
+    private UUID projectManagerId;
     private String description;
     private String color = "#4f46e5";
 
     public CreateProjectRequest() {
+    }
+
+    public UUID getProjectManagerId() {
+        return projectManagerId;
+    }
+
+    public void setProjectManagerId(UUID projectManagerId) {
+        this.projectManagerId = projectManagerId;
     }
 
     public UUID getWorkspaceId() {

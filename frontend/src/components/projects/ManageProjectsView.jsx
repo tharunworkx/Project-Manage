@@ -19,6 +19,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { DatePicker } from '../ui/date-picker';
+import { useAuthContext } from '../../context/AuthContext';
 import { toast } from 'sonner';
 
 const INITIAL_PROJECTS = [
@@ -232,6 +233,7 @@ const STATUS_CONFIG = {
 };
 
 export function ManageProjectsView() {
+  const { isAdmin, isProjectManager, isTeamMember, canCreateProjects, canManageProjects } = useAuthContext();
   const [projects, setProjects] = useState(() => {
     try {
       const stored = localStorage.getItem('taskflow_manage_projects_list');
@@ -264,6 +266,10 @@ export function ManageProjectsView() {
 
   const handleCreateProject = (e) => {
     e.preventDefault();
+    if (!canCreateProjects) {
+      toast.error('Permission denied: Only Admin and Project Managers can create projects.');
+      return;
+    }
     if (!newProjectName.trim()) {
       toast.error('Please enter a project title');
       return;
@@ -292,6 +298,10 @@ export function ManageProjectsView() {
   };
 
   const handleDeleteProject = (id, name) => {
+    if (!canManageProjects) {
+      toast.error('Permission denied: You do not have permission to delete projects.');
+      return;
+    }
     saveProjects(projects.filter((p) => p.id !== id));
     toast.success(`Project "${name}" removed`);
   };
@@ -321,12 +331,14 @@ export function ManageProjectsView() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-[#DEE4EA] tracking-tight">
-            Manage Projects
+            {isAdmin ? 'All Company Projects' : isProjectManager ? 'Manage Projects' : 'Assigned Projects'}
           </h1>
           <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-[#9FADBC] mt-1 font-medium">
-            <span>Dashboard</span>
+            <span>Workspace</span>
             <span className="text-slate-400 dark:text-[#738496]">&gt;</span>
-            <span className="text-slate-700 dark:text-[#DEE4EA]">Project</span>
+            <span className="text-slate-700 dark:text-[#DEE4EA]">
+              {isAdmin ? 'All Projects (Admin)' : isProjectManager ? 'Project Manager' : 'Team Member'}
+            </span>
           </div>
         </div>
 
@@ -406,14 +418,16 @@ export function ManageProjectsView() {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          {/* New Project Primary Button */}
-          <button
-            onClick={() => setIsNewProjectOpen(true)}
-            className="flex h-9 items-center gap-1.5 px-4 rounded-lg bg-[#0C66E4] hover:bg-[#0055CC] text-white text-xs font-semibold shadow-xs transition active:scale-98 cursor-pointer"
-          >
-            <Plus className="h-4 w-4 stroke-[2.5]" />
-            <span>New Project</span>
-          </button>
+          {/* New Project Primary Button - Admin and PM only */}
+          {canCreateProjects && (
+            <button
+              onClick={() => setIsNewProjectOpen(true)}
+              className="flex h-9 items-center gap-1.5 px-4 rounded-lg bg-[#0C66E4] hover:bg-[#0055CC] text-white text-xs font-semibold shadow-xs transition active:scale-98 cursor-pointer"
+            >
+              <Plus className="h-4 w-4 stroke-[2.5]" />
+              <span>New Project</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -460,15 +474,17 @@ export function ManageProjectsView() {
                         <ExternalLink className="h-3.5 w-3.5" />
                         <span>Open Project</span>
                       </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() =>
-                          handleDeleteProject(project.id, project.name)
-                        }
-                        className="flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer hover:bg-red-50 text-red-600 dark:hover:bg-[#3B1D1D] dark:text-[#F87171]"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                        <span>Delete Project</span>
-                      </DropdownMenuItem>
+                      {canManageProjects && (
+                        <DropdownMenuItem
+                          onClick={() =>
+                            handleDeleteProject(project.id, project.name)
+                          }
+                          className="flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer hover:bg-red-50 text-red-600 dark:hover:bg-[#3B1D1D] dark:text-[#F87171]"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                          <span>Delete Project</span>
+                        </DropdownMenuItem>
+                      )}
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>

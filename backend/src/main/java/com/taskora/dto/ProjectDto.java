@@ -8,6 +8,7 @@ import java.util.UUID;
 public class ProjectDto {
     private UUID id;
     private UUID workspaceId;
+    private UUID projectManagerId;
     private String name;
     private String description;
     private String color;
@@ -22,6 +23,7 @@ public class ProjectDto {
         ProjectDto dto = new ProjectDto();
         dto.setId(project.getId());
         dto.setWorkspaceId(project.getWorkspaceId());
+        dto.setProjectManagerId(project.getProjectManagerId());
         dto.setName(project.getName());
         dto.setDescription(project.getDescription());
         dto.setColor(project.getColor());
@@ -44,6 +46,14 @@ public class ProjectDto {
 
     public void setWorkspaceId(UUID workspaceId) {
         this.workspaceId = workspaceId;
+    }
+
+    public UUID getProjectManagerId() {
+        return projectManagerId;
+    }
+
+    public void setProjectManagerId(UUID projectManagerId) {
+        this.projectManagerId = projectManagerId;
     }
 
     public String getName() {

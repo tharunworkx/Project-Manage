@@ -49,7 +49,8 @@ public class WorkspaceController {
     }
 
     @PostMapping
-    @Operation(summary = "Create workspace", description = "Creates a new workspace")
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Create workspace", description = "Creates a new workspace (Admin only)")
     public ResponseEntity<ApiResponse<WorkspaceDto>> createWorkspace(
             @Valid @RequestBody CreateWorkspaceRequest request,
             @AuthenticationPrincipal UserPrincipal principal
@@ -60,7 +61,8 @@ public class WorkspaceController {
     }
 
     @DeleteMapping("/{id}")
-    @Operation(summary = "Delete workspace", description = "Deletes a workspace by ID")
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Delete workspace", description = "Deletes a workspace by ID (Admin only)")
     public ResponseEntity<ApiResponse<Void>> deleteWorkspace(@PathVariable UUID id) {
         workspaceService.deleteWorkspace(id);
         return ResponseEntity.ok(ApiResponse.success("Workspace deleted successfully", null));

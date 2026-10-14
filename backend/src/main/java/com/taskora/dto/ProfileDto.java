@@ -10,6 +10,7 @@ public class ProfileDto {
     private String fullName;
     private String avatarUrl;
     private String role;
+    private String status;
     private Instant createdAt;
     private Instant updatedAt;
 
@@ -23,6 +24,7 @@ public class ProfileDto {
         dto.setFullName(profile.getFullName());
         dto.setAvatarUrl(profile.getAvatarUrl());
         dto.setRole(profile.getRole());
+        dto.setStatus(profile.getStatus());
         dto.setCreatedAt(profile.getCreatedAt());
         dto.setUpdatedAt(profile.getUpdatedAt());
         return dto;
@@ -58,6 +60,14 @@ public class ProfileDto {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 
     public Instant getCreatedAt() {

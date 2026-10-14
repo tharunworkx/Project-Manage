@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import { useDroppable } from '@dnd-kit/core';
 import { Plus, MoreHorizontal, ChevronsLeftRight, ChevronsRightLeft } from 'lucide-react';
 import { TaskCard } from './TaskCard';
+import { useAuthContext } from '../../context/AuthContext';
 
 export function KanbanColumn({ column, tasks = [], onNewTaskInColumn, onCardClick }) {
+  const { canCreateTasks } = useAuthContext();
   const { setNodeRef, isOver } = useDroppable({
     id: column.id,
   });
@@ -101,8 +103,8 @@ export function KanbanColumn({ column, tasks = [], onNewTaskInColumn, onCardClic
           <TaskCard key={task.id} task={task} onCardClick={onCardClick} />
         ))}
 
-        {/* Empty column placeholder (dashed slot with plus) */}
-        {tasks.length === 0 && !inlineCreating && (
+        {/* Empty column placeholder (dashed slot with plus - Admin and PM only) */}
+        {tasks.length === 0 && !inlineCreating && canCreateTasks && (
           <button
             onClick={() => setInlineCreating(true)}
             className="w-full h-14 rounded-lg border border-dashed border-slate-300 dark:border-[#282E33] hover:border-[#0C66E4] dark:hover:border-[#388BFF]/60 hover:bg-white dark:hover:bg-[#22272B]/60 flex items-center justify-center text-slate-400 hover:text-slate-700 dark:text-[#738496] dark:hover:text-[#DEE4EA] transition cursor-pointer"
@@ -141,8 +143,8 @@ export function KanbanColumn({ column, tasks = [], onNewTaskInColumn, onCardClic
         )}
       </div>
 
-      {/* Bottom + button for columns with items */}
-      {tasks.length > 0 && !inlineCreating && (
+      {/* Bottom + button for columns with items (Admin and PM only) */}
+      {tasks.length > 0 && !inlineCreating && canCreateTasks && (
         <button
           onClick={() => setInlineCreating(true)}
           title="Create task"

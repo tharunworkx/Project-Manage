@@ -22,8 +22,10 @@ import { BoardToolbar } from './BoardToolbar';
 import { TaskDetailsDrawer } from '../tasks/TaskDetailsDrawer';
 import { TASK_STATUSES } from '../../lib/constants';
 import { formatDate } from '../../lib/utils';
+import { useAuthContext } from '../../context/AuthContext';
 
 export function KanbanBoard({ tasks = [], onTaskUpdate, onTaskCreate, onTaskDelete }) {
+  const { canCreateTasks } = useAuthContext();
   const [viewMode, setViewMode] = useState(() => {
     try {
       return localStorage.getItem('taskflow_board_view_mode') || 'grid';
@@ -310,17 +312,19 @@ export function KanbanBoard({ tasks = [], onTaskUpdate, onTaskCreate, onTaskDele
                 );
               })}
 
-              {/* Slot to create a new task in grid */}
-              <button
-                type="button"
-                onClick={() => handleNewTaskInColumn('todo', 'New issue from board')}
-                className="h-44 rounded-xl border-2 border-dashed border-slate-300 dark:border-[#282E33] hover:border-[#0C66E4] dark:hover:border-[#579DFF]/60 hover:bg-blue-50/20 dark:hover:bg-[#1C2125]/50 flex flex-col items-center justify-center gap-2 text-slate-400 hover:text-[#0C66E4] dark:text-[#738496] dark:hover:text-[#579DFF] transition cursor-pointer p-4 group"
-              >
-                <div className="h-9 w-9 rounded-full bg-slate-100 dark:bg-[#22272B] flex items-center justify-center text-slate-500 group-hover:bg-[#0C66E4] group-hover:text-white transition">
-                  <Plus className="h-5 w-5" />
-                </div>
-                <span className="text-xs font-semibold">Create issue</span>
-              </button>
+              {/* Slot to create a new task in grid (Admin and PM only) */}
+              {canCreateTasks && (
+                <button
+                  type="button"
+                  onClick={() => handleNewTaskInColumn('todo', 'New issue from board')}
+                  className="h-44 rounded-xl border-2 border-dashed border-slate-300 dark:border-[#282E33] hover:border-[#0C66E4] dark:hover:border-[#579DFF]/60 hover:bg-blue-50/20 dark:hover:bg-[#1C2125]/50 flex flex-col items-center justify-center gap-2 text-slate-400 hover:text-[#0C66E4] dark:text-[#738496] dark:hover:text-[#579DFF] transition cursor-pointer p-4 group"
+                >
+                  <div className="h-9 w-9 rounded-full bg-slate-100 dark:bg-[#22272B] flex items-center justify-center text-slate-500 group-hover:bg-[#0C66E4] group-hover:text-white transition">
+                    <Plus className="h-5 w-5" />
+                  </div>
+                  <span className="text-xs font-semibold">Create issue</span>
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -340,13 +344,15 @@ export function KanbanBoard({ tasks = [], onTaskUpdate, onTaskCreate, onTaskDele
               />
             ))}
 
-            {/* Add Column button on the right */}
-            <button
-              title="Create column"
-              className="h-11 w-11 shrink-0 rounded-xl bg-[#161A1D] hover:bg-[#22272B] border border-[#282E33]/70 flex items-center justify-center text-[#738496] hover:text-[#DEE4EA] transition cursor-pointer"
-            >
-              <Plus className="h-5 w-5" />
-            </button>
+            {/* Add Column button on the right (Admin and PM only) */}
+            {canCreateTasks && (
+              <button
+                title="Create column"
+                className="h-11 w-11 shrink-0 rounded-xl bg-[#161A1D] hover:bg-[#22272B] border border-[#282E33]/70 flex items-center justify-center text-[#738496] hover:text-[#DEE4EA] transition cursor-pointer"
+              >
+                <Plus className="h-5 w-5" />
+              </button>
+            )}
           </div>
         </DndContext>
       )}

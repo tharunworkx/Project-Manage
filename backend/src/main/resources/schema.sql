@@ -2,11 +2,13 @@
 -- Taskora - Database Schema for Supabase PostgreSQL
 -- ============================================================
 
--- 1. Profiles Table
+-- 1. Profiles Table (with role & active status)
 CREATE TABLE IF NOT EXISTS public.profiles (
   id UUID PRIMARY KEY,
   full_name TEXT,
   avatar_url TEXT,
+  role TEXT DEFAULT 'team_member', -- 'admin', 'project_manager', 'team_member'
+  status TEXT DEFAULT 'active',    -- 'active', 'deactivated'
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -25,20 +27,31 @@ CREATE TABLE IF NOT EXISTS public.workspace_members (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   workspace_id UUID REFERENCES public.workspaces(id) ON DELETE CASCADE,
   user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
-  role TEXT DEFAULT 'member',
+  role TEXT DEFAULT 'team_member', -- 'admin', 'project_manager', 'team_member'
   created_at TIMESTAMPTZ DEFAULT NOW(),
   UNIQUE(workspace_id, user_id)
 );
 
--- 4. Projects Table
+-- 4. Projects Table (with assigned Project Manager)
 CREATE TABLE IF NOT EXISTS public.projects (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   workspace_id UUID REFERENCES public.workspaces(id) ON DELETE CASCADE,
+  project_manager_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
   name TEXT NOT NULL,
   description TEXT,
   color TEXT DEFAULT '#4f46e5',
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 4b. Project Members Table (Enforces project-level authorization)
+CREATE TABLE IF NOT EXISTS public.project_members (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_id UUID REFERENCES public.projects(id) ON DELETE CASCADE,
+  user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
+  role_in_project TEXT DEFAULT 'team_member', -- 'project_manager', 'team_member'
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(project_id, user_id)
 );
 
 -- 5. Tasks Table

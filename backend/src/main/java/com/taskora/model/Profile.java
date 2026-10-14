@@ -21,6 +21,9 @@ public class Profile {
     @Column(name = "role")
     private String role = "team_member";
 
+    @Column(name = "status")
+    private String status = "active"; // "active" or "deactivated"
+
     @Column(name = "created_at", updatable = false)
     private Instant createdAt;
 
@@ -83,6 +86,14 @@ public class Profile {
 
     public void setRole(String role) {
         this.role = role != null ? role : "team_member";
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status != null ? status : "active";
     }
 
     public Instant getCreatedAt() {

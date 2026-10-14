@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum WorkspaceRole {
     ADMIN("admin"),
+    PROJECT_MANAGER("project_manager"),
     TEAM_MEMBER("team_member");
 
     private final String value;
@@ -24,8 +25,11 @@ public enum WorkspaceRole {
             return TEAM_MEMBER;
         }
         String clean = value.trim().toLowerCase();
-        if (clean.equals("owner") || clean.equals("admin") || clean.equals("project_manager") || clean.equals("pm")) {
+        if (clean.equals("admin") || clean.equals("owner")) {
             return ADMIN;
+        }
+        if (clean.equals("project_manager") || clean.equals("pm") || clean.equals("projectmanager")) {
+            return PROJECT_MANAGER;
         }
         return TEAM_MEMBER;
     }

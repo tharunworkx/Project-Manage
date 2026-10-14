@@ -12,6 +12,7 @@ import {
   BarChart3,
   Settings,
   ShieldCheck,
+  Briefcase,
   UserCheck,
   Sliders,
   ChevronsUpDown,
@@ -24,33 +25,44 @@ import { toast } from 'sonner';
 
 export function AppSidebar6() {
   const { isOpen } = useSidebar();
-  const { role, isAdmin } = useAuthContext();
+  const { role, isAdmin, isProjectManager, isTeamMember } = useAuthContext();
   const [searchFilter, setSearchFilter] = useState('');
   const [hoveredId, setHoveredId] = useState(null);
 
-  // Navigation items for the 2 user roles (Dashboard removed, Kanban is primary)
+  // Navigation items customized per role
   const getNavItemsForRole = () => {
     if (isAdmin) {
-      // User 1 — Admin / Project Manager (10 items)
+      // 1. ADMIN (Full workspace & company-wide control)
+      return [
+        { label: 'Kanban Board', path: '/kanban', icon: FolderKanban },
+        { label: 'All Tasks', path: '/tasks', icon: CheckSquare },
+        { label: 'All Projects', path: '/projects', icon: LayoutDashboard },
+        { label: 'Calendar', path: '/calendar', icon: Calendar },
+        { label: 'Activity Log', path: '/activity', icon: Activity },
+        { label: 'Company Reports', path: '/reports', icon: BarChart3 },
+        { label: 'Employee Accounts & Roles', path: '/users', icon: ShieldCheck },
+        { label: 'Workspace Settings', path: '/settings', icon: Settings },
+        { label: 'Notifications', path: '/notifications', icon: Bell },
+        { label: 'Preferences', path: '/preferences', icon: Sliders },
+      ];
+    } else if (isProjectManager) {
+      // 2. PROJECT MANAGER (Project management & team assignments)
       return [
         { label: 'Kanban Board', path: '/kanban', icon: FolderKanban },
         { label: 'My Tasks', path: '/tasks', icon: CheckSquare },
         { label: 'Projects', path: '/projects', icon: LayoutDashboard },
+        { label: 'Project Members', path: '/team', icon: Users2 },
         { label: 'Calendar', path: '/calendar', icon: Calendar },
-        { label: 'Activity', path: '/activity', icon: Activity },
+        { label: 'Project Reports', path: '/reports', icon: BarChart3 },
         { label: 'Notifications', path: '/notifications', icon: Bell },
-        { label: 'Team Members', path: '/team', icon: Users2 },
-        { label: 'Reports & Analytics', path: '/reports', icon: BarChart3 },
-        { label: 'Workspace Settings', path: '/settings', icon: Settings },
-        { label: 'User Management', path: '/users', icon: ShieldCheck },
         { label: 'Preferences', path: '/preferences', icon: Sliders },
       ];
     } else {
-      // User 2 — Team Member (6 items)
+      // 3. TEAM MEMBER (Assigned projects & tasks)
       return [
         { label: 'Kanban Board', path: '/kanban', icon: FolderKanban },
         { label: 'My Tasks', path: '/tasks', icon: CheckSquare },
-        { label: 'Projects', path: '/projects', icon: LayoutDashboard },
+        { label: 'Assigned Projects', path: '/projects', icon: LayoutDashboard },
         { label: 'Calendar', path: '/calendar', icon: Calendar },
         { label: 'Notifications', path: '/notifications', icon: Bell },
         { label: 'Preferences', path: '/preferences', icon: Sliders },
@@ -87,12 +99,19 @@ export function AppSidebar6() {
                   </h3>
                   <div className="flex items-center gap-1.5 mt-0.5">
                     {/* Coloured Logo Badge with Sidebar-style Icon */}
-                    {isAdmin ? (
-                      <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-md bg-[#0C66E4]/10 dark:bg-[#579DFF]/15 text-[#0C66E4] dark:text-[#579DFF] border border-[#0C66E4]/25">
+                    {isAdmin && (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-md bg-purple-500/10 dark:bg-purple-500/15 text-purple-600 dark:text-purple-400 border border-purple-500/25">
                         <ShieldCheck className="h-3 w-3 stroke-[2.2]" />
-                        <span>Admin / PM</span>
+                        <span>Admin</span>
                       </span>
-                    ) : (
+                    )}
+                    {isProjectManager && (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-md bg-[#0C66E4]/10 dark:bg-[#579DFF]/15 text-[#0C66E4] dark:text-[#579DFF] border border-[#0C66E4]/25">
+                        <Briefcase className="h-3 w-3 stroke-[2.2]" />
+                        <span>Project Manager</span>
+                      </span>
+                    )}
+                    {isTeamMember && (
                       <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-md bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25">
                         <UserCheck className="h-3 w-3 stroke-[2.2]" />
                         <span>Team Member</span>
