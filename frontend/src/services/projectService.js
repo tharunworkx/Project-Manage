@@ -1,5 +1,5 @@
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
-import { userService } from './userService';
+import { userService, SEED_USER_IDS } from './userService';
 
 const PROJECTS_STORAGE_KEY = 'taskflow_manage_projects_list_v4';
 
@@ -30,7 +30,9 @@ const MOCK_PROJECTS = [
     status: 'in_progress',
     duration: 'Nov 12, 2026',
     workspace_id: SEED_WORKSPACE_IDS.WS1,
-    member_ids: ['usr-admin', 'usr-2'],
+    project_manager_id: SEED_USER_IDS.ALEX,
+    member_ids: [SEED_USER_IDS.ADMIN, SEED_USER_IDS.ALEX, SEED_USER_IDS.MARIA],
+    member_emails: ['tharun@gmail.com', 'alex.j@company.com', 'maria.g@company.com'],
     moreCount: 0,
   },
   {
@@ -44,7 +46,9 @@ const MOCK_PROJECTS = [
     status: 'in_progress',
     duration: 'Dec 05, 2026',
     workspace_id: SEED_WORKSPACE_IDS.WS1,
-    member_ids: ['usr-2', 'usr-3'],
+    project_manager_id: SEED_USER_IDS.SARAH,
+    member_ids: [SEED_USER_IDS.SARAH, SEED_USER_IDS.DAVID],
+    member_emails: ['sarah.m@company.com', 'david.c@company.com'],
     moreCount: 0,
   },
   {
@@ -58,7 +62,9 @@ const MOCK_PROJECTS = [
     status: 'complete',
     duration: 'Oct 30, 2026',
     workspace_id: SEED_WORKSPACE_IDS.WS1,
-    member_ids: ['usr-admin', 'usr-4'],
+    project_manager_id: SEED_USER_IDS.ADMIN,
+    member_ids: [SEED_USER_IDS.ADMIN, SEED_USER_IDS.MARIA, SEED_USER_IDS.SOPHIE],
+    member_emails: ['tharun@gmail.com', 'maria.g@company.com', 'sophie.t@company.com'],
     moreCount: 0,
   },
 
@@ -74,7 +80,9 @@ const MOCK_PROJECTS = [
     status: 'in_progress',
     duration: 'Nov 18, 2026',
     workspace_id: SEED_WORKSPACE_IDS.WS2,
-    member_ids: ['usr-admin', 'usr-2', 'usr-3'],
+    project_manager_id: SEED_USER_IDS.ALEX,
+    member_ids: [SEED_USER_IDS.ADMIN, SEED_USER_IDS.ALEX, SEED_USER_IDS.SARAH, SEED_USER_IDS.MARIA],
+    member_emails: ['tharun@gmail.com', 'alex.j@company.com', 'sarah.m@company.com', 'maria.g@company.com'],
     moreCount: 0,
   },
   {
@@ -88,7 +96,9 @@ const MOCK_PROJECTS = [
     status: 'in_progress',
     duration: 'Nov 22, 2026',
     workspace_id: SEED_WORKSPACE_IDS.WS2,
-    member_ids: ['usr-2', 'usr-5'],
+    project_manager_id: SEED_USER_IDS.ALEX,
+    member_ids: [SEED_USER_IDS.ALEX, SEED_USER_IDS.DAVID],
+    member_emails: ['alex.j@company.com', 'david.c@company.com'],
     moreCount: 0,
   },
   {
@@ -102,7 +112,9 @@ const MOCK_PROJECTS = [
     status: 'on_hold',
     duration: 'Dec 15, 2026',
     workspace_id: SEED_WORKSPACE_IDS.WS2,
-    member_ids: ['usr-admin', 'usr-6'],
+    project_manager_id: SEED_USER_IDS.SARAH,
+    member_ids: [SEED_USER_IDS.ADMIN, SEED_USER_IDS.SARAH, SEED_USER_IDS.SOPHIE],
+    member_emails: ['tharun@gmail.com', 'sarah.m@company.com', 'sophie.t@company.com'],
     moreCount: 0,
   },
 
@@ -118,7 +130,9 @@ const MOCK_PROJECTS = [
     status: 'in_progress',
     duration: 'Nov 25, 2026',
     workspace_id: SEED_WORKSPACE_IDS.WS3,
-    member_ids: ['usr-2', 'usr-4'],
+    project_manager_id: SEED_USER_IDS.ALEX,
+    member_ids: [SEED_USER_IDS.ALEX, SEED_USER_IDS.MARIA, SEED_USER_IDS.LIAM],
+    member_emails: ['alex.j@company.com', 'maria.g@company.com', 'liam.w@company.com'],
     moreCount: 0,
   },
   {
@@ -132,28 +146,23 @@ const MOCK_PROJECTS = [
     status: 'in_progress',
     duration: 'Dec 10, 2026',
     workspace_id: SEED_WORKSPACE_IDS.WS3,
-    member_ids: ['usr-admin', 'usr-3', 'usr-5'],
+    project_manager_id: SEED_USER_IDS.SARAH,
+    member_ids: [SEED_USER_IDS.ADMIN, SEED_USER_IDS.SARAH, SEED_USER_IDS.DAVID],
+    member_emails: ['tharun@gmail.com', 'sarah.m@company.com', 'david.c@company.com'],
     moreCount: 0,
   },
 ];
 
 function getStoredProjects() {
   try {
-    const raw = localStorage.getItem(PROJECTS_STORAGE_KEY);
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed)) {
-        if (isSupabaseConfigured) {
-          return parsed.filter(
-            (p) =>
-              !p.id?.toString().startsWith('SRS-') &&
-              !p.id?.toString().startsWith('00000000-0000-0000-0000-000000000') &&
-              !['proj-101', 'proj-102', 'proj-201', 'proj-301', 'proj-302'].includes(p.id)
-          );
-        }
+    const stored = localStorage.getItem(PROJECTS_STORAGE_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      if (Array.isArray(parsed) && parsed.length > 0) {
         return parsed.map((p) => ({
           ...p,
           workspace_id: normalizeWorkspaceId(p.workspace_id),
+          member_emails: p.member_emails || (p.members ? p.members.map((m) => m.email?.toLowerCase()).filter(Boolean) : []),
         }));
       }
     }
@@ -202,6 +211,7 @@ const mapRemoteProject = (row) => ({
   members: [],
   member_ids: [],
   memberIds: [],
+  member_emails: [],
 });
 
 export const projectService = {
@@ -228,19 +238,89 @@ export const projectService = {
       const { data: remoteData, error } = await query;
       if (error) throw error;
 
+      // Also fetch all project_members joined with profiles from Supabase!
+      let remoteMembers = [];
+      try {
+        const { data: pmData, error: pmErr } = await supabase
+          .from('project_members')
+          .select('project_id, user_id, role_in_project, profiles(id, email, full_name, role, color, avatar_url)');
+        if (!pmErr && Array.isArray(pmData)) {
+          remoteMembers = pmData;
+        }
+      } catch (e) {
+        console.warn('Could not fetch project_members from Supabase:', e);
+      }
+
+      // Group members by project_id
+      const allUsers = userService.getUsers();
+      const membersByProject = new Map();
+      for (const rm of remoteMembers) {
+        if (!rm.project_id) continue;
+        if (!membersByProject.has(rm.project_id)) {
+          membersByProject.set(rm.project_id, []);
+        }
+        const profile = rm.profiles || {};
+        const matchedLocalUser = allUsers.find(
+          (u) =>
+            (profile.email && u.email && u.email.toLowerCase() === profile.email.toLowerCase()) ||
+            (rm.user_id && u.id === rm.user_id)
+        );
+
+        const email = (profile.email || matchedLocalUser?.email || '').toLowerCase();
+        const name = profile.full_name || matchedLocalUser?.name || email.split('@')[0] || 'Member';
+        const role = rm.role_in_project || profile.role || matchedLocalUser?.role || 'team_member';
+        const color = profile.color || matchedLocalUser?.color || '#10B981';
+
+        membersByProject.get(rm.project_id).push({
+          id: rm.user_id || profile.id || matchedLocalUser?.id,
+          name,
+          email,
+          role,
+          color,
+          avatar:
+            profile.avatar_url ||
+            matchedLocalUser?.avatar ||
+            name.split(' ').map((n) => n[0]).join('').substring(0, 2).toUpperCase(),
+        });
+      }
+
       const remoteProjects = (remoteData || []).map(mapRemoteProject);
       const stored = getStoredProjects();
 
-      // Merge remote projects with local UI details (members, member_ids, manager)
+      // Merge remote projects with database members AND local UI cache
       const merged = remoteProjects.map((rp) => {
         const localMatch = stored.find((lp) => lp.id === rp.id || lp.name === rp.name);
-        const members = localMatch?.members || rp.members || [];
-        const memberIds = localMatch?.memberIds || localMatch?.member_ids || rp.member_ids || [];
+        const dbMembers = membersByProject.get(rp.id) || [];
+
+        // Combine DB members with localMatch members, deduplicating by email
+        const memberMap = new Map();
+        for (const m of localMatch?.members || []) {
+          if (m?.email) memberMap.set(m.email.toLowerCase(), m);
+        }
+        for (const m of dbMembers) {
+          if (m?.email) memberMap.set(m.email.toLowerCase(), m);
+        }
+
+        const combinedMembers = Array.from(memberMap.values());
+        const memberIds = Array.from(
+          new Set([
+            ...combinedMembers.map((m) => m.id).filter(Boolean),
+            ...(localMatch?.member_ids || localMatch?.memberIds || []),
+          ])
+        );
+        const memberEmails = Array.from(
+          new Set([
+            ...combinedMembers.map((m) => m.email.toLowerCase()).filter(Boolean),
+            ...(localMatch?.member_emails || []),
+          ])
+        );
+
         return {
           ...rp,
-          members,
+          members: combinedMembers,
           member_ids: memberIds,
           memberIds,
+          member_emails: memberEmails,
           project_manager_id: localMatch?.project_manager_id || rp.project_manager_id || null,
         };
       });
@@ -260,8 +340,19 @@ export const projectService = {
   async createProject(project) {
     const wsId = normalizeWorkspaceId(project.workspace_id);
 
+    // Resolve PM
+    let pmId = project.project_manager_id || null;
+    if (pmId) {
+      const pmUser = userService.findUserById(pmId) || userService.findUserByEmail(pmId);
+      if (pmUser) {
+        pmId = pmUser.id;
+        await userService.syncUserToRemote(pmUser);
+      }
+    }
+
     const dbPayload = {
       workspace_id: wsId,
+      project_manager_id: pmId && pmId.includes('-') ? pmId : null,
       name: project.name?.trim(),
       description: project.description?.trim() || '',
       color: project.color || '#0C66E4',
@@ -296,22 +387,86 @@ export const projectService = {
 
     const assignedId = remoteRecord
       ? remoteRecord.id
-      : (typeof crypto !== 'undefined' && crypto.randomUUID
-          ? crypto.randomUUID()
-          : '00000000-0000-0000-0000-' + Date.now().toString().padStart(12, '0'));
+      : typeof crypto !== 'undefined' && crypto.randomUUID
+      ? crypto.randomUUID()
+      : '00000000-0000-0000-0000-' + Date.now().toString().padStart(12, '0');
+
+    // Resolve all member users and their emails
+    const rawMembers = project.members || [];
+    const rawMemberIds = project.member_ids || project.memberIds || [];
+    const allUsers = userService.getUsers();
+
+    const resolvedMembers = [];
+    const memberIds = [];
+    const memberEmails = [];
+
+    const combinedRefs = [
+      ...rawMembers,
+      ...rawMemberIds.map((id) => allUsers.find((u) => u.id === id || u.email === id) || id),
+    ];
+
+    const seenEmails = new Set();
+    for (const ref of combinedRefs) {
+      let u = null;
+      if (typeof ref === 'object' && ref !== null) {
+        u = ref.email ? allUsers.find((user) => user.email?.toLowerCase() === ref.email.toLowerCase()) || ref : ref;
+      } else if (typeof ref === 'string') {
+        u = allUsers.find((user) => user.id === ref || (user.email && user.email.toLowerCase() === ref.toLowerCase()));
+      }
+      if (u && u.email && !seenEmails.has(u.email.toLowerCase())) {
+        seenEmails.add(u.email.toLowerCase());
+        resolvedMembers.push(u);
+        if (u.id) memberIds.push(u.id);
+        memberEmails.push(u.email.toLowerCase());
+      }
+    }
+
+    // Persist to Supabase project_members table
+    if (isSupabaseConfigured && remoteRecord) {
+      try {
+        for (const member of resolvedMembers) {
+          // ensure profile row exists in Supabase so foreign key constraint is satisfied
+          await userService.syncUserToRemote(member);
+
+          await supabase.from('project_members').upsert(
+            {
+              project_id: assignedId,
+              user_id: member.id,
+              role_in_project: member.role || 'team_member',
+            },
+            { onConflict: 'project_id,user_id' }
+          );
+        }
+
+        // Also if PM exists, ensure PM is in project_members
+        if (pmId) {
+          await supabase.from('project_members').upsert(
+            {
+              project_id: assignedId,
+              user_id: pmId,
+              role_in_project: 'project_manager',
+            },
+            { onConflict: 'project_id,user_id' }
+          );
+        }
+      } catch (pmErr) {
+        console.warn('Error saving project_members in Supabase:', pmErr);
+      }
+    }
 
     const finalProject = {
       ...project,
       ...dbPayload,
       id: assignedId,
-      key: project.key || ('PROJ-' + assignedId.replace(/-/g, '').slice(0, 4).toUpperCase()),
+      key: project.key || 'PROJ-' + assignedId.replace(/-/g, '').slice(0, 4).toUpperCase(),
       duration: project.duration || (project.end_date || 'Nov 20, 2026'),
       task_count: 0,
       completed_count: 0,
-      moreCount: 0,
-      members: project.members || [],
-      member_ids: project.member_ids || project.memberIds || (project.members ? project.members.map((m) => m.id) : []),
-      memberIds: project.memberIds || project.member_ids || (project.members ? project.members.map((m) => m.id) : []),
+      moreCount: resolvedMembers.length > 3 ? resolvedMembers.length - 3 : 0,
+      members: resolvedMembers,
+      member_ids: memberIds,
+      memberIds: memberIds,
+      member_emails: memberEmails,
     };
 
     const current = getStoredProjects();
@@ -324,6 +479,7 @@ export const projectService = {
   async deleteProject(id) {
     if (isSupabaseConfigured) {
       try {
+        await supabase.from('project_members').delete().eq('project_id', id);
         await supabase.from('projects').delete().eq('id', id);
       } catch (err) {
         console.warn('Failed to delete project in Supabase:', err);
@@ -350,8 +506,32 @@ export const projectService = {
         if (updates.estimatedHours || updates.estimated_hours) {
           dbUpdates.estimated_hours = updates.estimatedHours || updates.estimated_hours;
         }
+        if (updates.project_manager_id) {
+          dbUpdates.project_manager_id = updates.project_manager_id;
+        }
+
         if (Object.keys(dbUpdates).length > 0) {
           await supabase.from('projects').update(dbUpdates).eq('id', id);
+        }
+
+        // Sync members if updated
+        if (Array.isArray(updates.members) || Array.isArray(updates.member_ids)) {
+          const allUsers = userService.getUsers();
+          const targetMembers = updates.members || updates.member_ids.map((mid) => allUsers.find((u) => u.id === mid) || { id: mid });
+
+          for (const mem of targetMembers) {
+            if (mem && mem.id) {
+              await userService.syncUserToRemote(mem);
+              await supabase.from('project_members').upsert(
+                {
+                  project_id: id,
+                  user_id: mem.id,
+                  role_in_project: mem.role || 'team_member',
+                },
+                { onConflict: 'project_id,user_id' }
+              );
+            }
+          }
         }
       } catch (err) {
         console.warn('Failed to update project in Supabase:', err);
@@ -371,12 +551,20 @@ export const isProjectAssignedToEmail = (project, userEmail, userId = null) => {
   if (!userEmail && !userId) return false;
   const cleanEmail = userEmail?.trim().toLowerCase();
 
-  // 1. Check project.members array (objects or strings)
+  // 1. Check project.member_emails array
+  if (Array.isArray(project.member_emails) && cleanEmail) {
+    if (project.member_emails.some((em) => em && em.toLowerCase() === cleanEmail)) {
+      return true;
+    }
+  }
+
+  // 2. Check project.members array (objects or strings)
   if (Array.isArray(project.members) && project.members.length > 0) {
     const isMember = project.members.some((m) => {
       if (!m) return false;
       if (typeof m === 'string') {
-        return (cleanEmail && m.trim().toLowerCase() === cleanEmail) || (userId && m === userId);
+        const mClean = m.trim().toLowerCase();
+        return (cleanEmail && mClean === cleanEmail) || (userId && m === userId);
       }
       if (typeof m === 'object') {
         const memEmail = m.email?.trim().toLowerCase();
@@ -387,7 +575,7 @@ export const isProjectAssignedToEmail = (project, userEmail, userId = null) => {
     if (isMember) return true;
   }
 
-  // 2. Check project.member_ids array
+  // 3. Check project.member_ids array
   if (Array.isArray(project.member_ids) && project.member_ids.length > 0) {
     if (userId && project.member_ids.includes(userId)) return true;
     try {
@@ -400,7 +588,7 @@ export const isProjectAssignedToEmail = (project, userEmail, userId = null) => {
     } catch {}
   }
 
-  // 3. Check project.project_manager_id
+  // 4. Check project.project_manager_id
   if (project.project_manager_id) {
     if (userId && project.project_manager_id === userId) return true;
     try {
@@ -412,4 +600,3 @@ export const isProjectAssignedToEmail = (project, userEmail, userId = null) => {
 
   return false;
 };
-

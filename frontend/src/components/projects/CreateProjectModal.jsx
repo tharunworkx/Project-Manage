@@ -18,6 +18,7 @@ import {
 import { userService } from '../../services/userService';
 import { clientService } from '../../services/clientService';
 import { useWorkspaceContext } from '../../context/WorkspaceContext';
+import { useAuthContext } from '../../context/AuthContext';
 import { DatePicker } from '../ui/date-picker';
 import { toast } from 'sonner';
 
@@ -70,6 +71,7 @@ const AI_PROJECT_TEMPLATES = [
 
 export function CreateProjectModal({ isOpen, onClose, onCreate }) {
   const { currentWorkspace } = useWorkspaceContext();
+  const { user, isProjectManager } = useAuthContext();
 
   // Form States matching User Reference UI
   const [name, setName] = useState('');
@@ -98,8 +100,23 @@ export function CreateProjectModal({ isOpen, onClose, onCreate }) {
   }, []);
 
   // Fetch Project Managers / Admins and deduplicate
-  const allUsers = userService.getUsers();
-  const rawPms = userService.getProjectManagers();
+  const [allUsers, setAllUsers] = useState(() => userService.getUsers());
+
+  useEffect(() => {
+    userService.fetchUsersFromRemote().then((loaded) => {
+      if (Array.isArray(loaded)) setAllUsers(loaded);
+    });
+    const handleUsersUpdate = () => setAllUsers(userService.getUsers());
+    window.addEventListener('taskflow_users_updated', handleUsersUpdate);
+    return () => window.removeEventListener('taskflow_users_updated', handleUsersUpdate);
+  }, []);
+
+  const rawPms = useMemo(() => {
+    return allUsers.filter(
+      (u) => u.role?.toLowerCase() === 'project_manager' || u.role?.toLowerCase() === 'admin'
+    );
+  }, [allUsers]);
+
   const projectManagers = useMemo(() => {
     const seen = new Set();
     const list = rawPms.filter((pm) => {
@@ -119,10 +136,14 @@ export function CreateProjectModal({ isOpen, onClose, onCreate }) {
   }, [clients, client]);
 
   useEffect(() => {
-    if (!selectedUserId && projectManagers.length > 0) {
-      setSelectedUserId(projectManagers[0].id);
+    if (!selectedUserId) {
+      if (isProjectManager && user?.id) {
+        setSelectedUserId(user.id);
+      } else if (projectManagers.length > 0) {
+        setSelectedUserId(projectManagers[0].id);
+      }
     }
-  }, [projectManagers, selectedUserId]);
+  }, [projectManagers, selectedUserId, isProjectManager, user?.id]);
 
   if (!isOpen) return null;
 
@@ -244,6 +265,7 @@ export function CreateProjectModal({ isOpen, onClose, onCreate }) {
       members: finalMembers,
       member_ids: finalMembers.map((m) => m.id),
       memberIds: finalMembers.map((m) => m.id),
+      member_emails: finalMembers.map((m) => m.email?.toLowerCase()).filter(Boolean),
       moreCount: finalMembers.length > 3 ? finalMembers.length - 3 : 0,
     };
 

@@ -76,25 +76,38 @@ export function AuthProvider({ children }) {
     return { data: { user: authenticatedUser }, error: null };
   };
 
+  useEffect(() => {
+    userService.fetchUsersFromRemote().catch(() => {});
+  }, []);
+
   const signUp = async (email, password, fullName) => {
-    const registeredUser = userService.registerUser({
-      name: fullName,
-      email,
-      password,
-    });
+    const rawName =
+      typeof fullName === 'string'
+        ? fullName
+        : fullName?.full_name || fullName?.name || '';
 
-    setUser(registeredUser);
-    localStorage.setItem('taskflow_logged_in_user', JSON.stringify(registeredUser));
+    try {
+      const registeredUser = await userService.registerUser({
+        name: rawName,
+        email,
+        password,
+      });
 
-    if (registeredUser.email.toLowerCase().includes('tharun') || registeredUser.role === ROLES.ADMIN) {
-      setRoleState(ROLES.ADMIN);
-      localStorage.setItem('taskora_active_role', ROLES.ADMIN);
-    } else {
-      setRoleState(registeredUser.role || ROLES.TEAM_MEMBER);
-      localStorage.setItem('taskora_active_role', registeredUser.role || ROLES.TEAM_MEMBER);
+      setUser(registeredUser);
+      localStorage.setItem('taskflow_logged_in_user', JSON.stringify(registeredUser));
+
+      if (registeredUser.email.toLowerCase().includes('tharun') || registeredUser.role === ROLES.ADMIN) {
+        setRoleState(ROLES.ADMIN);
+        localStorage.setItem('taskora_active_role', ROLES.ADMIN);
+      } else {
+        setRoleState(registeredUser.role || ROLES.TEAM_MEMBER);
+        localStorage.setItem('taskora_active_role', registeredUser.role || ROLES.TEAM_MEMBER);
+      }
+
+      return { data: { user: registeredUser }, error: null };
+    } catch (err) {
+      return { data: null, error: err };
     }
-
-    return { data: { user: registeredUser }, error: null };
   };
 
   const updateUser = (updatedFields) => {

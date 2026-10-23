@@ -62,10 +62,15 @@ export default function UserManagement() {
   const [editName, setEditName] = useState('');
   const [userToDelete, setUserToDelete] = useState(null);
 
+  React.useEffect(() => {
+    userService.fetchUsersFromRemote().then((loaded) => {
+      if (Array.isArray(loaded)) setUsers(loaded);
+    });
+  }, []);
+
   const handleRoleChange = (userId, newRole) => {
-    const updated = users.map((u) => (u.id === userId ? { ...u, role: newRole } : u));
-    setUsers(updated);
-    userService.saveUsers(updated);
+    userService.updateRole(userId, newRole);
+    setUsers(userService.getUsers());
     toast.success('Role updated');
   };
 
@@ -82,15 +87,9 @@ export default function UserManagement() {
     });
     setUsers(updated);
     userService.saveUsers(updated);
-    if (isSupabaseConfigured) {
-      try {
-        await supabase
-          .from('users')
-          .update({ is_active: nextStatus === 'Active' })
-          .eq('id', userId);
-      } catch (err) {
-        console.warn('Could not update status in Supabase:', err);
-      }
+    const targetUser = updated.find((u) => u.id === userId);
+    if (targetUser) {
+      userService.syncUserToRemote(targetUser);
     }
     toast.info(`Account status for "${targetName || 'User'}" set to ${nextStatus}`);
   };
@@ -98,54 +97,37 @@ export default function UserManagement() {
   const confirmDeleteUser = async () => {
     if (!userToDelete) return;
     const deletedName = userToDelete.name;
-    const updated = users.filter((u) => u.id !== userToDelete.id);
-    setUsers(updated);
-    userService.saveUsers(updated);
-    if (isSupabaseConfigured) {
-      try {
-        await supabase.from('users').delete().eq('id', userToDelete.id);
-      } catch (err) {
-        console.warn('Could not delete user in Supabase:', err);
-      }
-    }
+    userService.deleteUser(userToDelete.id);
+    setUsers(userService.getUsers());
     toast.success(`Account "${deletedName}" deleted permanently`);
     setUserToDelete(null);
   };
 
   const handleSaveEdit = (userId) => {
     if (!editName.trim()) return;
-    const updated = users.map((u) => (u.id === userId ? { ...u, name: editName } : u));
-    setUsers(updated);
-    userService.saveUsers(updated);
+    userService.updateUserProfile(userId, { name: editName });
+    setUsers(userService.getUsers());
     setEditingUserId(null);
     setEditName('');
   };
 
-  const handleInvite = (e) => {
+  const handleInvite = async (e) => {
     e.preventDefault();
     if (!inviteEmail) return;
-    const cleanEmail = inviteEmail.trim().toLowerCase();
-    const colors = {
-      admin: '#7C3AED',
-      project_manager: '#0C66E4',
-      team_member: '#10B981',
-    };
-    const newUser = {
-      id: 'usr-' + Date.now(),
-      name: inviteName.trim() || cleanEmail.split('@')[0],
-      email: cleanEmail,
-      password: '12345678',
-      role: inviteRole,
-      status: 'Active',
-      avatar: (inviteName ? inviteName.substring(0, 2) : cleanEmail.substring(0, 2)).toUpperCase(),
-      color: colors[inviteRole] || '#10B981',
-    };
-    const updated = [newUser, ...users];
-    setUsers(updated);
-    userService.saveUsers(updated);
-    setInviteEmail('');
-    setInviteName('');
-    setIsInviteOpen(false);
+    try {
+      const newUser = await userService.addUserByAdmin({
+        name: inviteName.trim(),
+        email: inviteEmail.trim(),
+        role: inviteRole,
+      });
+      setUsers(userService.getUsers());
+      setInviteEmail('');
+      setInviteName('');
+      setIsInviteOpen(false);
+      toast.success(`Account for "${newUser.name}" (${newUser.email}) created successfully!`);
+    } catch (err) {
+      toast.error(err.message || 'Could not register employee');
+    }
   };
 
   const filteredUsers = users.filter(u => {

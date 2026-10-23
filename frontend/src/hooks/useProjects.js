@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { projectService } from '../services/projectService';
+import { projectService, isProjectAssignedToEmail } from '../services/projectService';
 import { useWorkspaceContext } from '../context/WorkspaceContext';
+import { useAuthContext } from '../context/AuthContext';
 
 export function useProjects(explicitWorkspaceId = null) {
   const queryClient = useQueryClient();
@@ -16,10 +17,23 @@ export function useProjects(explicitWorkspaceId = null) {
       ? explicitWorkspaceId
       : contextWorkspaceId;
 
+  let currentUser = null;
+  let isMemberRole = false;
+  try {
+    const auth = useAuthContext();
+    currentUser = auth?.user;
+    isMemberRole = auth?.isTeamMember;
+  } catch {}
+
   const projectsQuery = useQuery({
     queryKey: ['projects', activeWorkspaceId],
     queryFn: () => projectService.fetchProjects(activeWorkspaceId),
   });
+
+  const allProjects = projectsQuery.data || [];
+  const assignedProjects = isMemberRole && currentUser
+    ? allProjects.filter((p) => isProjectAssignedToEmail(p, currentUser.email, currentUser.id))
+    : allProjects;
 
   const createProjectMutation = useMutation({
     mutationFn: (projectData) =>
@@ -32,7 +46,8 @@ export function useProjects(explicitWorkspaceId = null) {
 
   return {
     ...projectsQuery,
-    projects: projectsQuery.data || [],
+    projects: assignedProjects,
+    allProjects,
     createProject: createProjectMutation.mutateAsync,
   };
 }
