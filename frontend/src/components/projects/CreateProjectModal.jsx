@@ -252,11 +252,11 @@ export function CreateProjectModal({ isOpen, onClose, onCreate }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/50 backdrop-blur-xs animate-in fade-in-0 duration-150 select-none overflow-y-auto">
-      <div className="relative w-full max-w-xl my-auto rounded-2xl border border-slate-200 dark:border-[#282E33] bg-white dark:bg-[#161A1D] p-6 sm:p-7 shadow-2xl text-slate-800 dark:text-[#DEE4EA] space-y-4.5 animate-in zoom-in-95 duration-150 max-h-[92vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/50 animate-in fade-in-0 duration-150 select-none">
+      <div className="relative w-full max-w-xl my-auto rounded-2xl border border-slate-200 dark:border-[#282E33] bg-white dark:bg-[#161A1D] shadow-2xl text-slate-800 dark:text-[#DEE4EA] flex flex-col animate-in zoom-in-95 duration-150 max-h-[90vh] overflow-hidden">
         
-        {/* Top Header */}
-        <div className="flex items-center justify-between pb-1 border-b border-slate-100 dark:border-[#282E33]/70">
+        {/* Top Header - Fixed / Non-scrollable */}
+        <div className="flex items-center justify-between px-6 sm:px-7 py-4.5 border-b border-slate-100 dark:border-[#282E33]/70 shrink-0 bg-white dark:bg-[#161A1D]">
           <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-[#DEE4EA] tracking-tight">
             Create New Project
           </h2>
@@ -270,9 +270,10 @@ export function CreateProjectModal({ isOpen, onClose, onCreate }) {
           </button>
         </div>
 
-
-        {/* Form Body */}
-        <form onSubmit={handleSubmit} className="space-y-3.5 text-xs">
+        {/* Form Container */}
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+          {/* Scrollable Fields Body */}
+          <div className="flex-1 overflow-y-auto px-6 sm:px-7 py-4.5 space-y-3.5 text-xs">
           
           {/* Row 1: Project Name* */}
           <div>
@@ -630,9 +631,10 @@ export function CreateProjectModal({ isOpen, onClose, onCreate }) {
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
+        </div>
 
-          {/* Footer Action Buttons */}
-          <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100 dark:border-[#282E33]/70">
+        {/* Footer Action Buttons - Fixed / Non-scrollable */}
+          <div className="flex items-center justify-end gap-3 px-6 sm:px-7 py-3.5 border-t border-slate-100 dark:border-[#282E33]/70 bg-white dark:bg-[#161A1D] shrink-0">
             <button
               type="button"
               onClick={onClose}
