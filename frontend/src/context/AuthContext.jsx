@@ -12,8 +12,7 @@ export function AuthProvider({ children }) {
       const savedUser = localStorage.getItem('taskflow_logged_in_user');
       if (savedUser) return JSON.parse(savedUser);
     } catch {}
-    // Default admin user
-    return userService.findUserByEmail('tharun@gmail.com');
+    return null;
   });
 
   const [session, setSession] = useState(null);
@@ -41,7 +40,7 @@ export function AuthProvider({ children }) {
         return parsed.role || ROLES.TEAM_MEMBER;
       }
     } catch {}
-    return ROLES.ADMIN;
+    return null;
   });
 
   // Only the actual Admin is permitted to switch active role mode
@@ -125,14 +124,13 @@ export function AuthProvider({ children }) {
   const signOut = () => {
     localStorage.removeItem('taskflow_logged_in_user');
     localStorage.removeItem('taskora_active_role');
-    const defaultAdmin = userService.findUserByEmail('tharun@gmail.com');
-    setUser(defaultAdmin);
-    setRoleState(ROLES.ADMIN);
+    setUser(null);
+    setRoleState(null);
   };
 
-  const isAdmin = role === ROLES.ADMIN;
-  const isProjectManager = role === ROLES.PROJECT_MANAGER;
-  const isTeamMember = role === ROLES.TEAM_MEMBER;
+  const isAdmin = Boolean(user && role === ROLES.ADMIN);
+  const isProjectManager = Boolean(user && role === ROLES.PROJECT_MANAGER);
+  const isTeamMember = Boolean(user && role === ROLES.TEAM_MEMBER);
 
   const value = {
     user,

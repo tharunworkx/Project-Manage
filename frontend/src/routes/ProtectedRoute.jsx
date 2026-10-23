@@ -13,6 +13,9 @@ export function ProtectedRoute() {
     );
   }
 
-  // Allow browsing demo mode even when offline/mock
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
   return <Outlet />;
 }

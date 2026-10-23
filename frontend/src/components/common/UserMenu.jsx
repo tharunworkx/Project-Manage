@@ -2,10 +2,19 @@ import React from 'react';
 import { LogOut, Settings, User } from 'lucide-react';
 import { Dropdown } from '../ui/Dropdown';
 import { Avatar } from '../ui/Avatar';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 
 export function UserMenu() {
   const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    try {
+      await signOut?.();
+    } catch {}
+    navigate('/login');
+  };
 
   return (
     <Dropdown
@@ -29,7 +38,7 @@ export function UserMenu() {
           <Settings className="h-3.5 w-3.5" /> Workspace Settings
         </button>
         <button
-          onClick={signOut}
+          onClick={handleSignOut}
           className="flex w-full items-center gap-2 px-3 py-1.5 text-xs text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/50 rounded-lg cursor-pointer"
         >
           <LogOut className="h-3.5 w-3.5" /> Sign out
