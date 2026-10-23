@@ -58,14 +58,10 @@ export default function Login() {
     }
   };
 
-  const fillCredentials = (userEmail, userPassword, roleLabel) => {
-    setEmail(userEmail);
-    setPassword(userPassword);
-    setSuccessMsg(`${roleLabel} credentials prefilled. Click "Sign In" to proceed.`);
-  };
-
   const handleGitHubClick = () => {
-    fillCredentials('tharun@gmail.com', '12345678', 'Admin');
+    setEmail('tharun@gmail.com');
+    setPassword('12345678');
+    setSuccessMsg('GitHub credentials prefilled. Click "Sign In" to proceed.');
   };
 
   return (
@@ -95,38 +91,6 @@ export default function Login() {
               : 'Login to your account to continue your work.'}
           </p>
         </div>
-
-        {/* Quick Demo Logins for easy testing across roles */}
-        {!isSignUp && (
-          <div className="mb-4">
-            <span className="block text-[11px] font-medium text-[#738496] mb-1.5">
-              Quick Demo Logins:
-            </span>
-            <div className="grid grid-cols-3 gap-2">
-              <button
-                type="button"
-                onClick={() => fillCredentials('tharun@gmail.com', '12345678', 'Admin')}
-                className="px-2 py-1.5 rounded-xl border border-[#333C44] bg-[#161A1D] hover:bg-[#22272B] hover:border-[#579DFF]/60 text-[11px] font-medium text-[#DEE4EA] text-center transition cursor-pointer"
-              >
-                👑 Admin
-              </button>
-              <button
-                type="button"
-                onClick={() => fillCredentials('alex.j@company.com', '12345678', 'Project Manager')}
-                className="px-2 py-1.5 rounded-xl border border-[#333C44] bg-[#161A1D] hover:bg-[#22272B] hover:border-[#579DFF]/60 text-[11px] font-medium text-[#DEE4EA] text-center transition cursor-pointer"
-              >
-                💼 Manager
-              </button>
-              <button
-                type="button"
-                onClick={() => fillCredentials('maria.g@company.com', '12345678', 'Team Member')}
-                className="px-2 py-1.5 rounded-xl border border-[#333C44] bg-[#161A1D] hover:bg-[#22272B] hover:border-[#579DFF]/60 text-[11px] font-medium text-[#DEE4EA] text-center transition cursor-pointer"
-              >
-                👤 Member
-              </button>
-            </div>
-          </div>
-        )}
 
         {/* GitHub Social Button (styled to match dashboard card/button palette) */}
         <button
