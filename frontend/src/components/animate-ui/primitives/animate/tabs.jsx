@@ -138,7 +138,17 @@ export function TabsContents({
     const container = containerRef.current;
     if (!pane || !container) return 0;
 
-    const base = pane.getBoundingClientRect().height || 0;
+    const target = pane.firstElementChild || pane;
+    const scrollH = target.scrollHeight || 0;
+    const offsetH = target.offsetHeight || 0;
+
+    let rectH = target.getBoundingClientRect?.().height || 0;
+    const zoomVal = parseFloat(getComputedStyle(document.documentElement).zoom || '1') || 1;
+    if (zoomVal > 0 && zoomVal !== 1) {
+      rectH = rectH / zoomVal;
+    }
+
+    const base = Math.max(scrollH, offsetH, rectH);
     const cs = getComputedStyle(container);
     const isBorderBox = cs.boxSizing === 'border-box';
     const paddingY =
@@ -148,14 +158,37 @@ export function TabsContents({
       (parseFloat(cs.borderTopWidth || '0') || 0) +
       (parseFloat(cs.borderBottomWidth || '0') || 0);
 
-    return Math.ceil(base + (isBorderBox ? paddingY + borderY : 0));
+    return Math.ceil(base + (isBorderBox ? paddingY + borderY : 0) + 4);
   }, []);
 
   React.useEffect(() => {
     if (activeIndex >= 0) {
-      setHeight(measure(activeIndex));
+      const update = () => {
+        const measured = measure(activeIndex);
+        if (measured > 0) setHeight(measured);
+      };
+      update();
+      const t1 = setTimeout(update, 50);
+      const t2 = setTimeout(update, 200);
+      return () => {
+        clearTimeout(t1);
+        clearTimeout(t2);
+      };
     }
   }, [activeIndex, childrenArray.length, measure]);
+
+  React.useEffect(() => {
+    if (activeIndex < 0) return;
+    const pane = itemRefs.current[activeIndex];
+    if (!pane || typeof ResizeObserver === 'undefined') return;
+    const ro = new ResizeObserver(() => {
+      const measured = measure(activeIndex);
+      if (measured > 0) setHeight(measured);
+    });
+    ro.observe(pane);
+    if (pane.firstElementChild) ro.observe(pane.firstElementChild);
+    return () => ro.disconnect();
+  }, [activeIndex, measure]);
 
   const safeIndex = activeIndex >= 0 ? activeIndex : 0;
 
@@ -169,7 +202,7 @@ export function TabsContents({
       {...props}
     >
       <motion.div
-        className="flex"
+        className="flex items-start"
         animate={{ x: safeIndex * -100 + '%' }}
         transition={transition}
       >
@@ -179,7 +212,7 @@ export function TabsContents({
             ref={(el) => {
               itemRefs.current[index] = el;
             }}
-            className="w-full shrink-0 h-full"
+            className="w-full shrink-0"
           >
             {child}
           </div>
@@ -198,7 +231,7 @@ export function TabsContent({ value, style, asChild = false, ...props }) {
     <Component
       role="tabpanel"
       data-slot="tabs-content"
-      style={{ overflow: 'hidden', ...style }}
+      style={{ ...style }}
       initial={{ opacity: 0.8 }}
       animate={{
         opacity: isActive ? 1 : 0.4,

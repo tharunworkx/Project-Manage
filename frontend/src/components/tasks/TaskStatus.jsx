@@ -5,7 +5,7 @@ export function TaskStatus({ status = 'todo' }) {
   const map = {
     todo: { label: 'To Do', variant: 'default' },
     in_progress: { label: 'In Progress', variant: 'primary' },
-    in_review: { label: 'In Review', variant: 'warning' },
+    in_review: { label: 'Review', variant: 'warning' },
     done: { label: 'Done', variant: 'success' },
   };
 

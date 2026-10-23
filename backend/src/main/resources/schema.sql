@@ -2,7 +2,21 @@
 -- Taskora - Database Schema for Supabase PostgreSQL
 -- ============================================================
 
--- 1. Profiles Table (with role & active status)
+-- 1. Users Table (Stores all registered users and their roles)
+CREATE TABLE IF NOT EXISTS public.users (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  full_name VARCHAR(100) NOT NULL,
+  email VARCHAR(255) NOT NULL UNIQUE,
+  password_hash VARCHAR(255),
+  employee_id VARCHAR(50) UNIQUE,
+  role VARCHAR(30) DEFAULT 'TEAM_MEMBER' CHECK (role IN ('ADMIN', 'PROJECT_MANAGER', 'TEAM_MEMBER')),
+  avatar_url TEXT,
+  is_active BOOLEAN DEFAULT true,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 1b. Profiles Table (with role & active status)
 CREATE TABLE IF NOT EXISTS public.profiles (
   id UUID PRIMARY KEY,
   full_name TEXT,
@@ -40,6 +54,14 @@ CREATE TABLE IF NOT EXISTS public.projects (
   name TEXT NOT NULL,
   description TEXT,
   color TEXT DEFAULT '#4f46e5',
+  start_date TEXT,
+  end_date TEXT,
+  image_url TEXT,
+  client TEXT,
+  budget TEXT,
+  estimated_hours TEXT,
+  tag TEXT,
+  status TEXT DEFAULT 'in_progress',
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );

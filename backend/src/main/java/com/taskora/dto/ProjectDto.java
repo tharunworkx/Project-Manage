@@ -12,6 +12,14 @@ public class ProjectDto {
     private String name;
     private String description;
     private String color;
+    private String startDate;
+    private String endDate;
+    private String imageUrl;
+    private String client;
+    private String budget;
+    private String estimatedHours;
+    private String tag;
+    private String status;
     private Instant createdAt;
     private Instant updatedAt;
 
@@ -27,6 +35,14 @@ public class ProjectDto {
         dto.setName(project.getName());
         dto.setDescription(project.getDescription());
         dto.setColor(project.getColor());
+        dto.setStartDate(project.getStartDate());
+        dto.setEndDate(project.getEndDate());
+        dto.setImageUrl(project.getImageUrl());
+        dto.setClient(project.getClient());
+        dto.setBudget(project.getBudget());
+        dto.setEstimatedHours(project.getEstimatedHours());
+        dto.setTag(project.getTag());
+        dto.setStatus(project.getStatus());
         dto.setCreatedAt(project.getCreatedAt());
         dto.setUpdatedAt(project.getUpdatedAt());
         return dto;
@@ -94,5 +110,69 @@ public class ProjectDto {
 
     public void setUpdatedAt(Instant updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public String getStartDate() {
+        return startDate;
+    }
+
+    public void setStartDate(String startDate) {
+        this.startDate = startDate;
+    }
+
+    public String getEndDate() {
+        return endDate;
+    }
+
+    public void setEndDate(String endDate) {
+        this.endDate = endDate;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
+    public String getClient() {
+        return client;
+    }
+
+    public void setClient(String client) {
+        this.client = client;
+    }
+
+    public String getBudget() {
+        return budget;
+    }
+
+    public void setBudget(String budget) {
+        this.budget = budget;
+    }
+
+    public String getEstimatedHours() {
+        return estimatedHours;
+    }
+
+    public void setEstimatedHours(String estimatedHours) {
+        this.estimatedHours = estimatedHours;
+    }
+
+    public String getTag() {
+        return tag;
+    }
+
+    public void setTag(String tag) {
+        this.tag = tag;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }

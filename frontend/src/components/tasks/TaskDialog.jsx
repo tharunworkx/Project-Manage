@@ -2,12 +2,14 @@ import React from 'react';
 import { Modal } from '../ui/Modal';
 import { TaskForm } from './TaskForm';
 
-export function TaskDialog({ isOpen, onClose, onSubmit, initialData }) {
+export function TaskDialog({ isOpen, onClose, onSubmit, initialData, title }) {
+  const isEditing = Boolean(initialData?.id);
+  const dialogTitle = title || (isEditing ? 'Edit Task' : 'Create Task');
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={initialData ? 'Edit Task' : 'Create New Task'}
+      title={dialogTitle}
       maxWidth="max-w-xl"
     >
       <TaskForm

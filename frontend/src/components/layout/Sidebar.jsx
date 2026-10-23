@@ -19,15 +19,17 @@ import {
   PanelLeftClose,
 } from 'lucide-react';
 import { useSidebar } from '../../context/SidebarContext';
+import { useWorkspaceContext } from '../../context/WorkspaceContext';
 
 export function Sidebar() {
   const { isOpen, toggle } = useSidebar();
+  const { currentWorkspace } = useWorkspaceContext();
 
   return (
     <div className="relative flex select-none shrink-0 z-30">
       {/* Sidebar Panel */}
       <aside
-        className={`flex flex-col border-r border-[#282E33] bg-[#161A1D] text-[#9FADBC] text-sm h-[calc(100vh-3.5rem)] transition-all duration-200 ease-in-out overflow-hidden ${
+        className={`flex flex-col border-r border-slate-200 dark:border-[#282E33] bg-white dark:bg-[#161A1D] text-slate-700 dark:text-[#9FADBC] text-sm h-full transition-all duration-200 ease-in-out overflow-hidden ${
           isOpen ? 'w-64 min-w-[256px]' : 'w-0 min-w-0 border-r-0'
         }`}
       >
@@ -124,12 +126,14 @@ export function Sidebar() {
                 <div className="absolute left-0 top-1 bottom-1 w-1 bg-[#579DFF] rounded-r" />
 
                 {/* Colorful Space Icon */}
-                <div className="h-5 w-5 rounded bg-[#1D7AFC] flex items-center justify-center text-white text-[10px] font-bold shrink-0 relative">
-                  <div className="h-1.5 w-1.5 rounded-full bg-[#E5493A] absolute -top-0.5 -right-0.5 ring-1 ring-[#161A1D]" />
-                  <span className="text-[11px]">📱</span>
+                <div
+                  className="h-5 w-5 rounded flex items-center justify-center text-white text-[10px] font-bold shrink-0 relative"
+                  style={{ backgroundColor: currentWorkspace?.color || '#0C66E4' }}
+                >
+                  <span className="text-[10px]">{currentWorkspace?.initial || 'W'}</span>
                 </div>
-                <span className="truncate text-[#DEE4EA] font-semibold text-sm">
-                  My Software Team
+                <span className="truncate text-slate-900 dark:text-[#DEE4EA] font-semibold text-sm">
+                  {currentWorkspace?.name || 'Workspace'}
                 </span>
               </NavLink>
 

@@ -8,7 +8,6 @@ const NAV_ITEMS = [
   { label: 'My Tasks', path: '/tasks', icon: CheckSquare },
   { label: 'Projects', path: '/projects', icon: FolderKanban },
   { label: 'Calendar', path: '/calendar', icon: Calendar },
-  { label: 'Reports', path: '/reports', icon: BarChart3 },
   { label: 'Settings', path: '/settings', icon: Settings },
 ];
 
@@ -20,11 +19,13 @@ export function MobileSidebar({ isOpen, onClose }) {
       <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs" onClick={onClose} />
       <div className="fixed inset-y-0 left-0 w-72 bg-white dark:bg-slate-900 p-5 shadow-2xl flex flex-col z-50 animate-slide-in-right">
         <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-bold">
-              TF
-            </div>
-            <span className="font-extrabold text-lg text-slate-900 dark:text-white">Taskflow</span>
+          <div className="flex items-center gap-2.5">
+            <img
+              src="/logo.png"
+              alt="Taskora Logo"
+              className="h-8 w-8 rounded-full object-cover shadow-sm ring-1 ring-blue-500/20"
+            />
+            <span className="font-extrabold text-lg text-slate-900 dark:text-white">Taskora</span>
           </div>
           <button onClick={onClose} className="p-1 rounded-lg text-slate-400 hover:text-slate-200">
             <X className="h-5 w-5" />

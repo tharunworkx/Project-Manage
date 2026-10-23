@@ -7,10 +7,10 @@ const variantClasses = {
   primary: 'bg-[#0C66E4] text-white hover:bg-[#0055CC] shadow-xs active:bg-[#0047B3]',
   destructive: 'bg-[#E5493A] text-white hover:bg-[#CA3521]',
   danger: 'bg-[#E5493A] text-white hover:bg-[#CA3521]',
-  outline: 'border border-[#333C44] bg-[#22272B] hover:bg-[#282E33] text-[#DEE4EA]',
-  secondary: 'bg-[#282E33] text-[#DEE4EA] hover:bg-[#333C44]',
-  ghost: 'hover:bg-[#282E33] text-[#9FADBC] hover:text-[#DEE4EA]',
-  link: 'text-[#579DFF] underline-offset-4 hover:underline',
+  outline: 'border border-slate-200 dark:border-[#333C44] bg-white dark:bg-[#22272B] hover:bg-slate-100 dark:hover:bg-[#282E33] text-slate-800 dark:text-[#DEE4EA] shadow-2xs',
+  secondary: 'bg-slate-100 dark:bg-[#282E33] text-slate-800 dark:text-[#DEE4EA] hover:bg-slate-200 dark:hover:bg-[#333C44]',
+  ghost: 'hover:bg-slate-100 dark:hover:bg-[#282E33] text-slate-600 dark:text-[#9FADBC] hover:text-slate-900 dark:hover:text-[#DEE4EA]',
+  link: 'text-[#0C66E4] dark:text-[#579DFF] underline-offset-4 hover:underline',
 };
 
 const sizeClasses = {

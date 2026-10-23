@@ -164,11 +164,11 @@ export function AppSidebar2() {
       {/* Top: Brand Logo Badge 'A' */}
       <div className="flex flex-col items-center gap-4 w-full">
         <NavLink
-          to="/board"
-          className="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-black font-extrabold text-sm shadow-md hover:scale-105 active:scale-95 transition-transform"
-          title="Home / Active Space"
+          to="/kanban"
+          className="flex h-9 w-9 items-center justify-center rounded-xl overflow-hidden shadow-md hover:scale-105 active:scale-95 transition-transform ring-1 ring-white/10"
+          title="Taskora"
         >
-          A
+          <img src="/logo.png" alt="Taskora" className="h-full w-full object-cover" />
         </NavLink>
 
         {/* Primary Icon Rail */}

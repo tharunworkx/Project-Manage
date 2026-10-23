@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/Button';
 import { toast } from 'sonner';
 
 const MEMBERS = [
-  { id: '1', name: 'Tharun R', email: 'tharun.workx@gmail.com', role: 'admin', activeTasks: 5, avatar: 'TR', color: '#E8831D' },
+  { id: '1', name: 'Tharun R', email: 'tharun.workx@gmail.com', role: 'admin', activeTasks: 5, avatar: 'TR', color: '#7C3AED' },
   { id: '2', name: 'Alex Johnson', email: 'alex.j@company.com', role: 'admin', activeTasks: 8, avatar: 'AJ', color: '#0C66E4' },
   { id: '3', name: 'Maria Garcia', email: 'maria.g@company.com', role: 'team_member', activeTasks: 4, avatar: 'MG', color: '#579DFF' },
   { id: '4', name: 'David Chen', email: 'david.c@company.com', role: 'team_member', activeTasks: 6, avatar: 'DC', color: '#4BCE97' },
@@ -48,21 +48,18 @@ export default function TeamMembers() {
           </div>
           <h1 className="text-2xl font-extrabold text-slate-900 dark:text-[#DEE4EA]">Team Members</h1>
         </div>
-        <p className="text-xs text-slate-500 dark:text-[#9FADBC] mt-1 ml-11.5">
-          Workspace directory: Admins / Project Managers and collaborating Team Members.
-        </p>
       </div>
 
       {/* Filters */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
         <div className="relative w-full sm:w-80">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-500 dark:text-slate-400" />
           <input
             type="text"
             placeholder="Search member name or email..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full h-9 pl-9 pr-3 rounded-xl border border-slate-200 dark:border-[#333C44] bg-white dark:bg-[#161A1D] text-xs text-slate-900 dark:text-[#DEE4EA] focus:outline-none"
+            className="w-full h-9 pl-9 pr-3 rounded-xl border border-black dark:border-white bg-white dark:bg-[#161A1D] text-xs text-slate-900 dark:text-[#DEE4EA] focus:outline-none focus:border-black dark:focus:border-white transition-colors"
           />
         </div>
 

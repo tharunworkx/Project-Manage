@@ -23,19 +23,35 @@ import {
   TableRow,
   TableCell,
 } from '@/components/ui/table';
-
-const INITIAL_USERS = [
-  { id: '1', name: 'Tharun R', email: 'tharun.workx@gmail.com', role: 'admin', status: 'Active', avatar: 'TR', color: '#7C3AED' },
-  { id: '2', name: 'Alex Johnson', email: 'alex.j@company.com', role: 'project_manager', status: 'Active', avatar: 'AJ', color: '#0C66E4' },
-  { id: '3', name: 'Sarah Miller', email: 'sarah.m@company.com', role: 'project_manager', status: 'Active', avatar: 'SM', color: '#0284C7' },
-  { id: '4', name: 'Maria Garcia', email: 'maria.g@company.com', role: 'team_member', status: 'Active', avatar: 'MG', color: '#10B981' },
-  { id: '5', name: 'David Chen', email: 'david.c@company.com', role: 'team_member', status: 'Active', avatar: 'DC', color: '#059669' },
-  { id: '6', name: 'Sophie Taylor', email: 'sophie.t@company.com', role: 'team_member', status: 'Deactivated', avatar: 'ST', color: '#64748B' },
-  { id: '7', name: 'Liam Wilson', email: 'liam.w@company.com', role: 'team_member', status: 'Invited', avatar: 'LW', color: '#F59E0B' },
-];
+import { userService } from '../services/userService';
+import { Select } from '@/components/ui/Select';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { ConfirmDialog } from '../components/common/ConfirmDialog';
+import { useAuthContext } from '../context/AuthContext';
+import { supabase, isSupabaseConfigured } from '../lib/supabase';
+import { toast } from 'sonner';
+import { Navigate, useNavigate } from 'react-router-dom';
 
 export default function UserManagement() {
-  const [users, setUsers] = useState(INITIAL_USERS);
+  const { isAdmin } = useAuthContext();
+  const navigate = useNavigate();
+
+  React.useEffect(() => {
+    if (!isAdmin) {
+      navigate('/kanban', { replace: true });
+    }
+  }, [isAdmin, navigate]);
+
+  if (!isAdmin) {
+    return <Navigate to="/kanban" replace />;
+  }
+
+  const [users, setUsers] = useState(() => userService.getUsers());
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
   const [inviteEmail, setInviteEmail] = useState('');
@@ -44,24 +60,63 @@ export default function UserManagement() {
   const [isInviteOpen, setIsInviteOpen] = useState(false);
   const [editingUserId, setEditingUserId] = useState(null);
   const [editName, setEditName] = useState('');
+  const [userToDelete, setUserToDelete] = useState(null);
 
   const handleRoleChange = (userId, newRole) => {
-    setUsers(users.map(u => u.id === userId ? { ...u, role: newRole } : u));
+    const updated = users.map((u) => (u.id === userId ? { ...u, role: newRole } : u));
+    setUsers(updated);
+    userService.saveUsers(updated);
+    toast.success('Role updated');
   };
 
-  const handleToggleStatus = (userId) => {
-    setUsers(users.map(u => {
+  const handleToggleStatus = async (userId) => {
+    let nextStatus = 'Active';
+    let targetName = '';
+    const updated = users.map((u) => {
       if (u.id === userId) {
-        const nextStatus = u.status === 'Active' ? 'Deactivated' : 'Active';
+        nextStatus = u.status === 'Active' ? 'Deactivated' : 'Active';
+        targetName = u.name;
         return { ...u, status: nextStatus };
       }
       return u;
-    }));
+    });
+    setUsers(updated);
+    userService.saveUsers(updated);
+    if (isSupabaseConfigured) {
+      try {
+        await supabase
+          .from('users')
+          .update({ is_active: nextStatus === 'Active' })
+          .eq('id', userId);
+      } catch (err) {
+        console.warn('Could not update status in Supabase:', err);
+      }
+    }
+    toast.info(`Account status for "${targetName || 'User'}" set to ${nextStatus}`);
+  };
+
+  const confirmDeleteUser = async () => {
+    if (!userToDelete) return;
+    const deletedName = userToDelete.name;
+    const updated = users.filter((u) => u.id !== userToDelete.id);
+    setUsers(updated);
+    userService.saveUsers(updated);
+    if (isSupabaseConfigured) {
+      try {
+        await supabase.from('users').delete().eq('id', userToDelete.id);
+      } catch (err) {
+        console.warn('Could not delete user in Supabase:', err);
+      }
+    }
+    toast.success(`Account "${deletedName}" deleted permanently`);
+    setUserToDelete(null);
   };
 
   const handleSaveEdit = (userId) => {
     if (!editName.trim()) return;
-    setUsers(users.map(u => u.id === userId ? { ...u, name: editName } : u));
+    const updated = users.map((u) => (u.id === userId ? { ...u, name: editName } : u));
+    setUsers(updated);
+    userService.saveUsers(updated);
     setEditingUserId(null);
     setEditName('');
   };
@@ -69,21 +124,25 @@ export default function UserManagement() {
   const handleInvite = (e) => {
     e.preventDefault();
     if (!inviteEmail) return;
+    const cleanEmail = inviteEmail.trim().toLowerCase();
     const colors = {
       admin: '#7C3AED',
       project_manager: '#0C66E4',
       team_member: '#10B981',
     };
     const newUser = {
-      id: String(Date.now()),
-      name: inviteName || inviteEmail.split('@')[0],
-      email: inviteEmail,
+      id: 'usr-' + Date.now(),
+      name: inviteName.trim() || cleanEmail.split('@')[0],
+      email: cleanEmail,
+      password: '12345678',
       role: inviteRole,
       status: 'Active',
-      avatar: (inviteName ? inviteName.substring(0, 2) : inviteEmail.substring(0, 2)).toUpperCase(),
+      avatar: (inviteName ? inviteName.substring(0, 2) : cleanEmail.substring(0, 2)).toUpperCase(),
       color: colors[inviteRole] || '#10B981',
     };
-    setUsers([newUser, ...users]);
+    const updated = [newUser, ...users];
+    setUsers(updated);
+    userService.saveUsers(updated);
     setInviteEmail('');
     setInviteName('');
     setIsInviteOpen(false);
@@ -113,9 +172,6 @@ export default function UserManagement() {
             </div>
             <h1 className="text-2xl font-extrabold text-slate-900 dark:text-[#DEE4EA]">Employee Accounts & Roles</h1>
           </div>
-          <p className="text-xs text-slate-500 dark:text-[#9FADBC] mt-1 ml-11.5">
-            Admin console: Create, view, edit, and deactivate employee accounts, assign Project Managers, and manage workspace permissions.
-          </p>
         </div>
 
         <Button onClick={() => setIsInviteOpen(true)} className="gap-2 bg-[#0C66E4] hover:bg-[#0055CC] text-white shadow-xs">
@@ -225,15 +281,15 @@ export default function UserManagement() {
               onChange={(e) => setInviteEmail(e.target.value)}
               className="h-9 px-3 rounded-xl border border-slate-200 dark:border-[#333C44] bg-white dark:bg-[#22272B] text-xs text-slate-900 dark:text-[#DEE4EA] focus:outline-none"
             />
-            <select
+            <Select
               value={inviteRole}
               onChange={(e) => setInviteRole(e.target.value)}
-              className="h-9 px-3 rounded-xl border border-slate-200 dark:border-[#333C44] bg-white dark:bg-[#22272B] text-xs text-slate-900 dark:text-[#DEE4EA] font-medium"
+              className="h-9 rounded-xl text-xs"
             >
               <option value="team_member">Team Member (Default)</option>
               <option value="project_manager">Project Manager</option>
               <option value="admin">Administrator</option>
-            </select>
+            </Select>
             <div className="flex gap-2">
               <Button type="submit" className="flex-1 h-9 text-xs bg-purple-600 hover:bg-purple-700 text-white">Create Account</Button>
               <Button type="button" variant="outline" onClick={() => setIsInviteOpen(false)} className="h-9 text-xs">Cancel</Button>
@@ -246,13 +302,13 @@ export default function UserManagement() {
       <div className="rounded-2xl border border-slate-200 dark:border-[#282E33] bg-white dark:bg-[#161A1D] overflow-hidden shadow-xs">
         <div className="p-4 border-b border-slate-200 dark:border-[#282E33] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div className="relative w-full sm:w-72">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-500 dark:text-slate-400" />
             <input
               type="text"
               placeholder="Search employee accounts..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full h-8.5 pl-8.5 pr-3 rounded-xl border border-slate-200 dark:border-[#333C44] bg-slate-50 dark:bg-[#22272B] text-xs text-slate-900 dark:text-[#DEE4EA] focus:outline-none"
+              className="w-full h-8.5 pl-8.5 pr-3 rounded-xl border border-black dark:border-white bg-slate-50 dark:bg-[#22272B] text-xs text-slate-900 dark:text-[#DEE4EA] focus:outline-none focus:border-black dark:focus:border-white transition-colors"
             />
           </div>
           <div className="flex items-center gap-2">
@@ -358,15 +414,15 @@ export default function UserManagement() {
                   )}
                 </TableCell>
                 <TableCell>
-                  <select
+                  <Select
                     value={user.role}
                     onChange={(e) => handleRoleChange(user.id, e.target.value)}
-                    className="px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-[#333C44] bg-white dark:bg-[#22272B] text-xs text-slate-900 dark:text-[#DEE4EA] font-semibold cursor-pointer focus:outline-none"
+                    className="w-36 h-8 text-xs font-semibold"
                   >
                     <option value="admin">Admin</option>
                     <option value="project_manager">Project Manager</option>
                     <option value="team_member">Team Member</option>
-                  </select>
+                  </Select>
                 </TableCell>
                 <TableCell>
                   <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold ${
@@ -381,26 +437,47 @@ export default function UserManagement() {
                   </span>
                 </TableCell>
                 <TableCell className="text-right">
-                  <div className="flex items-center justify-end gap-1.5">
-                    {user.status === 'Active' ? (
-                      <button
-                        onClick={() => handleToggleStatus(user.id)}
-                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/40 hover:bg-rose-100 transition cursor-pointer"
-                        title="Deactivate employee account"
+                  <div className="flex items-center justify-end">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <button
+                          type="button"
+                          className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-500 hover:text-slate-800 dark:text-[#9FADBC] dark:hover:text-[#DEE4EA] hover:bg-slate-100 dark:hover:bg-[#282E33] transition cursor-pointer"
+                          title="Account actions"
+                        >
+                          <MoreVertical className="h-4 w-4" />
+                        </button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent
+                        align="end"
+                        className="w-40 rounded-xl border border-slate-200 dark:border-[#282E33] bg-white dark:bg-[#161A1D] p-1.5 shadow-xl text-xs z-50"
                       >
-                        <UserX className="h-3.5 w-3.5" />
-                        <span>Deactivate</span>
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => handleToggleStatus(user.id)}
-                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/40 hover:bg-emerald-100 transition cursor-pointer"
-                        title="Reactivate employee account"
-                      >
-                        <UserCheck2 className="h-3.5 w-3.5" />
-                        <span>Activate</span>
-                      </button>
-                    )}
+                        <DropdownMenuItem
+                          onClick={() => handleToggleStatus(user.id)}
+                          className="flex items-center gap-2 px-2.5 py-2 rounded-lg cursor-pointer hover:bg-slate-100 dark:hover:bg-[#22272B] text-slate-700 dark:text-[#DEE4EA] font-medium"
+                        >
+                          {user.status === 'Active' ? (
+                            <>
+                              <UserX className="h-3.5 w-3.5 text-amber-500" />
+                              <span>Deactivate</span>
+                            </>
+                          ) : (
+                            <>
+                              <UserCheck2 className="h-3.5 w-3.5 text-emerald-500" />
+                              <span>Activate</span>
+                            </>
+                          )}
+                        </DropdownMenuItem>
+
+                        <DropdownMenuItem
+                          onClick={() => setUserToDelete(user)}
+                          className="flex items-center gap-2 px-2.5 py-2 rounded-lg cursor-pointer hover:bg-rose-50 dark:hover:bg-rose-950/30 text-rose-600 dark:text-rose-400 font-medium"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                          <span>Delete</span>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
                 </TableCell>
               </TableRow>
@@ -408,6 +485,16 @@ export default function UserManagement() {
           </TableBody>
         </Table>
       </div>
+
+      {/* Delete User Account Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={!!userToDelete}
+        onClose={() => setUserToDelete(null)}
+        onConfirm={confirmDeleteUser}
+        title="Delete Employee Account"
+        description={`Are you sure you want to permanently delete the account for "${userToDelete?.name}" (${userToDelete?.email})? They will immediately lose access to all projects and tasks.`}
+        confirmText="Delete Account"
+      />
     </div>
   );
 }

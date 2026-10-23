@@ -78,6 +78,14 @@ public class ProjectService {
         project.setName(request.getName());
         project.setDescription(request.getDescription());
         project.setColor(request.getColor() != null ? request.getColor() : "#4f46e5");
+        project.setStartDate(request.getStartDate());
+        project.setEndDate(request.getEndDate());
+        project.setImageUrl(request.getImageUrl());
+        project.setClient(request.getClient());
+        project.setBudget(request.getBudget());
+        project.setEstimatedHours(request.getEstimatedHours());
+        project.setTag(request.getTag());
+        project.setStatus(request.getStatus() != null ? request.getStatus() : "in_progress");
 
         if (request.getProjectManagerId() != null) {
             project.setProjectManagerId(request.getProjectManagerId());
@@ -94,6 +102,19 @@ public class ProjectService {
                     saved.getProjectManagerId(),
                     "project_manager"
             ));
+        }
+
+        // Add assigned team members to project
+        if (request.getMemberIds() != null) {
+            for (UUID memberId : request.getMemberIds()) {
+                if (memberId != null && !memberId.equals(saved.getProjectManagerId())) {
+                    projectMemberRepository.save(new com.taskora.model.ProjectMember(
+                            saved.getId(),
+                            memberId,
+                            "team_member"
+                    ));
+                }
+            }
         }
 
         return ProjectDto.fromEntity(saved);

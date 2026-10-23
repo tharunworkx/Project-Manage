@@ -3,9 +3,6 @@ import {
   Search,
   Filter,
   Layers,
-  BarChart2,
-  SlidersHorizontal,
-  MoreHorizontal,
   X,
   Check,
   LayoutGrid,
@@ -64,13 +61,13 @@ export function BoardToolbar({
       <div className="flex items-center gap-2.5 flex-wrap">
         {/* Search board */}
         <div className="relative w-56 sm:w-64">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 dark:text-[#738496]" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500 dark:text-[#738496]" />
           <input
             type="text"
             placeholder="Search board"
             value={searchVal}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="w-full h-8 rounded-md border border-slate-200 bg-white dark:border-[#333C44] dark:bg-[#22272B] pl-9 pr-7 text-sm text-slate-900 dark:text-[#DEE4EA] placeholder-slate-400 dark:placeholder-[#738496] transition focus:border-[#0C66E4] dark:focus:border-[#579DFF] focus:outline-none"
+            className="w-full h-8 rounded-md border border-black dark:border-white bg-white dark:bg-[#22272B] pl-9 pr-7 text-sm text-slate-900 dark:text-[#DEE4EA] placeholder-slate-400 dark:placeholder-[#738496] transition focus:border-black dark:focus:border-white focus:outline-none"
           />
           {searchVal && (
             <button
@@ -88,8 +85,8 @@ export function BoardToolbar({
           title={onlyMe ? 'Showing only my issues (click to clear)' : 'Filter by TR (Only my issues)'}
           className={`flex h-7 w-7 items-center justify-center rounded-full text-white font-bold text-[11px] transition cursor-pointer relative ${
             onlyMe
-              ? 'ring-2 ring-[#0C66E4] dark:ring-[#579DFF] bg-[#E8831D]'
-              : 'bg-[#E8831D] hover:ring-2 hover:ring-slate-300 dark:hover:ring-[#738496]'
+              ? 'ring-2 ring-[#0C66E4] dark:ring-[#579DFF] bg-[#7C3AED]'
+              : 'bg-[#7C3AED] hover:ring-2 hover:ring-slate-300 dark:hover:ring-[#738496]'
           }`}
         >
           TR
@@ -213,27 +210,6 @@ export function BoardToolbar({
           </div>
         )}
 
-        <button
-          onClick={onToggleInsights}
-          title="Insights"
-          className="flex h-8 w-8 items-center justify-center rounded-md hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-[#22272B] dark:hover:text-[#DEE4EA] transition cursor-pointer"
-        >
-          <BarChart2 className="h-4.5 w-4.5" />
-        </button>
-
-        <button
-          title="View settings"
-          className="flex h-8 w-8 items-center justify-center rounded-md hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-[#22272B] dark:hover:text-[#DEE4EA] transition cursor-pointer"
-        >
-          <SlidersHorizontal className="h-4.5 w-4.5" />
-        </button>
-
-        <button
-          title="More options"
-          className="flex h-8 w-8 items-center justify-center rounded-md hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-[#22272B] dark:hover:text-[#DEE4EA] transition cursor-pointer"
-        >
-          <MoreHorizontal className="h-4.5 w-4.5" />
-        </button>
       </div>
     </div>
   );

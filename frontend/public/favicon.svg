@@ -1,4 +1,12 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
-  <rect width="32" height="32" rx="8" fill="#4F46E5"/>
-  <path d="M9 16.5L14 21.5L23 10.5" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="none">
+  <rect width="256" height="256" rx="128" fill="#0C66E4"/>
+  <circle cx="128" cy="128" r="104" stroke="white" stroke-width="8" stroke-linecap="round"/>
+  <!-- Document -->
+  <path d="M78 66V186H150L182 158V66" stroke="white" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Folded corner -->
+  <path d="M150 186V158H182" stroke="white" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Top bar -->
+  <path d="M96 92H134" stroke="white" stroke-width="8" stroke-linecap="round"/>
+  <!-- Checkmark -->
+  <path d="M102 124L120 144L164 96" stroke="white" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>

@@ -18,73 +18,84 @@ import { Button } from '@/components/ui/Button';
 import { useTasks } from '../hooks/useTasks';
 import { useProjects } from '../hooks/useProjects';
 import { useAuthContext } from '../context/AuthContext';
+import { useWorkspaceContext } from '../context/WorkspaceContext';
 
 export default function Dashboard() {
-  const { tasks } = useTasks();
-  const { projects } = useProjects();
+  const { currentWorkspace } = useWorkspaceContext();
+  const { tasks } = useTasks(null, currentWorkspace?.id);
+  const { projects } = useProjects(currentWorkspace?.id);
   const { isAdmin } = useAuthContext();
 
-  return (
-    <div className="p-6 space-y-6 w-full">
-      {/* Dynamic Role Header with Colored Logo */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          {isAdmin ? (
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold bg-[#0C66E4]/10 dark:bg-[#579DFF]/15 text-[#0C66E4] dark:text-[#579DFF] border border-[#0C66E4]/25 mb-2">
-              <ShieldCheck className="h-4 w-4 stroke-[2.2]" />
-              <span>Admin / Project Manager Dashboard</span>
-            </div>
-          ) : (
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25 mb-2">
-              <UserCheck className="h-4 w-4 stroke-[2.2]" />
-              <span>Team Member Dashboard</span>
-            </div>
-          )}
+  const activeTasksCount = tasks.filter(
+    (t) => t.status !== 'done' && t.status !== 'cancelled'
+  ).length;
 
-          <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-[#DEE4EA]">
-            {isAdmin ? 'Executive & Project Management Overview' : 'My Work & Assigned Tasks'}
-          </h1>
-          <p className="text-xs text-slate-500 dark:text-[#9FADBC] mt-1">
-            {isAdmin
-              ? 'Oversee all company projects, assign tasks to team members, manage deadlines, and track progress.'
-              : 'View authorized projects, update task statuses, collaborate with team members, and manage deliverables.'}
-          </p>
+  const completedTasksCount = tasks.filter((t) => t.status === 'done').length;
+  const completionRate =
+    tasks.length > 0 ? Math.round((completedTasksCount / tasks.length) * 100) + '%' : '0%';
+
+  const teamMembersCount =
+    currentWorkspace?.id === 'ws-1' ? '8' : currentWorkspace?.id === 'ws-3' ? '4' : '6';
+
+  return (
+    <div className="p-6 sm:px-8 space-y-6 w-full select-none transition-colors duration-150">
+      {/* Workspace Banner & Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-5 rounded-2xl border border-slate-200 dark:border-[#282E33] bg-white dark:bg-[#161A1D] shadow-xs">
+        <div className="flex items-start sm:items-center gap-3.5">
+          <div
+            className="h-12 w-12 rounded-xl flex items-center justify-center text-white font-extrabold text-lg shrink-0 shadow-sm"
+            style={{ backgroundColor: currentWorkspace?.color || '#0C66E4' }}
+          >
+            {currentWorkspace?.initial || 'W'}
+          </div>
+          <div>
+            <div className="flex items-center gap-2 flex-wrap mb-1">
+              <span className="text-xs font-semibold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-[#22272B] text-slate-700 dark:text-[#DEE4EA] border border-slate-200 dark:border-[#333C44]">
+                Active Workspace
+              </span>
+              {isAdmin ? (
+                <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
+                  <ShieldCheck className="h-3.5 w-3.5" />
+                  Admin Overview
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-blue-600 dark:text-[#579DFF]">
+                  <UserCheck className="h-3.5 w-3.5" />
+                  Member View
+                </span>
+              )}
+            </div>
+            <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-[#DEE4EA]">
+              {currentWorkspace?.name || 'Workspace Dashboard'}
+            </h1>
+          </div>
         </div>
 
-        {/* Quick Role Actions: ONLY Kanban view (My Work Items removed) */}
-        <div className="flex items-center gap-2">
-          {isAdmin && (
-            <>
-              <Link to="/users">
-                <Button size="sm" variant="outline" className="gap-1.5 text-xs h-9">
-                  <ShieldCheck className="h-4 w-4 text-[#0C66E4]" />
-                  <span>User Roles</span>
-                </Button>
-              </Link>
-              <Link to="/projects">
-                <Button size="sm" className="gap-1.5 text-xs h-9 bg-[#0C66E4] hover:bg-[#0055CC] text-white">
-                  <Plus className="h-4 w-4" />
-                  <span>Create Project</span>
-                </Button>
-              </Link>
-            </>
-          )}
-
-          <Link to="/board">
+        {/* Quick Actions */}
+        <div className="flex items-center gap-2 self-start sm:self-center shrink-0">
+          <Link to="/kanban">
             <Button size="sm" variant="outline" className="gap-1.5 text-xs h-9">
               <span>View Kanban</span>
               <ArrowRight className="h-3.5 w-3.5" />
             </Button>
           </Link>
+          {isAdmin && (
+            <Link to="/projects">
+              <Button size="sm" className="gap-1.5 text-xs h-9 bg-[#0C66E4] hover:bg-[#0055CC] text-white">
+                <Plus className="h-4 w-4" />
+                <span>Create Project</span>
+              </Button>
+            </Link>
+          )}
         </div>
       </div>
 
-      {/* Metrics Row */}
+      {/* Metrics Row - Scoped specifically to currentWorkspace */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard title="Active Tasks" value={tasks.length} change="+12%" icon={CheckSquare} />
-        <StatCard title="Projects" value={projects.length} change="+2" icon={FolderKanban} />
-        <StatCard title="Team Members" value="6" change="Active" icon={Users} />
-        <StatCard title="Completion Rate" value="76%" change="+4.5%" icon={Clock} />
+        <StatCard title="Active Tasks" value={activeTasksCount} change={`${tasks.length} total`} icon={CheckSquare} />
+        <StatCard title="Projects" value={projects.length} change="In workspace" icon={FolderKanban} />
+        <StatCard title="Team Members" value={teamMembersCount} change="Active" icon={Users} />
+        <StatCard title="Completion Rate" value={completionRate} change={`${completedTasksCount} done`} icon={Clock} />
       </div>
 
       {/* Task Summary */}
@@ -93,10 +104,10 @@ export default function Dashboard() {
       {/* Analytics & Activity */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
-          <ProductivityChart />
+          <ProductivityChart workspaceId={currentWorkspace?.id} />
         </div>
         <div>
-          <ActivityFeed />
+          <ActivityFeed workspaceId={currentWorkspace?.id} />
         </div>
       </div>
     </div>

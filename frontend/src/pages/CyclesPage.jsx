@@ -14,12 +14,13 @@ import {
   MoreHorizontal,
   ChevronRight,
   ArrowUpRight,
-  CheckSquare,
 } from 'lucide-react';
 import { Modal } from '../components/ui/Modal';
 import { DatePicker } from '../components/ui/date-picker';
+import { useWorkspaceContext } from '../context/WorkspaceContext';
 
 export default function CyclesPage() {
+  const { currentWorkspace } = useWorkspaceContext();
   const [filter, setFilter] = useState('all'); // all, active, upcoming, completed
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [searchVal, setSearchVal] = useState('');
@@ -126,25 +127,22 @@ export default function CyclesPage() {
   const activeCycle = cycles.find((c) => c.status === 'active');
 
   return (
-    <div className="flex flex-col h-full bg-[#101214] text-[#DEE4EA] overflow-y-auto">
+    <div className="flex flex-col h-full bg-[#F8FAFC] dark:bg-[#101214] text-slate-900 dark:text-[#DEE4EA] overflow-y-auto select-none transition-colors duration-150">
       {/* Header */}
-      <div className="border-b border-[#282E33] bg-[#101214] px-6 py-4">
+      <div className="border-b border-slate-200 dark:border-[#282E33] bg-white dark:bg-[#101214] px-6 py-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2 text-xs font-medium text-[#9FADBC] mb-1">
-              <span>My Software Team</span>
+            <div className="flex items-center gap-2 text-xs font-medium text-slate-500 dark:text-[#9FADBC] mb-1">
+              <span>{currentWorkspace?.name || 'Workspace'}</span>
               <span>/</span>
-              <span className="text-[#DEE4EA]">Cycles</span>
+              <span className="text-slate-900 dark:text-[#DEE4EA]">Cycles</span>
             </div>
             <div className="flex items-center gap-3">
-              <div className="h-8 w-8 rounded-lg bg-[#579DFF]/15 text-[#579DFF] flex items-center justify-center font-bold">
+              <div className="h-8 w-8 rounded-lg bg-blue-500/10 dark:bg-[#579DFF]/15 text-[#0C66E4] dark:text-[#579DFF] flex items-center justify-center font-bold">
                 <Repeat className="h-5 w-5" />
               </div>
               <div>
-                <h1 className="text-xl font-bold tracking-tight text-[#DEE4EA]">Cycles</h1>
-                <p className="text-xs text-[#9FADBC]">
-                  Time-boxed sprints to plan, pace, and measure team velocity.
-                </p>
+                <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-[#DEE4EA]">Cycles</h1>
               </div>
             </div>
           </div>
@@ -161,7 +159,7 @@ export default function CyclesPage() {
         </div>
 
         {/* Filters and search row */}
-        <div className="flex items-center justify-between gap-4 mt-5 pt-3 border-t border-[#282E33]/60">
+        <div className="flex items-center justify-between gap-4 mt-5 pt-3 border-t border-slate-200 dark:border-[#282E33]/60">
           <div className="flex items-center gap-2">
             {[
               { id: 'all', label: 'All Cycles' },
@@ -174,14 +172,14 @@ export default function CyclesPage() {
                 onClick={() => setFilter(tab.id)}
                 className={`relative px-3 py-1.5 rounded-lg text-xs font-medium transition cursor-pointer select-none ${
                   filter === tab.id
-                    ? 'text-[#579DFF] font-semibold'
-                    : 'text-[#9FADBC] hover:text-[#DEE4EA]'
+                    ? 'text-[#0C66E4] dark:text-[#579DFF] font-semibold'
+                    : 'text-slate-600 hover:text-slate-900 dark:text-[#9FADBC] dark:hover:text-[#DEE4EA]'
                 }`}
               >
                 {filter === tab.id && (
                   <motion.div
                     layoutId="cycles-tab-pill"
-                    className="absolute inset-0 rounded-lg bg-[#1C2B41] border border-[#579DFF]/40 -z-10 shadow-xs"
+                    className="absolute inset-0 rounded-lg bg-blue-50 dark:bg-[#1C2B41] border border-blue-200 dark:border-[#579DFF]/40 -z-10 shadow-xs"
                     transition={{
                       type: 'spring',
                       stiffness: 600,
@@ -196,13 +194,13 @@ export default function CyclesPage() {
           </div>
 
           <div className="relative w-64">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[#738496]" />
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-500 dark:text-[#738496]" />
             <input
               type="text"
               placeholder="Search cycles..."
               value={searchVal}
               onChange={(e) => setSearchVal(e.target.value)}
-              className="w-full h-8 rounded-md border border-[#333C44] bg-[#22272B] pl-8 pr-3 text-xs text-[#DEE4EA] placeholder-[#738496] focus:border-[#579DFF] focus:outline-none"
+              className="w-full h-8 rounded-md border border-black dark:border-white bg-white dark:bg-[#22272B] pl-8 pr-3 text-xs text-slate-900 dark:text-[#DEE4EA] placeholder-slate-400 dark:placeholder-[#738496] focus:border-black dark:focus:border-white focus:outline-none transition-colors"
             />
           </div>
         </div>
@@ -212,56 +210,56 @@ export default function CyclesPage() {
       <div className="w-full px-6 py-6 space-y-6">
         {/* Active Cycle Spotlight Hero */}
         {activeCycle && (filter === 'all' || filter === 'active') && (
-          <div className="rounded-xl border border-[#282E33] bg-[#161A1D] p-5 shadow-sm space-y-4">
+          <div className="rounded-xl border border-slate-200 dark:border-[#282E33] bg-white dark:bg-[#161A1D] p-5 shadow-xs space-y-4">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <div className="flex items-center gap-2.5 mb-1.5">
-                  <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-bold bg-[#163828] text-[#4BCE97] border border-[#4BCE97]/40">
-                    <span className="h-1.5 w-1.5 rounded-full bg-[#4BCE97] animate-pulse" />
+                  <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 dark:bg-[#163828] text-emerald-600 dark:text-[#4BCE97] border border-emerald-200 dark:border-[#4BCE97]/40">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
                     Active Cycle
                   </span>
-                  <span className="text-xs text-[#738496]">
+                  <span className="text-xs text-slate-500 dark:text-[#738496]">
                     {activeCycle.startDate} – {activeCycle.endDate}
                   </span>
                 </div>
-                <h2 className="text-lg font-bold text-[#DEE4EA]">{activeCycle.name}</h2>
-                <p className="text-xs text-[#9FADBC] mt-1 max-w-2xl">{activeCycle.description}</p>
+                <h2 className="text-lg font-bold text-slate-900 dark:text-[#DEE4EA]">{activeCycle.name}</h2>
+                <p className="text-xs text-slate-500 dark:text-[#9FADBC] mt-1 max-w-2xl">{activeCycle.description}</p>
               </div>
 
               <div className="text-right">
-                <span className="text-2xl font-bold text-[#579DFF]">
+                <span className="text-2xl font-bold text-[#0C66E4] dark:text-[#579DFF]">
                   {Math.round((activeCycle.completedIssues / activeCycle.totalIssues) * 100)}%
                 </span>
-                <p className="text-[11px] text-[#738496]">Completion rate</p>
+                <p className="text-[11px] text-slate-400 dark:text-[#738496]">Completion rate</p>
               </div>
             </div>
 
             {/* Progress bar */}
             <div>
-              <div className="h-2 w-full rounded-full bg-[#22272B] overflow-hidden flex">
+              <div className="h-2 w-full rounded-full bg-slate-100 dark:bg-[#22272B] overflow-hidden flex">
                 <div
-                  className="bg-[#4BCE97] transition-all"
+                  className="bg-emerald-500 dark:bg-[#4BCE97] transition-all"
                   style={{ width: `${(activeCycle.completedIssues / activeCycle.totalIssues) * 100}%` }}
                 />
                 <div
-                  className="bg-[#F5CD47] transition-all"
+                  className="bg-amber-400 dark:bg-[#F5CD47] transition-all"
                   style={{ width: `${(activeCycle.inProgressIssues / activeCycle.totalIssues) * 100}%` }}
                 />
               </div>
 
               {/* Progress metrics breakdown */}
-              <div className="flex items-center justify-between text-xs text-[#9FADBC] mt-2">
+              <div className="flex items-center justify-between text-xs text-slate-500 dark:text-[#9FADBC] mt-2">
                 <div className="flex items-center gap-4">
                   <span className="flex items-center gap-1.5">
-                    <span className="h-2 w-2 rounded-full bg-[#4BCE97]" />
+                    <span className="h-2 w-2 rounded-full bg-emerald-500" />
                     {activeCycle.completedIssues} Completed
                   </span>
                   <span className="flex items-center gap-1.5">
-                    <span className="h-2 w-2 rounded-full bg-[#F5CD47]" />
+                    <span className="h-2 w-2 rounded-full bg-amber-400" />
                     {activeCycle.inProgressIssues} In Progress
                   </span>
                   <span className="flex items-center gap-1.5">
-                    <span className="h-2 w-2 rounded-full bg-[#738496]" />
+                    <span className="h-2 w-2 rounded-full bg-slate-400" />
                     {activeCycle.backlogIssues} Pending
                   </span>
                 </div>
@@ -271,20 +269,19 @@ export default function CyclesPage() {
 
             {/* Active Cycle Work Items preview */}
             {activeCycle.items.length > 0 && (
-              <div className="pt-3 border-t border-[#282E33]/70">
-                <p className="text-xs font-semibold text-[#9FADBC] mb-2">Cycle Work Items</p>
+              <div className="pt-3 border-t border-slate-200 dark:border-[#282E33]/70">
+                <p className="text-xs font-semibold text-slate-700 dark:text-[#9FADBC] mb-2">Cycle Work Items</p>
                 <div className="space-y-1.5">
                   {activeCycle.items.map((item) => (
                     <div
                       key={item.id}
-                      className="flex items-center justify-between p-2.5 rounded-lg bg-[#1D2125] hover:bg-[#22272B] transition cursor-pointer text-xs"
+                      className="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 dark:bg-[#1D2125] hover:bg-slate-100 dark:hover:bg-[#22272B] transition cursor-pointer text-xs border border-slate-200/60 dark:border-transparent"
                     >
                       <div className="flex items-center gap-2.5">
-                        <CheckSquare className="h-3.5 w-3.5 text-[#579DFF]" />
-                        <span className="font-semibold text-[#579DFF]">{item.key}</span>
-                        <span className="text-[#DEE4EA] font-medium">{item.title}</span>
+                        <span className="font-semibold text-[#0C66E4] dark:text-[#579DFF]">{item.key}</span>
+                        <span className="text-slate-900 dark:text-[#DEE4EA] font-medium">{item.title}</span>
                       </div>
-                      <span className="capitalize text-[11px] text-[#9FADBC] px-2 py-0.5 rounded bg-[#282E33]">
+                      <span className="capitalize text-[11px] text-slate-600 dark:text-[#9FADBC] px-2 py-0.5 rounded bg-slate-200 dark:bg-[#282E33]">
                         {item.status.replace('_', ' ')}
                       </span>
                     </div>
@@ -297,7 +294,7 @@ export default function CyclesPage() {
 
         {/* Cycles List */}
         <div className="space-y-3">
-          <h3 className="text-xs font-semibold text-[#738496] uppercase tracking-wider">
+          <h3 className="text-xs font-semibold text-slate-500 dark:text-[#738496] uppercase tracking-wider">
             All Cycles ({filteredCycles.length})
           </h3>
 
@@ -311,42 +308,42 @@ export default function CyclesPage() {
               return (
                 <div
                   key={cycle.id}
-                  className="rounded-xl border border-[#282E33] bg-[#161A1D] p-4.5 hover:border-[#388BFF]/60 transition flex flex-col justify-between"
+                  className="rounded-xl border border-slate-200 dark:border-[#282E33] bg-white dark:bg-[#161A1D] p-4.5 hover:border-[#0C66E4] dark:hover:border-[#388BFF]/60 transition flex flex-col justify-between shadow-xs"
                 >
                   <div>
                     <div className="flex items-center justify-between mb-2">
                       <span
                         className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${
                           cycle.status === 'active'
-                            ? 'bg-[#163828] text-[#4BCE97]'
+                            ? 'bg-emerald-50 dark:bg-[#163828] text-emerald-600 dark:text-[#4BCE97]'
                             : cycle.status === 'upcoming'
-                            ? 'bg-[#1C2B41] text-[#579DFF]'
-                            : 'bg-[#22272B] text-[#738496]'
+                            ? 'bg-blue-50 dark:bg-[#1C2B41] text-[#0C66E4] dark:text-[#579DFF]'
+                            : 'bg-slate-100 dark:bg-[#22272B] text-slate-600 dark:text-[#738496]'
                         }`}
                       >
                         {cycle.status}
                       </span>
-                      <span className="text-xs text-[#738496]">
+                      <span className="text-xs text-slate-500 dark:text-[#738496]">
                         {cycle.startDate} – {cycle.endDate}
                       </span>
                     </div>
 
-                    <h4 className="text-sm font-bold text-[#DEE4EA]">{cycle.name}</h4>
-                    <p className="text-xs text-[#9FADBC] mt-1 line-clamp-2">{cycle.description}</p>
+                    <h4 className="text-sm font-bold text-slate-900 dark:text-[#DEE4EA]">{cycle.name}</h4>
+                    <p className="text-xs text-slate-500 dark:text-[#9FADBC] mt-1 line-clamp-2">{cycle.description}</p>
                   </div>
 
-                  <div className="mt-4 pt-3 border-t border-[#282E33]/60">
+                  <div className="mt-4 pt-3 border-t border-slate-200 dark:border-[#282E33]/60">
                     <div className="flex items-center justify-between text-xs mb-1.5">
-                      <span className="text-[#9FADBC]">Progress</span>
-                      <span className="font-semibold text-[#DEE4EA]">{percent}%</span>
+                      <span className="text-slate-500 dark:text-[#9FADBC]">Progress</span>
+                      <span className="font-semibold text-slate-900 dark:text-[#DEE4EA]">{percent}%</span>
                     </div>
-                    <div className="h-1.5 w-full rounded-full bg-[#22272B] overflow-hidden">
+                    <div className="h-1.5 w-full rounded-full bg-slate-100 dark:bg-[#22272B] overflow-hidden">
                       <div
-                        className="h-full bg-[#4BCE97]"
+                        className="h-full bg-emerald-500 dark:bg-[#4BCE97]"
                         style={{ width: `${percent}%` }}
                       />
                     </div>
-                    <div className="flex items-center justify-between text-[11px] text-[#738496] mt-2">
+                    <div className="flex items-center justify-between text-[11px] text-slate-400 dark:text-[#738496] mt-2">
                       <span>{cycle.completedIssues}/{cycle.totalIssues} items resolved</span>
                       <span>{cycle.points} story points</span>
                     </div>
@@ -365,9 +362,9 @@ export default function CyclesPage() {
         title="Create Cycle"
         maxWidth="max-w-lg"
       >
-        <form onSubmit={handleCreateCycle} className="space-y-4 text-xs text-[#DEE4EA]">
+        <form onSubmit={handleCreateCycle} className="space-y-4 text-xs text-slate-900 dark:text-[#DEE4EA]">
           <div>
-            <label className="block text-xs font-semibold text-[#9FADBC] mb-1">
+            <label className="block text-xs font-semibold text-slate-600 dark:text-[#9FADBC] mb-1">
               Cycle Name *
             </label>
             <input
@@ -377,12 +374,12 @@ export default function CyclesPage() {
               placeholder="e.g. Cycle 17 · Beta Release"
               value={newCycleName}
               onChange={(e) => setNewCycleName(e.target.value)}
-              className="w-full rounded-md bg-[#1D2125] border border-[#333C44] px-3 py-2 text-xs text-[#DEE4EA] focus:outline-none focus:border-[#579DFF]"
+              className="w-full rounded-md bg-white dark:bg-[#1D2125] border border-slate-200 dark:border-[#333C44] px-3 py-2 text-xs text-slate-900 dark:text-[#DEE4EA] focus:outline-none focus:border-[#0C66E4] dark:focus:border-[#579DFF]"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-[#9FADBC] mb-1">
+            <label className="block text-xs font-semibold text-slate-600 dark:text-[#9FADBC] mb-1">
               Description
             </label>
             <textarea
@@ -390,13 +387,13 @@ export default function CyclesPage() {
               placeholder="Sprint goals and deliverables..."
               value={newCycleDesc}
               onChange={(e) => setNewCycleDesc(e.target.value)}
-              className="w-full rounded-md bg-[#1D2125] border border-[#333C44] p-3 text-xs text-[#DEE4EA] focus:outline-none focus:border-[#579DFF]"
+              className="w-full rounded-md bg-white dark:bg-[#1D2125] border border-slate-200 dark:border-[#333C44] p-3 text-xs text-slate-900 dark:text-[#DEE4EA] focus:outline-none focus:border-[#0C66E4] dark:focus:border-[#579DFF]"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-[#9FADBC] mb-1">
+              <label className="block text-xs font-semibold text-slate-600 dark:text-[#9FADBC] mb-1">
                 Start Date
               </label>
               <DatePicker
@@ -406,7 +403,7 @@ export default function CyclesPage() {
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-[#9FADBC] mb-1">
+              <label className="block text-xs font-semibold text-slate-600 dark:text-[#9FADBC] mb-1">
                 End Date
               </label>
               <DatePicker
@@ -417,11 +414,11 @@ export default function CyclesPage() {
             </div>
           </div>
 
-          <div className="flex justify-end gap-2 pt-3 border-t border-[#282E33]">
+          <div className="flex justify-end gap-2 pt-3 border-t border-slate-200 dark:border-[#282E33]">
             <button
               type="button"
               onClick={() => setIsCreateOpen(false)}
-              className="px-3 py-1.5 rounded-md hover:bg-[#282E33] text-xs font-semibold text-[#DEE4EA] transition cursor-pointer"
+              className="px-3 py-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-[#282E33] text-xs font-semibold text-slate-700 dark:text-[#DEE4EA] transition cursor-pointer"
             >
               Cancel
             </button>

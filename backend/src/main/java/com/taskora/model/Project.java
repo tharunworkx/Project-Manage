@@ -28,6 +28,30 @@ public class Project {
     @Column(name = "color")
     private String color = "#4f46e5";
 
+    @Column(name = "start_date")
+    private String startDate;
+
+    @Column(name = "end_date")
+    private String endDate;
+
+    @Column(name = "image_url")
+    private String imageUrl;
+
+    @Column(name = "client")
+    private String client;
+
+    @Column(name = "budget")
+    private String budget;
+
+    @Column(name = "estimated_hours")
+    private String estimatedHours;
+
+    @Column(name = "tag")
+    private String tag;
+
+    @Column(name = "status")
+    private String status = "in_progress";
+
     @Column(name = "created_at", updatable = false)
     private Instant createdAt;
 
@@ -123,5 +147,69 @@ public class Project {
 
     public void setUpdatedAt(Instant updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public String getStartDate() {
+        return startDate;
+    }
+
+    public void setStartDate(String startDate) {
+        this.startDate = startDate;
+    }
+
+    public String getEndDate() {
+        return endDate;
+    }
+
+    public void setEndDate(String endDate) {
+        this.endDate = endDate;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
+    public String getClient() {
+        return client;
+    }
+
+    public void setClient(String client) {
+        this.client = client;
+    }
+
+    public String getBudget() {
+        return budget;
+    }
+
+    public void setBudget(String budget) {
+        this.budget = budget;
+    }
+
+    public String getEstimatedHours() {
+        return estimatedHours;
+    }
+
+    public void setEstimatedHours(String estimatedHours) {
+        this.estimatedHours = estimatedHours;
+    }
+
+    public String getTag() {
+        return tag;
+    }
+
+    public void setTag(String tag) {
+        this.tag = tag;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }

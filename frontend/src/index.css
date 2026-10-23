@@ -3,6 +3,18 @@
 @custom-variant dark (&:where(.dark, .dark *));
 @variant dark (&:where(.dark, .dark *));
 
+@theme {
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-border: var(--border-color);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+}
+
 @layer base {
   :root {
     --bg-canvas: #F8FAFC;
@@ -13,12 +25,19 @@
     --border-subtle: #F1F5F9;
     --border-default: #E2E8F0;
     --border-bold: #CBD5E1;
+    --border-color: #E2E8F0;
     --text-primary: #0F172A;
     --text-subtle: #64748B;
     --text-muted: #94A3B8;
     --foreground: #0F172A;
+    --popover: #FFFFFF;
+    --popover-foreground: #0F172A;
+    --accent: #F1F5F9;
+    --accent-foreground: #0F172A;
     --muted: #F1F5F9;
     --muted-foreground: #64748B;
+    --destructive: #EF4444;
+    --destructive-foreground: #FFFFFF;
     --jira-blue: #0C66E4;
     --jira-blue-hover: #0055CC;
     --jira-blue-active: #0C66E4;
@@ -33,16 +52,29 @@
     --border-subtle: #22272B;
     --border-default: #282E33;
     --border-bold: #333C44;
+    --border-color: #282E33;
     --text-primary: #DEE4EA;
     --text-subtle: #9FADBC;
     --text-muted: #738496;
     --foreground: #DEE4EA;
+    --popover: #161A1D;
+    --popover-foreground: #DEE4EA;
+    --accent: #22272B;
+    --accent-foreground: #DEE4EA;
     --muted: #22272B;
     --muted-foreground: #9FADBC;
+    --destructive: #F87171;
+    --destructive-foreground: #FFFFFF;
     --jira-blue: #0C66E4;
     --jira-blue-hover: #0055CC;
     --jira-blue-active: #579DFF;
   }
+}
+
+html {
+  zoom: 1;
+  width: 100%;
+  height: 100%;
 }
 
 body {
@@ -51,8 +83,15 @@ body {
   color: var(--text-primary);
   margin: 0;
   padding: 0;
+  width: 100%;
+  height: 100%;
   overflow: hidden;
   transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+#root {
+  width: 100%;
+  height: 100%;
 }
 
 /* Jira custom scrollbar */

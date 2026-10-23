@@ -1,16 +1,17 @@
 import React, { useState } from 'react';
 import {
   DndContext,
-  closestCenter,
+  closestCorners,
   KeyboardSensor,
   PointerSensor,
   useSensor,
   useSensors,
+  DragOverlay,
+  defaultDropAnimationSideEffects,
 } from '@dnd-kit/core';
 import {
   Plus,
   TrendingUp,
-  CheckSquare,
   Bookmark,
   Bug,
   User,
@@ -19,13 +20,23 @@ import {
 } from 'lucide-react';
 import { KanbanColumn } from './KanbanColumn';
 import { BoardToolbar } from './BoardToolbar';
+import { TaskCard } from './TaskCard';
 import { TaskDetailsDrawer } from '../tasks/TaskDetailsDrawer';
+import { TaskDialog } from '../tasks/TaskDialog';
 import { TASK_STATUSES } from '../../lib/constants';
 import { formatDate } from '../../lib/utils';
 import { useAuthContext } from '../../context/AuthContext';
+import { toast } from 'sonner';
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu';
 
 export function KanbanBoard({ tasks = [], onTaskUpdate, onTaskCreate, onTaskDelete }) {
-  const { canCreateTasks } = useAuthContext();
+  const { canCreateTasks, canMarkTaskDone } = useAuthContext();
   const [viewMode, setViewMode] = useState(() => {
     try {
       return localStorage.getItem('taskflow_board_view_mode') || 'grid';
@@ -48,11 +59,26 @@ export function KanbanBoard({ tasks = [], onTaskUpdate, onTaskCreate, onTaskDele
   const [groupBy, setGroupBy] = useState('none');
   const [showInsights, setShowInsights] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
+  const [activeTask, setActiveTask] = useState(null);
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [createDialogStatus, setCreateDialogStatus] = useState('todo');
 
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
     useSensor(KeyboardSensor)
   );
+
+  const dropAnimationConfig = {
+    sideEffects: defaultDropAnimationSideEffects({
+      styles: {
+        active: {
+          opacity: '0.4',
+        },
+      },
+    }),
+    duration: 220,
+    easing: 'cubic-bezier(0.18, 0.67, 0.6, 1.22)',
+  };
 
   // Apply filters
   const filteredTasks = tasks.filter((t) => {
@@ -77,27 +103,51 @@ export function KanbanBoard({ tasks = [], onTaskUpdate, onTaskCreate, onTaskDele
     return true;
   });
 
+  const handleDragStart = (event) => {
+    const { active } = event;
+    const task = tasks.find((t) => t.id === active.id) || active.data?.current;
+    setActiveTask(task || null);
+  };
+
+  const handleDragCancel = () => {
+    setActiveTask(null);
+  };
+
   const handleDragEnd = (event) => {
     const { active, over } = event;
+    setActiveTask(null);
     if (!over) return;
 
     const taskId = active.id;
-    const newStatus = over.id;
+    let newStatus = over.id;
 
-    if (active.data.current?.status !== newStatus && onTaskUpdate) {
+    // If dropped over another task card, resolve its column status
+    const overTask = tasks.find((t) => t.id === over.id);
+    if (overTask) {
+      newStatus = overTask.status;
+    }
+
+    if ((newStatus === 'done' || active.data?.current?.status === 'done') && !canMarkTaskDone) {
+      toast.error('Only Project Managers and Admins can review and make tasks Done.');
+      return;
+    }
+
+    if (active.data?.current?.status !== newStatus && onTaskUpdate) {
       onTaskUpdate(taskId, { status: newStatus });
     }
   };
 
-  const handleNewTaskInColumn = (status, title) => {
+  const handleNewTaskInColumn = (status, title, extra = {}) => {
     if (onTaskCreate) {
       onTaskCreate({
-        title,
-        status,
-        type: 'task',
-        priority: 'medium',
-        due_date: new Date().toISOString().split('T')[0],
+        ...extra,
+        title: title || extra.title,
+        status: status || extra.status || 'todo',
+        type: extra.type || 'task',
+        priority: extra.priority || 'medium',
+        due_date: extra.due_date || new Date().toISOString().split('T')[0],
       });
+      toast.success(`Created "${title || extra.title || 'Task'}" successfully`);
     }
   };
 
@@ -116,11 +166,7 @@ export function KanbanBoard({ tasks = [], onTaskUpdate, onTaskCreate, onTaskDele
         </span>
       );
     }
-    return (
-      <span title="Task" className="text-slate-400 dark:text-[#9FADBC] flex items-center shrink-0">
-        <CheckSquare className="h-4 w-4 stroke-[1.8]" />
-      </span>
-    );
+    return null;
   };
 
   const statusMap = TASK_STATUSES.reduce((acc, col) => {
@@ -147,21 +193,21 @@ export function KanbanBoard({ tasks = [], onTaskUpdate, onTaskCreate, onTaskDele
 
       {/* Optional Insights Banner */}
       {showInsights && (
-        <div className="mx-6 mb-3 p-4 rounded-xl bg-[#161A1D] border border-[#282E33] flex items-center justify-between animate-fade-in text-sm">
+        <div className="mx-6 mb-3 p-4 rounded-xl bg-white dark:bg-[#161A1D] border border-slate-200 dark:border-[#282E33] flex items-center justify-between animate-fade-in text-sm shadow-xs">
           <div className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-lg bg-[#0C66E4]/20 text-[#579DFF] flex items-center justify-center">
+            <div className="h-9 w-9 rounded-lg bg-blue-500/10 dark:bg-[#0C66E4]/20 text-[#0C66E4] dark:text-[#579DFF] flex items-center justify-center">
               <TrendingUp className="h-5 w-5" />
             </div>
             <div>
-              <p className="font-bold text-[#DEE4EA]">Active Sprint Health: 100%</p>
-              <p className="text-xs text-[#9FADBC]">
+              <p className="font-bold text-slate-900 dark:text-[#DEE4EA]">Active Sprint Health: 100%</p>
+              <p className="text-xs text-slate-500 dark:text-[#9FADBC]">
                 {tasks.filter((t) => t.status === 'done').length} of {tasks.length} issues completed on schedule.
               </p>
             </div>
           </div>
           <button
             onClick={() => setShowInsights(false)}
-            className="text-xs text-[#738496] hover:text-[#DEE4EA]"
+            className="text-xs text-slate-400 hover:text-slate-700 dark:text-[#738496] dark:hover:text-[#DEE4EA] cursor-pointer"
           >
             Dismiss
           </button>
@@ -170,7 +216,7 @@ export function KanbanBoard({ tasks = [], onTaskUpdate, onTaskCreate, onTaskDele
 
       {/* VIEW MODE 1: GRID VIEW (Down) - EXACT SAME UI AS COLUMN VIEW CARDS */}
       {viewMode === 'grid' && (
-        <div className="flex-1 flex flex-col overflow-hidden px-6 pb-6 pt-1">
+        <div className="flex-1 flex flex-col overflow-hidden px-6 sm:px-8 pb-6 pt-1">
           {/* Status Quick Filter Chips */}
           <div className="flex items-center gap-2 mb-3.5 overflow-x-auto pb-1 scrollbar-none">
             <button
@@ -259,13 +305,59 @@ export function KanbanBoard({ tasks = [], onTaskUpdate, onTaskCreate, onTaskDele
                           >
                             <Edit3 className="h-3.5 w-3.5" />
                           </button>
-                          <button
-                            onClick={(e) => e.stopPropagation()}
-                            title="More options"
-                            className="p-1 rounded text-slate-400 hover:text-slate-800 hover:bg-slate-100 dark:text-[#9FADBC] dark:hover:text-[#DEE4EA] dark:hover:bg-[#333C44]"
-                          >
-                            <MoreHorizontal className="h-3.5 w-3.5" />
-                          </button>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <button
+                                type="button"
+                                onClick={(e) => e.stopPropagation()}
+                                title="Move / More actions"
+                                className="p-1 rounded text-slate-400 hover:text-slate-800 hover:bg-slate-100 dark:text-[#9FADBC] dark:hover:text-[#DEE4EA] dark:hover:bg-[#333C44] cursor-pointer outline-none"
+                              >
+                                <MoreHorizontal className="h-3.5 w-3.5" />
+                              </button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent
+                              align="end"
+                              className="w-48 p-1.5 rounded-xl bg-white dark:bg-[#1D2125] border border-slate-200 dark:border-[#282E33] shadow-xl z-50 select-none"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <div className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-[#738496]">
+                                Move to
+                              </div>
+                              {TASK_STATUSES.filter((s) => s.id !== task.status).map((s) => (
+                                <DropdownMenuItem
+                                  key={s.id}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (s.id === 'done' && !canMarkTaskDone) {
+                                      toast.error('Only Project Managers and Admins can review and make tasks Done.');
+                                      return;
+                                    }
+                                    onTaskUpdate && onTaskUpdate(task.id, { status: s.id });
+                                    toast.success(`Moved to ${s.label}`);
+                                  }}
+                                  className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium cursor-pointer text-slate-700 dark:text-[#DEE4EA] hover:bg-slate-100 dark:hover:bg-[#282E33] transition"
+                                >
+                                  <span
+                                    className="h-2 w-2 rounded-full shrink-0 shadow-xs"
+                                    style={{ backgroundColor: s.color }}
+                                  />
+                                  <span className="truncate">{s.label}</span>
+                                </DropdownMenuItem>
+                              ))}
+                              <DropdownMenuSeparator className="my-1 bg-slate-100 dark:bg-[#282E33]" />
+                              <DropdownMenuItem
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedTask(task);
+                                }}
+                                className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium cursor-pointer text-slate-700 dark:text-[#DEE4EA] hover:bg-slate-100 dark:hover:bg-[#282E33] transition"
+                              >
+                                <Edit3 className="h-3.5 w-3.5 text-slate-400" />
+                                <span>View Details</span>
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </div>
                       </div>
 
@@ -294,7 +386,7 @@ export function KanbanBoard({ tasks = [], onTaskUpdate, onTaskCreate, onTaskDele
                       {/* Assignee Avatar */}
                       {task.assignee === 'TR' ? (
                         <div
-                          className="flex h-6 w-6 items-center justify-center rounded-full bg-[#E8831D] text-[#0C162D] font-bold text-[10px] shadow-xs"
+                          className="flex h-6 w-6 items-center justify-center rounded-full bg-[#7C3AED] text-white font-bold text-[10px] shadow-xs"
                           title="Assignee: TR"
                         >
                           TR
@@ -312,11 +404,14 @@ export function KanbanBoard({ tasks = [], onTaskUpdate, onTaskCreate, onTaskDele
                 );
               })}
 
-              {/* Slot to create a new task in grid (Admin and PM only) */}
+              {/* Slot to create a new task in grid */}
               {canCreateTasks && (
                 <button
                   type="button"
-                  onClick={() => handleNewTaskInColumn('todo', 'New issue from board')}
+                  onClick={() => {
+                    setCreateDialogStatus(statusFilter !== 'all' ? statusFilter : 'todo');
+                    setIsCreateDialogOpen(true);
+                  }}
                   className="h-44 rounded-xl border-2 border-dashed border-slate-300 dark:border-[#282E33] hover:border-[#0C66E4] dark:hover:border-[#579DFF]/60 hover:bg-blue-50/20 dark:hover:bg-[#1C2125]/50 flex flex-col items-center justify-center gap-2 text-slate-400 hover:text-[#0C66E4] dark:text-[#738496] dark:hover:text-[#579DFF] transition cursor-pointer p-4 group"
                 >
                   <div className="h-9 w-9 rounded-full bg-slate-100 dark:bg-[#22272B] flex items-center justify-center text-slate-500 group-hover:bg-[#0C66E4] group-hover:text-white transition">
@@ -332,28 +427,36 @@ export function KanbanBoard({ tasks = [], onTaskUpdate, onTaskCreate, onTaskDele
 
       {/* VIEW MODE 2: COLUMN VIEW (Row) */}
       {viewMode === 'columns' && (
-        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-          <div className="flex-1 flex gap-4 overflow-x-auto px-6 pb-6 pt-1 items-start">
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCorners}
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
+          onDragCancel={handleDragCancel}
+        >
+          <div className="flex-1 flex gap-4 overflow-x-auto px-6 sm:px-8 pb-6 pt-1 items-start">
             {TASK_STATUSES.map((col) => (
               <KanbanColumn
                 key={col.id}
                 column={col}
                 tasks={filteredTasks.filter((t) => t.status === col.id)}
-                onNewTaskInColumn={handleNewTaskInColumn}
+                onNewTaskInColumn={(status) => {
+                  setCreateDialogStatus(status);
+                  setIsCreateDialogOpen(true);
+                }}
+                onOpenCreateDialog={(status) => {
+                  setCreateDialogStatus(status);
+                  setIsCreateDialogOpen(true);
+                }}
                 onCardClick={(task) => setSelectedTask(task)}
+                onTaskUpdate={onTaskUpdate}
               />
             ))}
-
-            {/* Add Column button on the right (Admin and PM only) */}
-            {canCreateTasks && (
-              <button
-                title="Create column"
-                className="h-11 w-11 shrink-0 rounded-xl bg-[#161A1D] hover:bg-[#22272B] border border-[#282E33]/70 flex items-center justify-center text-[#738496] hover:text-[#DEE4EA] transition cursor-pointer"
-              >
-                <Plus className="h-5 w-5" />
-              </button>
-            )}
           </div>
+
+          <DragOverlay dropAnimation={dropAnimationConfig}>
+            {activeTask ? <TaskCard task={activeTask} isOverlay /> : null}
+          </DragOverlay>
         </DndContext>
       )}
 
@@ -369,6 +472,19 @@ export function KanbanBoard({ tasks = [], onTaskUpdate, onTaskCreate, onTaskDele
         onDelete={(taskId) => {
           onTaskDelete && onTaskDelete(taskId);
           setSelectedTask(null);
+        }}
+      />
+
+      {/* Create Task Dialog with all fields */}
+      <TaskDialog
+        isOpen={isCreateDialogOpen}
+        initialData={{
+          status: createDialogStatus || (statusFilter !== 'all' ? statusFilter : 'todo'),
+        }}
+        onClose={() => setIsCreateDialogOpen(false)}
+        onSubmit={(data) => {
+          handleNewTaskInColumn(data.status, data.title, data);
+          setIsCreateDialogOpen(false);
         }}
       />
     </div>

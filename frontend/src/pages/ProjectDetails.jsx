@@ -8,7 +8,7 @@ import { useTasks } from '../hooks/useTasks';
 
 export default function ProjectDetails() {
   const { id } = useParams();
-  const { tasks, updateTask, createTask } = useTasks(id);
+  const { tasks, updateTask, createTask, deleteTask } = useTasks(id);
 
   return (
     <div className="space-y-6">
@@ -19,14 +19,18 @@ export default function ProjectDetails() {
           </Link>
           <div>
             <h1 className="text-2xl font-extrabold text-slate-900 dark:text-slate-100">Project Workspace</h1>
-            <p className="text-xs text-slate-500">ID: {id} · Sprint tracking and deliverables</p>
           </div>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         <div className="lg:col-span-3">
-          <KanbanBoard tasks={tasks} onTaskUpdate={(taskId, updates) => updateTask({ id: taskId, updates })} />
+          <KanbanBoard
+            tasks={tasks}
+            onTaskUpdate={(taskId, updates) => updateTask({ id: taskId, updates })}
+            onTaskCreate={(data) => createTask({ ...data, project_id: id })}
+            onTaskDelete={(taskId) => deleteTask(taskId)}
+          />
         </div>
         <div>
           <ProjectMembers />

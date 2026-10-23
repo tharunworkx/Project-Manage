@@ -10,8 +10,10 @@ import {
   User,
   Star,
 } from 'lucide-react';
+import { useWorkspaceContext } from '../context/WorkspaceContext';
 
 export default function PagesPage() {
+  const { currentWorkspace } = useWorkspaceContext();
   const [searchVal, setSearchVal] = useState('');
 
   const [docs, setDocs] = useState([
@@ -19,7 +21,7 @@ export default function PagesPage() {
       id: 'doc-1',
       title: 'Taskora Architecture & State Machine RFC',
       summary: 'Specifications on how work items transition between Backlog, Unstarted, Started, Completed, and Cancelled.',
-      author: 'Tharun S.',
+      author: 'Tharun R.',
       updatedAt: 'Today at 3:42 PM',
       starred: true,
       category: 'Architecture',
@@ -28,7 +30,7 @@ export default function PagesPage() {
       id: 'doc-2',
       title: 'Cycles & Sprint Burndown Strategy',
       summary: 'Mathematical breakdown of velocity points, target pace calculation, and automatic scope creep adjustments.',
-      author: 'Tharun S.',
+      author: 'Tharun R.',
       updatedAt: 'Yesterday',
       starred: true,
       category: 'Product Specs',
@@ -37,7 +39,7 @@ export default function PagesPage() {
       id: 'doc-3',
       title: 'Frontend Token System & Design Guidelines',
       summary: 'Color palettes, spacing scale, interactive keyboard shortcuts, and animation easing standards.',
-      author: 'Tharun S.',
+      author: 'Tharun R.',
       updatedAt: '3 days ago',
       starred: false,
       category: 'Design System',
@@ -59,25 +61,22 @@ export default function PagesPage() {
   );
 
   return (
-    <div className="flex flex-col h-full bg-[#101214] text-[#DEE4EA] overflow-y-auto">
+    <div className="flex flex-col h-full bg-[#F8FAFC] dark:bg-[#101214] text-slate-900 dark:text-[#DEE4EA] overflow-y-auto select-none transition-colors duration-150">
       {/* Header */}
-      <div className="border-b border-[#282E33] bg-[#101214] px-6 py-4">
+      <div className="border-b border-slate-200 dark:border-[#282E33] bg-white dark:bg-[#101214] px-6 py-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2 text-xs font-medium text-[#9FADBC] mb-1">
-              <span>My Software Team</span>
+            <div className="flex items-center gap-2 text-xs font-medium text-slate-500 dark:text-[#9FADBC] mb-1">
+              <span>{currentWorkspace?.name || 'Workspace'}</span>
               <span>/</span>
-              <span className="text-[#DEE4EA]">Pages</span>
+              <span className="text-slate-900 dark:text-[#DEE4EA]">Pages</span>
             </div>
             <div className="flex items-center gap-3">
-              <div className="h-8 w-8 rounded-lg bg-[#579DFF]/15 text-[#579DFF] flex items-center justify-center font-bold">
+              <div className="h-8 w-8 rounded-lg bg-blue-500/10 dark:bg-[#579DFF]/15 text-[#0C66E4] dark:text-[#579DFF] flex items-center justify-center font-bold">
                 <FileText className="h-5 w-5" />
               </div>
               <div>
-                <h1 className="text-xl font-bold tracking-tight text-[#DEE4EA]">Pages & Docs</h1>
-                <p className="text-xs text-[#9FADBC]">
-                  Collaborative specifications, architectural RFCs, and engineering guidelines.
-                </p>
+                <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-[#DEE4EA]">Pages & Docs</h1>
               </div>
             </div>
           </div>
@@ -94,14 +93,14 @@ export default function PagesPage() {
         </div>
 
         {/* Search */}
-        <div className="mt-4 pt-3 border-t border-[#282E33]/60 relative w-72">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[#738496]" />
+        <div className="mt-4 pt-3 border-t border-slate-200 dark:border-[#282E33]/60 relative w-72">
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-500 dark:text-[#738496]" />
           <input
             type="text"
             placeholder="Search pages and specs..."
             value={searchVal}
             onChange={(e) => setSearchVal(e.target.value)}
-            className="w-full h-8 rounded-md border border-[#333C44] bg-[#22272B] pl-8 pr-3 text-xs text-[#DEE4EA] placeholder-[#738496] focus:border-[#579DFF] focus:outline-none"
+            className="w-full h-8 rounded-md border border-black dark:border-white bg-white dark:bg-[#22272B] pl-8 pr-3 text-xs text-slate-900 dark:text-[#DEE4EA] placeholder-slate-400 dark:placeholder-[#738496] focus:border-black dark:focus:border-white focus:outline-none transition-colors"
           />
         </div>
       </div>
@@ -112,34 +111,34 @@ export default function PagesPage() {
           <div
             key={doc.id}
             onClick={() => {}}
-            className="flex items-center justify-between p-4.5 rounded-xl border border-[#282E33] bg-[#161A1D] hover:border-[#388BFF]/60 hover:bg-[#1C2127] transition group cursor-pointer"
+            className="flex items-center justify-between p-4.5 rounded-xl border border-slate-200 dark:border-[#282E33] bg-white dark:bg-[#161A1D] hover:border-[#0C66E4] dark:hover:border-[#388BFF]/60 hover:bg-slate-50 dark:hover:bg-[#1C2127] transition group cursor-pointer shadow-xs"
           >
             <div className="flex items-start gap-3.5">
-              <div className="p-2 rounded-lg bg-[#22272B] text-[#579DFF] group-hover:bg-[#1C2B41] transition">
+              <div className="p-2 rounded-lg bg-slate-100 dark:bg-[#22272B] text-[#0C66E4] dark:text-[#579DFF] group-hover:bg-blue-50 dark:group-hover:bg-[#1C2B41] transition">
                 <BookOpen className="h-4 w-4" />
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-[#22272B] text-[#9FADBC]">
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-100 dark:bg-[#22272B] text-slate-600 dark:text-[#9FADBC]">
                     {doc.category}
                   </span>
-                  <h3 className="text-sm font-bold text-[#DEE4EA] group-hover:text-[#579DFF] transition">
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-[#DEE4EA] group-hover:text-[#0C66E4] dark:group-hover:text-[#579DFF] transition">
                     {doc.title}
                   </h3>
                   {doc.starred && (
                     <Star className="h-3.5 w-3.5 fill-[#F5CD47] text-[#F5CD47]" />
                   )}
                 </div>
-                <p className="text-xs text-[#9FADBC] mt-1">{doc.summary}</p>
+                <p className="text-xs text-slate-500 dark:text-[#9FADBC] mt-1">{doc.summary}</p>
               </div>
             </div>
 
-            <div className="flex items-center gap-4 text-xs text-[#738496]">
+            <div className="flex items-center gap-4 text-xs text-slate-400 dark:text-[#738496]">
               <span className="flex items-center gap-1">
                 <Clock className="h-3 w-3" />
                 {doc.updatedAt}
               </span>
-              <ChevronRight className="h-4 w-4 text-[#738496] group-hover:text-[#DEE4EA] transition" />
+              <ChevronRight className="h-4 w-4 text-slate-400 dark:text-[#738496] group-hover:text-slate-900 dark:group-hover:text-[#DEE4EA] transition" />
             </div>
           </div>
         ))}
