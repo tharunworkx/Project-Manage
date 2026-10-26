@@ -369,19 +369,74 @@ export const projectService = {
     let remoteRecord = null;
     if (isSupabaseConfigured) {
       try {
-        const { data, error } = await supabase
+        let insertPayload = { ...dbPayload };
+        let { data, error } = await supabase
           .from('projects')
-          .insert([dbPayload])
+          .insert([insertPayload])
           .select()
           .single();
 
+        // If foreign key constraint failed on workspace_id, ensure workspace exists or fallback to available
+        if (error && (error.code === '23503' || error.message?.includes('workspace_id'))) {
+          console.warn('Workspace foreign key constraint hit. Ensuring workspace exists...', wsId);
+          // Try to upsert the workspace first
+          await supabase.from('workspaces').upsert([
+            {
+              id: wsId,
+              name: 'Southern Rescue Services',
+              slug: 'southern-rescue-' + wsId.slice(-4),
+              description: 'Workspace',
+              color: '#0C66E4',
+            }
+          ], { onConflict: 'id' });
+
+          const retry = await supabase
+            .from('projects')
+            .insert([insertPayload])
+            .select()
+            .single();
+
+          data = retry.data;
+          error = retry.error;
+
+          // If still failing, fallback to any available workspace in DB
+          if (error && (error.code === '23503' || error.message?.includes('workspace_id'))) {
+            const { data: wsRows } = await supabase.from('workspaces').select('id').limit(1);
+            if (wsRows && wsRows.length > 0) {
+              insertPayload.workspace_id = wsRows[0].id;
+              const fallbackRetry = await supabase
+                .from('projects')
+                .insert([insertPayload])
+                .select()
+                .single();
+              data = fallbackRetry.data;
+              error = fallbackRetry.error;
+            }
+          }
+        }
+
+        // If foreign key constraint failed on project_manager_id, retry with null PM
+        if (error && (error.code === '23503' || error.message?.includes('project_manager_id'))) {
+          console.warn('PM foreign key constraint hit, retrying with project_manager_id: null');
+          insertPayload.project_manager_id = null;
+          const retryPm = await supabase
+            .from('projects')
+            .insert([insertPayload])
+            .select()
+            .single();
+          data = retryPm.data;
+          error = retryPm.error;
+        }
+
         if (error) {
           console.error('Supabase project insert failed:', error);
+          throw new Error('Supabase save failed: ' + error.message);
         } else if (data) {
           remoteRecord = data;
         }
       } catch (supaErr) {
         console.error('Supabase project insert error:', supaErr);
+        throw supaErr;
       }
     }
 

@@ -131,7 +131,7 @@ export function ManageProjectsView() {
       toast.success(`Project "${saved.name}" created successfully!`);
     } catch (err) {
       console.error('Create project error:', err);
-      toast.error('Failed to create project');
+      toast.error(err?.message || 'Failed to create project');
     }
   };
 
