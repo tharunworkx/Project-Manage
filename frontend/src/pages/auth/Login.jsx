@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Lock, Eye, EyeOff } from 'lucide-react';
 import { StarsBackground } from '@/components/animate-ui/components/backgrounds/stars';
 import { useAuth } from '../../hooks/useAuth';
+import { supabase, isSupabaseConfigured } from '../../lib/supabase';
 
 export default function Login() {
   const { signIn, signUp } = useAuth();
@@ -58,10 +59,24 @@ export default function Login() {
     }
   };
 
-  const handleGitHubClick = () => {
-    setEmail('tharun@gmail.com');
-    setPassword('12345678');
-    setSuccessMsg('GitHub credentials prefilled. Click "Sign In" to proceed.');
+  const handleGitHubClick = async () => {
+    setErrorMsg('');
+    setSuccessMsg('');
+    if (isSupabaseConfigured) {
+      try {
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: 'github',
+          options: {
+            redirectTo: `${window.location.origin}/kanban`,
+          },
+        });
+        if (error) throw error;
+      } catch (err) {
+        setErrorMsg(err.message || 'GitHub authentication failed');
+      }
+    } else {
+      setErrorMsg('GitHub sign-in is not configured. Please sign in with your email and password.');
+    }
   };
 
   return (
