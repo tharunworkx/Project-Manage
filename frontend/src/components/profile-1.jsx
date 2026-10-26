@@ -84,7 +84,7 @@ export function Profile1({ className }) {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: -4 }}
             transition={{ type: 'spring', stiffness: 450, damping: 28 }}
-            className="absolute right-0 top-full mt-2 w-76 rounded-2xl border border-slate-200 dark:border-[#282E33] bg-white dark:bg-[#161A1D] p-2.5 text-slate-900 dark:text-[#DEE4EA] shadow-2xl backdrop-blur-md select-none z-50 transition-colors duration-150"
+            className="fixed sm:absolute right-2 sm:right-0 top-14 sm:top-full mt-1 sm:mt-2 w-[calc(100vw-1rem)] max-w-xs sm:w-76 rounded-2xl border border-slate-200 dark:border-[#282E33] bg-white dark:bg-[#161A1D] p-2.5 text-slate-900 dark:text-[#DEE4EA] shadow-2xl backdrop-blur-md select-none z-50 transition-colors duration-150"
           >
             {/* User Card */}
             <div className="flex items-center gap-3.5 p-3 rounded-xl bg-slate-50 dark:bg-[#1C2125]/70 border border-slate-200/80 dark:border-[#282E33]/40 mb-2">

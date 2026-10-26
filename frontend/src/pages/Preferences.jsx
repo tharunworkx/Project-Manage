@@ -142,13 +142,13 @@ export default function Preferences() {
   const roleLabel = isAdmin ? 'Admin' : isProjectManager ? 'Project Manager' : 'Team Member';
 
   return (
-    <div className="w-full p-6 md:p-8 pb-28 space-y-6 select-none transition-colors duration-150">
+    <div className="w-full p-4 sm:p-6 md:p-8 pb-28 space-y-4 sm:space-y-6 select-none transition-colors duration-150">
       <div>
         <div className="flex items-center gap-2.5">
-          <div className="h-8.5 w-8.5 rounded-lg bg-blue-50 dark:bg-[#1C2B41] flex items-center justify-center text-[#0C66E4] dark:text-[#579DFF]">
+          <div className="h-8.5 w-8.5 rounded-lg bg-blue-50 dark:bg-[#1C2B41] flex items-center justify-center text-[#0C66E4] dark:text-[#579DFF] shrink-0">
             <Sliders className="h-4.5 w-4.5 stroke-[2]" />
           </div>
-          <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-[#DEE4EA]">
+          <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-[#DEE4EA]">
             Preferences
           </h1>
         </div>
@@ -157,12 +157,14 @@ export default function Preferences() {
       <div className="flex w-full flex-col gap-6">
         <Tabs defaultValue="account">
           {/* Animated Tabs Bar */}
-          <TabsList className="mb-5">
-            <TabsTrigger value="account">Account</TabsTrigger>
-            <TabsTrigger value="notifications">Notifications</TabsTrigger>
-            <TabsTrigger value="localization">Display & Language</TabsTrigger>
-            <TabsTrigger value="security">Security</TabsTrigger>
-          </TabsList>
+          <div className="overflow-x-auto no-scrollbar pb-1 max-w-full">
+            <TabsList className="mb-5 flex-nowrap shrink-0">
+              <TabsTrigger value="account">Account</TabsTrigger>
+              <TabsTrigger value="notifications">Notifications</TabsTrigger>
+              <TabsTrigger value="localization">Display & Language</TabsTrigger>
+              <TabsTrigger value="security">Security</TabsTrigger>
+            </TabsList>
+          </div>
 
           <Card className="w-full border border-slate-200 dark:border-[#282E33] bg-white dark:bg-[#161A1D] shadow-xs">
             <TabsContents className="p-0">

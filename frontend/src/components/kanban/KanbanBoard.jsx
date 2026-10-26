@@ -216,9 +216,9 @@ export function KanbanBoard({ tasks = [], onTaskUpdate, onTaskCreate, onTaskDele
 
       {/* VIEW MODE 1: GRID VIEW (Down) - EXACT SAME UI AS COLUMN VIEW CARDS */}
       {viewMode === 'grid' && (
-        <div className="flex-1 flex flex-col overflow-hidden px-6 sm:px-8 pb-6 pt-1">
+        <div className="flex-1 flex flex-col overflow-hidden px-3.5 sm:px-8 pb-6 pt-1">
           {/* Status Quick Filter Chips */}
-          <div className="flex items-center gap-2 mb-3.5 overflow-x-auto pb-1 scrollbar-none">
+          <div className="flex items-center gap-2 mb-3.5 overflow-x-auto pb-1 scrollbar-none no-scrollbar">
             <button
               onClick={() => setStatusFilter('all')}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer shrink-0 ${
@@ -434,7 +434,7 @@ export function KanbanBoard({ tasks = [], onTaskUpdate, onTaskCreate, onTaskDele
           onDragEnd={handleDragEnd}
           onDragCancel={handleDragCancel}
         >
-          <div className="flex-1 flex gap-4 overflow-x-auto px-6 sm:px-8 pb-6 pt-1 items-start">
+          <div className="flex-1 flex gap-3 sm:gap-4 overflow-x-auto px-3.5 sm:px-8 pb-6 pt-1 items-start snap-x snap-mandatory scroll-smooth no-scrollbar">
             {TASK_STATUSES.map((col) => (
               <KanbanColumn
                 key={col.id}

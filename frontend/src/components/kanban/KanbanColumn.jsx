@@ -61,7 +61,7 @@ export function KanbanColumn({
   return (
     <div
       ref={setNodeRef}
-      className={`flex flex-col rounded-xl bg-slate-100/80 dark:bg-[#161A1D] border p-3 min-w-[250px] max-w-[285px] w-full transition-colors ${
+      className={`flex flex-col rounded-xl bg-slate-100/80 dark:bg-[#161A1D] border p-3 min-w-[80vw] xs:min-w-[270px] sm:min-w-[250px] max-w-[285px] w-full snap-center transition-colors ${
         isOver
           ? 'border-[#0C66E4] bg-blue-50/50 dark:bg-[#1C2B41]/30 ring-1 ring-[#0C66E4]'
           : 'border-slate-200 dark:border-[#282E33]/70'

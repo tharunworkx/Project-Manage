@@ -187,15 +187,15 @@ export default function ClientsPage() {
   const CLIENT_COLORS = ['#0C66E4', '#7C3AED', '#0284C7', '#10B981', '#F59E0B', '#EC4899'];
 
   return (
-    <div className="p-6 space-y-6 w-full select-none">
+    <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 w-full select-none">
       {/* Header exactly matching Employee Accounts & Roles */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <div className="flex items-center gap-2.5">
-            <div className="h-9 w-9 rounded-xl bg-slate-100 dark:bg-[#22272B] border border-slate-200 dark:border-[#333C44] flex items-center justify-center text-slate-700 dark:text-[#DEE4EA]">
+            <div className="h-9 w-9 rounded-xl bg-slate-100 dark:bg-[#22272B] border border-slate-200 dark:border-[#333C44] flex items-center justify-center text-slate-700 dark:text-[#DEE4EA] shrink-0">
               <Building2 className="h-5 w-5 stroke-[1.8]" />
             </div>
-            <h1 className="text-2xl font-extrabold text-slate-900 dark:text-[#DEE4EA]">
+            <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-[#DEE4EA]">
               Client Management
             </h1>
           </div>
@@ -213,7 +213,7 @@ export default function ClientsPage() {
       </div>
 
       {/* 3 Summary Cards exactly matching Employee Accounts & Roles */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
         {/* Card 1: Active Clients */}
         <div
           onClick={() => setStatusFilter(statusFilter === 'Active' ? 'all' : 'Active')}

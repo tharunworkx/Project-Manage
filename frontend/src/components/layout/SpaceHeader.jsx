@@ -123,17 +123,17 @@ export function SpaceHeader({ activeTab, onTabChange }) {
   };
 
   return (
-    <div className="border-b border-slate-200 dark:border-[#282E33] bg-[#F8FAFC] dark:bg-[#101214] px-8 pt-6 select-none transition-colors duration-150">
+    <div className="border-b border-slate-200 dark:border-[#282E33] bg-[#F8FAFC] dark:bg-[#101214] px-3.5 sm:px-8 pt-3.5 sm:pt-6 select-none transition-colors duration-150">
       {/* Breadcrumb */}
-      <div className="text-xs font-medium text-slate-500 dark:text-[#9FADBC] mb-2 flex items-center gap-1.5">
+      <div className="text-xs font-medium text-slate-500 dark:text-[#9FADBC] mb-1.5 sm:mb-2 flex items-center gap-1.5 truncate">
         <span>Spaces</span>
         <span className="text-slate-400 dark:text-[#738496]">/</span>
-        <span className="text-slate-900 dark:text-[#DEE4EA] font-semibold">{workspaceName}</span>
+        <span className="text-slate-900 dark:text-[#DEE4EA] font-semibold truncate">{workspaceName}</span>
       </div>
 
       {/* Title & Action Tools */}
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
+      <div className="flex items-center justify-between gap-2 sm:gap-4">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           {/* Space Icon with Workspace Initial & Color */}
           <div
             className="h-7 w-7 rounded-md flex items-center justify-center text-white text-xs font-bold shrink-0 shadow-2xs"
@@ -142,7 +142,7 @@ export function SpaceHeader({ activeTab, onTabChange }) {
             {currentWorkspace?.initial || 'W'}
           </div>
 
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-[#DEE4EA]">
+          <h1 className="text-lg sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-[#DEE4EA] truncate">
             {workspaceName}
           </h1>
 
@@ -264,7 +264,7 @@ export function SpaceHeader({ activeTab, onTabChange }) {
       </div>
 
       {/* Tabs navigation row */}
-      <div className="mt-4 flex items-center gap-6 text-sm font-medium">
+      <div className="mt-3 sm:mt-4 flex items-center gap-4 sm:gap-6 text-xs sm:text-sm font-medium overflow-x-auto no-scrollbar pb-1 whitespace-nowrap scroll-smooth">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -273,13 +273,13 @@ export function SpaceHeader({ activeTab, onTabChange }) {
             <button
               key={tab.id}
               onClick={() => onTabChange(tab.id)}
-              className={`relative flex items-center gap-2 pb-2.5 transition cursor-pointer select-none ${
+              className={`relative flex items-center gap-1.5 sm:gap-2 pb-2.5 transition cursor-pointer select-none shrink-0 ${
                 isActive
                   ? 'text-[#0C66E4] dark:text-[#579DFF] font-semibold'
                   : 'text-slate-500 hover:text-slate-900 dark:text-[#9FADBC] dark:hover:text-[#DEE4EA]'
               }`}
             >
-              <Icon className="h-4 w-4" />
+              <Icon className="h-4 w-4 shrink-0" />
               <span>{tab.label}</span>
               {isActive && (
                 <motion.div

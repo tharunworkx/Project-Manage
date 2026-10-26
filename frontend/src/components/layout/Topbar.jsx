@@ -83,9 +83,9 @@ export function Topbar() {
 
   return (
     <>
-      <header className="flex h-14 items-center justify-between border-b border-slate-200 dark:border-[#282E33] bg-white dark:bg-[#1D2125] px-4 select-none text-slate-800 dark:text-[#DEE4EA] z-40 transition-colors duration-150">
+      <header className="flex h-14 items-center justify-between border-b border-slate-200 dark:border-[#282E33] bg-white dark:bg-[#1D2125] px-2.5 sm:px-4 select-none text-slate-800 dark:text-[#DEE4EA] z-40 transition-colors duration-150">
         {/* Left: Sidebar Toggle Icon & Taskora Logo */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           <button
             onClick={toggleDrawer}
             title={isDrawerOpen ? 'Collapse sidebar ( [ )' : 'Expand sidebar ( [ )'}
@@ -99,47 +99,48 @@ export function Topbar() {
           </button>
 
           {/* Taskora Logo */}
-          <Link to="/kanban" className="flex items-center gap-2.5 px-1 cursor-pointer">
+          <Link to="/kanban" className="flex items-center gap-2 px-1 cursor-pointer">
             <img
               src="/logo.png"
               alt="Taskora Logo"
               className="h-6.5 w-6.5 rounded-full object-cover shadow-xs ring-1 ring-blue-500/20"
             />
-            <span className="font-bold text-base tracking-tight text-slate-900 dark:text-[#DEE4EA]">
+            <span className="font-bold text-base tracking-tight text-slate-900 dark:text-[#DEE4EA] hidden sm:inline">
               Taskora
             </span>
           </Link>
         </div>
 
         {/* Center: Search & + Create button */}
-        <div className="flex items-center gap-3">
-          <div className="relative w-72 md:w-96">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500 dark:text-[#738496]" />
+        <div className="flex items-center gap-1.5 sm:gap-3 flex-1 max-w-[200px] xs:max-w-[260px] sm:max-w-md mx-2 justify-center sm:justify-start">
+          <div className="relative w-full max-w-[130px] xs:max-w-[180px] sm:max-w-none sm:w-72 md:w-80 lg:w-96">
+            <Search className="absolute left-2.5 sm:left-3 top-1/2 -translate-y-1/2 h-3.5 sm:h-4 w-3.5 sm:w-4 text-slate-500 dark:text-[#738496]" />
             <input
               type="text"
-              placeholder="Search"
+              placeholder="Search..."
               value={searchVal}
               onChange={(e) => setSearchVal(e.target.value)}
-              className="w-full h-9 rounded-md border border-black dark:border-white bg-slate-100 dark:bg-[#22272B] pl-9 pr-3 text-sm text-slate-900 dark:text-[#DEE4EA] placeholder-slate-400 dark:placeholder-[#738496] transition focus:border-black dark:focus:border-white focus:bg-white dark:focus:bg-[#1D2125] focus:outline-none"
+              className="w-full h-8 sm:h-9 rounded-md border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-[#22272B] pl-8 sm:pl-9 pr-2 text-xs sm:text-sm text-slate-900 dark:text-[#DEE4EA] placeholder-slate-400 dark:placeholder-[#738496] transition focus:border-[#0C66E4] dark:focus:border-[#579DFF] focus:bg-white dark:focus:bg-[#1D2125] focus:outline-none"
             />
           </div>
 
           <button
             onClick={() => setIsCreateOpen(true)}
-            className="flex h-9 items-center gap-1.5 rounded-md bg-[#0C66E4] hover:bg-[#0055CC] px-3.5 text-sm font-semibold text-white shadow-xs transition cursor-pointer"
+            className="flex h-8 sm:h-9 items-center justify-center gap-1 sm:gap-1.5 rounded-md bg-[#0C66E4] hover:bg-[#0055CC] px-2 sm:px-3.5 text-xs sm:text-sm font-semibold text-white shadow-xs transition cursor-pointer shrink-0"
+            title="Create task"
           >
             <Plus className="h-4 w-4 stroke-[2.5]" />
-            <span>Create</span>
+            <span className="hidden sm:inline">Create</span>
           </button>
         </div>
 
-        {/* Right: Fullscreen, Responsive Notifications, Help, Avatar */}
-        <div className="flex items-center gap-1.5">
+        {/* Right: Fullscreen, Responsive Notifications, Avatar */}
+        <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
           {/* Full Screen Button */}
           <button
             onClick={handleToggleFullscreen}
             title={isFullscreen ? 'Exit full screen' : 'Full screen'}
-            className="flex h-8.5 w-8.5 items-center justify-center rounded-md text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:text-[#9FADBC] dark:hover:bg-[#282E33] dark:hover:text-[#DEE4EA] transition cursor-pointer"
+            className="hidden sm:flex h-8.5 w-8.5 items-center justify-center rounded-md text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:text-[#9FADBC] dark:hover:bg-[#282E33] dark:hover:text-[#DEE4EA] transition cursor-pointer"
           >
             {isFullscreen ? <Minimize2 className="h-4.5 w-4.5" /> : <Maximize2 className="h-4.5 w-4.5" />}
           </button>
@@ -151,13 +152,13 @@ export function Topbar() {
               title="Notifications"
               aria-label="Open notifications"
               aria-expanded={isNotifOpen}
-              className={`relative flex h-8.5 w-8.5 items-center justify-center rounded-md transition cursor-pointer focus:outline-none ${
+              className={`relative flex h-8 sm:h-8.5 w-8 sm:w-8.5 items-center justify-center rounded-md transition cursor-pointer focus:outline-none ${
                 isNotifOpen
                   ? 'bg-blue-50 dark:bg-[#1C2B41] text-[#0C66E4] dark:text-[#579DFF]'
                   : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:text-[#9FADBC] dark:hover:bg-[#282E33] dark:hover:text-[#DEE4EA]'
               }`}
             >
-              <Bell className="h-4.5 w-4.5" />
+              <Bell className="h-4 sm:h-4.5 w-4 sm:w-4.5" />
               {unreadCount > 0 && (
                 <span className="absolute top-1 right-1 flex h-2 w-2 rounded-full bg-[#0C66E4] ring-2 ring-white dark:ring-[#1D2125]" />
               )}
@@ -170,7 +171,7 @@ export function Topbar() {
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95, y: -4 }}
                   transition={{ type: 'spring', stiffness: 450, damping: 28 }}
-                  className="absolute right-0 top-full mt-2 w-80 rounded-2xl border border-slate-200 dark:border-[#282E33] bg-white dark:bg-[#161A1D] p-3 text-slate-900 dark:text-[#DEE4EA] shadow-2xl backdrop-blur-md select-none z-50"
+                  className="fixed sm:absolute right-2 sm:right-0 top-14 sm:top-full mt-1 sm:mt-2 w-[calc(100vw-1rem)] max-w-xs sm:w-80 rounded-2xl border border-slate-200 dark:border-[#282E33] bg-white dark:bg-[#161A1D] p-3 text-slate-900 dark:text-[#DEE4EA] shadow-2xl backdrop-blur-md select-none z-50"
                 >
                   {/* Notifications Header */}
                   <div className="flex items-center justify-between pb-2.5 mb-2 border-b border-slate-100 dark:border-[#282E33]">

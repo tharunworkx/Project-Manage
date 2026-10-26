@@ -36,7 +36,7 @@ import { ROLES } from '../../lib/constants';
 import { CreateWorkspaceModal } from '../workspace/CreateWorkspaceModal';
 
 export function AppSidebar6() {
-  const { isOpen } = useSidebar();
+  const { isOpen, close } = useSidebar();
   const { user, role, isAdmin, isProjectManager, isTeamMember } = useAuthContext();
   const { workspaces, currentWorkspace, switchWorkspace } = useWorkspaceContext();
   const [hoveredId, setHoveredId] = useState(null);
@@ -88,58 +88,80 @@ export function AppSidebar6() {
   const filteredNav = navItems;
 
   return (
-    <div className="relative flex select-none shrink-0 z-30">
-      {/* Sidebar Panel */}
-      <aside
-        className={`flex flex-col border-r border-slate-200 dark:border-[#282E33] bg-white dark:bg-[#161A1D] text-slate-800 dark:text-[#DEE4EA] h-full transition-all duration-200 ease-in-out overflow-hidden ${
-          isOpen ? 'w-64 min-w-[256px]' : 'w-0 min-w-0 border-r-0'
-        }`}
-      >
-        <div className="flex flex-col h-full w-64 p-3.5">
-          {/* User Name Header & Active Role Indicator */}
-          <div className="pb-3 border-b border-slate-200 dark:border-[#282E33]/70 shrink-0 space-y-2">
-            <div className="flex items-center gap-2.5 p-1 rounded-xl">
-              <div
-                className="h-8.5 w-8.5 rounded-full flex items-center justify-center font-bold text-xs text-white shrink-0 shadow-2xs"
-                style={{ backgroundColor: user?.color || '#7C3AED' }}
-              >
-                {user?.avatar || (user?.name ? user.name.split(' ').map((n) => n[0]).join('').substring(0, 2).toUpperCase() : 'TR')}
-              </div>
-              <div className="min-w-0 text-left flex-1">
-                <h3 className="text-sm font-bold tracking-tight text-slate-900 dark:text-[#DEE4EA] truncate leading-tight">
-                  {user?.name || 'Tharun R'}
-                </h3>
-                <div className="flex items-center gap-1.5 mt-0.5">
-                  {isAdmin && (
-                    <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-[#282E33] text-slate-700 dark:text-[#DEE4EA] border border-slate-200 dark:border-[#333C44]">
-                      <ShieldCheck className="h-3 w-3 stroke-[1.8]" />
-                      <span>Admin</span>
-                    </span>
-                  )}
-                  {isProjectManager && (
-                    <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-[#282E33] text-slate-700 dark:text-[#DEE4EA] border border-slate-200 dark:border-[#333C44]">
-                      <Briefcase className="h-3 w-3 stroke-[1.8]" />
-                      <span>Project Manager</span>
-                    </span>
-                  )}
-                  {isTeamMember && (
-                    <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-[#282E33] text-slate-700 dark:text-[#DEE4EA] border border-slate-200 dark:border-[#333C44]">
-                      <UserCheck className="h-3 w-3 stroke-[1.8]" />
-                      <span>Team Member</span>
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
+    <>
+      {/* Mobile Drawer Backdrop */}
+      {isOpen && (
+        <div
+          onClick={close}
+          className="fixed inset-0 bg-black/40 dark:bg-black/60 z-40 md:hidden backdrop-blur-xs transition-opacity"
+        />
+      )}
 
-            {/* Workspace Switcher & Creator */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
+      <div className="select-none shrink-0 z-50 md:z-30">
+        {/* Sidebar Panel - overlay drawer on mobile, in-flow column on desktop */}
+        <aside
+          className={`flex flex-col border-r border-slate-200 dark:border-[#282E33] bg-white dark:bg-[#161A1D] text-slate-800 dark:text-[#DEE4EA] h-full transition-all duration-200 ease-in-out overflow-hidden fixed inset-y-0 left-0 md:relative shadow-2xl md:shadow-none ${
+            isOpen
+              ? 'w-72 sm:w-64 min-w-[256px] translate-x-0'
+              : 'w-0 min-w-0 border-r-0 -translate-x-full md:translate-x-0 pointer-events-none md:pointer-events-auto'
+          }`}
+        >
+          <div className="flex flex-col h-full w-72 sm:w-64 p-3.5">
+            {/* User Name Header & Active Role Indicator */}
+            <div className="pb-3 border-b border-slate-200 dark:border-[#282E33]/70 shrink-0 space-y-2">
+              <div className="flex items-center justify-between p-1 rounded-xl">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div
+                    className="h-8.5 w-8.5 rounded-full flex items-center justify-center font-bold text-xs text-white shrink-0 shadow-2xs"
+                    style={{ backgroundColor: user?.color || '#7C3AED' }}
+                  >
+                    {user?.avatar || (user?.name ? user.name.split(' ').map((n) => n[0]).join('').substring(0, 2).toUpperCase() : 'TR')}
+                  </div>
+                  <div className="min-w-0 text-left flex-1">
+                    <h3 className="text-sm font-bold tracking-tight text-slate-900 dark:text-[#DEE4EA] truncate leading-tight">
+                      {user?.name || 'Tharun R'}
+                    </h3>
+                    <div className="flex items-center gap-1.5 mt-0.5">
+                      {isAdmin && (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-[#282E33] text-slate-700 dark:text-[#DEE4EA] border border-slate-200 dark:border-[#333C44]">
+                          <ShieldCheck className="h-3 w-3 stroke-[1.8]" />
+                          <span>Admin</span>
+                        </span>
+                      )}
+                      {isProjectManager && (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-[#282E33] text-slate-700 dark:text-[#DEE4EA] border border-slate-200 dark:border-[#333C44]">
+                          <Briefcase className="h-3 w-3 stroke-[1.8]" />
+                          <span>Project Manager</span>
+                        </span>
+                      )}
+                      {isTeamMember && (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-[#282E33] text-slate-700 dark:text-[#DEE4EA] border border-slate-200 dark:border-[#333C44]">
+                          <UserCheck className="h-3 w-3 stroke-[1.8]" />
+                          <span>Team Member</span>
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Mobile close button */}
                 <button
-                  type="button"
-                  title="Switch or create workspace"
-                  className="flex w-full items-center justify-between px-2.5 py-1.5 rounded-lg border border-slate-200/80 dark:border-[#333C44]/70 bg-slate-50 dark:bg-[#22272B] hover:bg-slate-100 dark:hover:bg-[#282E33] transition cursor-pointer text-left"
+                  onClick={close}
+                  className="md:hidden p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:text-[#9FADBC] dark:hover:text-[#DEE4EA] hover:bg-slate-100 dark:hover:bg-[#282E33] transition"
+                  title="Close sidebar"
                 >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+
+              {/* Workspace Switcher & Creator */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    type="button"
+                    title="Switch or create workspace"
+                    className="flex w-full items-center justify-between px-2.5 py-1.5 rounded-lg border border-slate-200/80 dark:border-[#333C44]/70 bg-slate-50 dark:bg-[#22272B] hover:bg-slate-100 dark:hover:bg-[#282E33] transition cursor-pointer text-left"
+                  >
                   <div className="flex items-center gap-2 min-w-0">
                     <div
                       className="h-4.5 w-4.5 rounded flex items-center justify-center text-white text-[9px] font-bold shrink-0"
@@ -215,6 +237,11 @@ export function AppSidebar6() {
                 <NavLink
                   key={item.label}
                   to={item.path}
+                  onClick={() => {
+                    if (window.innerWidth < 1024) {
+                      close();
+                    }
+                  }}
                   onMouseEnter={() => setHoveredId(item.path)}
                   className={({ isActive }) =>
                     `relative flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-colors duration-150 z-10 group ${
@@ -259,6 +286,7 @@ export function AppSidebar6() {
         onClose={() => setIsNewWorkspaceOpen(false)}
       />
     </div>
+    </>
   );
 }
 

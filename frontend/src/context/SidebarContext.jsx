@@ -3,8 +3,13 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 const SidebarContext = createContext(null);
 
 export function SidebarProvider({ children }) {
-  // Static in-dashboard sidebar state (open by default)
-  const [isOpen, setIsOpen] = useState(true);
+  // Static in-dashboard sidebar state (open on desktop, closed on mobile/tablet)
+  const [isOpen, setIsOpen] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth >= 1024;
+    }
+    return true;
+  });
   const [showIconRail, setShowIconRail] = useState(false);
 
   const toggle = () => setIsOpen((prev) => !prev);

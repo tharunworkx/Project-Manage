@@ -144,26 +144,26 @@ export default function UserManagement() {
   const memberCount = users.filter(u => u.role === 'team_member' && u.status === 'Active').length;
 
   return (
-    <div className="p-6 space-y-6 w-full">
+    <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 w-full">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <div className="flex items-center gap-2.5">
-            <div className="h-9 w-9 rounded-xl bg-slate-100 dark:bg-[#22272B] border border-slate-200 dark:border-[#333C44] flex items-center justify-center text-slate-700 dark:text-[#DEE4EA]">
+            <div className="h-9 w-9 rounded-xl bg-slate-100 dark:bg-[#22272B] border border-slate-200 dark:border-[#333C44] flex items-center justify-center text-slate-700 dark:text-[#DEE4EA] shrink-0">
               <ShieldCheck className="h-5 w-5 stroke-[1.8]" />
             </div>
-            <h1 className="text-2xl font-extrabold text-slate-900 dark:text-[#DEE4EA]">Employee Accounts & Roles</h1>
+            <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-[#DEE4EA]">Employee Accounts & Roles</h1>
           </div>
         </div>
 
-        <Button onClick={() => setIsInviteOpen(true)} className="gap-2 bg-[#0C66E4] hover:bg-[#0055CC] text-white shadow-xs">
+        <Button onClick={() => setIsInviteOpen(true)} className="gap-2 bg-[#0C66E4] hover:bg-[#0055CC] text-white shadow-xs self-start sm:self-auto">
           <Plus className="h-4 w-4" />
           <span>Add Employee Account</span>
         </Button>
       </div>
 
       {/* 3 Role Summary Cards with Normal Clean Icons */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
         {/* Card 1: Administrators */}
         <div
           onClick={() => setRoleFilter(roleFilter === 'admin' ? 'all' : 'admin')}

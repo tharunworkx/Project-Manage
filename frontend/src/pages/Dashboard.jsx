@@ -38,9 +38,9 @@ export default function Dashboard() {
     currentWorkspace?.id === 'ws-1' ? '8' : currentWorkspace?.id === 'ws-3' ? '4' : '6';
 
   return (
-    <div className="p-6 sm:px-8 space-y-6 w-full select-none transition-colors duration-150">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6 w-full select-none transition-colors duration-150">
       {/* Workspace Banner & Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-5 rounded-2xl border border-slate-200 dark:border-[#282E33] bg-white dark:bg-[#161A1D] shadow-xs">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-[#282E33] bg-white dark:bg-[#161A1D] shadow-xs">
         <div className="flex items-start sm:items-center gap-3.5">
           <div
             className="h-12 w-12 rounded-xl flex items-center justify-center text-white font-extrabold text-lg shrink-0 shadow-sm"

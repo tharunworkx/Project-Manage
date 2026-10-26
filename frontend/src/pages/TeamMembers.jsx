@@ -40,13 +40,13 @@ export default function TeamMembers() {
   };
 
   return (
-    <div className="w-full p-6 space-y-6">
+    <div className="w-full p-4 sm:p-6 space-y-4 sm:space-y-6">
       <div>
         <div className="flex items-center gap-2.5">
-          <div className="h-9 w-9 rounded-xl bg-[#0C66E4]/10 dark:bg-[#579DFF]/15 border border-[#0C66E4]/25 flex items-center justify-center text-[#0C66E4] dark:text-[#579DFF]">
+          <div className="h-9 w-9 rounded-xl bg-[#0C66E4]/10 dark:bg-[#579DFF]/15 border border-[#0C66E4]/25 flex items-center justify-center text-[#0C66E4] dark:text-[#579DFF] shrink-0">
             <Users2 className="h-5 w-5" />
           </div>
-          <h1 className="text-2xl font-extrabold text-slate-900 dark:text-[#DEE4EA]">Team Members</h1>
+          <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-[#DEE4EA]">Team Members</h1>
         </div>
       </div>
 
@@ -59,11 +59,11 @@ export default function TeamMembers() {
             placeholder="Search member name or email..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full h-9 pl-9 pr-3 rounded-xl border border-black dark:border-white bg-white dark:bg-[#161A1D] text-xs text-slate-900 dark:text-[#DEE4EA] focus:outline-none focus:border-black dark:focus:border-white transition-colors"
+            className="w-full h-9 pl-9 pr-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#161A1D] text-xs text-slate-900 dark:text-[#DEE4EA] focus:outline-none focus:border-[#0C66E4] dark:focus:border-[#579DFF] transition-colors"
           />
         </div>
 
-        <div className="flex gap-2 w-full sm:w-auto">
+        <div className="flex gap-2 w-full sm:w-auto overflow-x-auto no-scrollbar pb-1">
           {[
             { id: 'all', label: 'All Users' },
             { id: 'admin', label: 'Admin / Project Managers' },
@@ -72,7 +72,7 @@ export default function TeamMembers() {
             <button
               key={tab.id}
               onClick={() => setFilterRole(tab.id)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer shrink-0 whitespace-nowrap ${
                 filterRole === tab.id
                   ? 'bg-[#0C66E4] text-white shadow-xs'
                   : 'bg-white dark:bg-[#161A1D] border border-slate-200 dark:border-[#282E33] text-slate-600 dark:text-[#9FADBC] hover:bg-slate-50 dark:hover:bg-[#22272B]'

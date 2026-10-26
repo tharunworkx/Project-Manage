@@ -138,26 +138,26 @@ export default function Settings() {
   };
 
   return (
-    <div className="w-full p-6 md:p-8 pb-28 space-y-6 select-none transition-colors duration-150">
+    <div className="w-full p-4 sm:p-6 md:p-8 pb-28 space-y-4 sm:space-y-6 select-none transition-colors duration-150">
       {/* Page Title */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <div className="flex items-center gap-2.5">
             <div
-              className="h-8.5 w-8.5 rounded-lg flex items-center justify-center text-white text-sm font-bold shadow-xs"
+              className="h-8.5 w-8.5 rounded-lg flex items-center justify-center text-white text-sm font-bold shadow-xs shrink-0"
               style={{ backgroundColor: currentWorkspace?.color || '#0C66E4' }}
             >
               {currentWorkspace?.initial || 'W'}
             </div>
             <div>
-              <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-[#DEE4EA]">
+              <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-[#DEE4EA]">
                 Workspace Settings
               </h1>
             </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 self-start sm:self-auto">
           <Button
             variant="outline"
             size="sm"
@@ -173,12 +173,14 @@ export default function Settings() {
       <div className="flex w-full flex-col gap-6">
         <Tabs defaultValue="general">
           {/* Animated Tabs Bar */}
-          <TabsList className="mb-5">
-            <TabsTrigger value="general">General</TabsTrigger>
-            <TabsTrigger value="workflow">Workflow & Policies</TabsTrigger>
-            <TabsTrigger value="members">Members & Access</TabsTrigger>
-            <TabsTrigger value="danger">Danger Zone</TabsTrigger>
-          </TabsList>
+          <div className="overflow-x-auto no-scrollbar pb-1 max-w-full">
+            <TabsList className="mb-5 flex-nowrap shrink-0">
+              <TabsTrigger value="general">General</TabsTrigger>
+              <TabsTrigger value="workflow">Workflow & Policies</TabsTrigger>
+              <TabsTrigger value="members">Members & Access</TabsTrigger>
+              <TabsTrigger value="danger">Danger Zone</TabsTrigger>
+            </TabsList>
+          </div>
 
           <Card className="w-full border border-slate-200 dark:border-[#282E33] bg-white dark:bg-[#161A1D] shadow-xs">
             <TabsContents className="p-0">

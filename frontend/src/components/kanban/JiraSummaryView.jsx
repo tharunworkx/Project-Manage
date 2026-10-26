@@ -132,7 +132,7 @@ export function JiraSummaryView({
   let cumulativeOffset = 0;
 
   return (
-    <div className="w-full px-6 sm:px-8 py-5 space-y-5 select-none transition-colors duration-150">
+    <div className="w-full px-3.5 sm:px-8 py-3.5 sm:py-5 space-y-4 sm:space-y-5 select-none transition-colors duration-150">
       {/* 1. Four Metric Cards Row matching Screenshot */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Card 1: Completed */}

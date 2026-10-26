@@ -56,11 +56,11 @@ export function BoardToolbar({
   ];
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3 px-6 pt-3 pb-4 select-none">
+    <div className="flex flex-wrap items-center justify-between gap-2.5 sm:gap-3 px-3.5 sm:px-6 pt-2.5 sm:pt-3 pb-3 sm:pb-4 select-none">
       {/* Left controls */}
-      <div className="flex items-center gap-2.5 flex-wrap">
+      <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap flex-1 min-w-0">
         {/* Search board */}
-        <div className="relative w-56 sm:w-64">
+        <div className="relative flex-1 min-w-[130px] sm:w-64 sm:flex-initial">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500 dark:text-[#738496]" />
           <input
             type="text"
