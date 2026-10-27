@@ -310,17 +310,17 @@ ON CONFLICT (email) DO UPDATE SET full_name = EXCLUDED.full_name, role = EXCLUDE
 -- 8.3 Default Clients
 INSERT INTO public.clients (id, name, contact_person, company, email, phone, status)
 VALUES
-  ('c0000000-0000-0000-0000-000000000001', 'Partical Black', 'Partical Black Tech', 'Partical Black Tech', 'contact@particalblack.com', '+1 (555) 019-2834', 'active'),
-  ('c0000000-0000-0000-0000-000000000002', 'Acme Corporation', 'Acme Corporation', 'Acme Corporation', 'billing@acme.corp', '+1 (555) 987-6543', 'active'),
-  ('c0000000-0000-0000-0000-000000000003', 'Stripe Payments', 'Stripe Payments', 'Stripe Payments', 'enterprise@stripe.com', '+1 (555) 345-6789', 'active'),
-  ('c0000000-0000-0000-0000-000000000004', 'Global Dynamics', 'Global Dynamics Inc.', 'Global Dynamics Inc.', 'partners@globaldynamics.io', '+1 (555) 876-5432', 'active')
+  ('00000000-0000-0000-0002-000000000001', 'Partical Black', 'Partical Black Tech', 'Partical Black Tech', 'contact@particalblack.com', '+1 (555) 019-2834', 'active'),
+  ('00000000-0000-0000-0002-000000000002', 'Acme Corporation', 'Acme Corporation', 'Acme Corporation', 'billing@acme.corp', '+1 (555) 987-6543', 'active'),
+  ('00000000-0000-0000-0002-000000000003', 'Stripe Payments', 'Stripe Payments', 'Stripe Payments', 'enterprise@stripe.com', '+1 (555) 345-6789', 'active'),
+  ('00000000-0000-0000-0002-000000000004', 'Global Dynamics', 'Global Dynamics Inc.', 'Global Dynamics Inc.', 'partners@globaldynamics.io', '+1 (555) 876-5432', 'active')
 ON CONFLICT (id) DO NOTHING;
 
 -- 8.4 Default Projects
 INSERT INTO public.projects (id, workspace_id, project_manager_id, client, name, description, color, tag, status, budget, estimated_hours)
 VALUES
   (
-    'p0000000-0000-0000-0000-000000000001',
+    '00000000-0000-0000-0001-000000000001',
     '00000000-0000-0000-0000-000000000001',
     '00000000-0000-0000-0000-000000000002',
     'Partical Black',
@@ -333,7 +333,7 @@ VALUES
     320
   ),
   (
-    'p0000000-0000-0000-0000-000000000002',
+    '00000000-0000-0000-0001-000000000002',
     '00000000-0000-0000-0000-000000000001',
     '00000000-0000-0000-0000-000000000003',
     'Acme Corporation',
@@ -350,19 +350,19 @@ ON CONFLICT (id) DO NOTHING;
 -- 8.5 Assign Project Members
 INSERT INTO public.project_members (project_id, user_id, role_in_project)
 VALUES
-  ('p0000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000002', 'project_manager'),
-  ('p0000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000004', 'team_member'),
-  ('p0000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000005', 'team_member'),
-  ('p0000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000003', 'project_manager'),
-  ('p0000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000006', 'team_member'),
-  ('p0000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000007', 'team_member')
+  ('00000000-0000-0000-0001-000000000001', '00000000-0000-0000-0000-000000000002', 'project_manager'),
+  ('00000000-0000-0000-0001-000000000001', '00000000-0000-0000-0000-000000000004', 'team_member'),
+  ('00000000-0000-0000-0001-000000000001', '00000000-0000-0000-0000-000000000005', 'team_member'),
+  ('00000000-0000-0000-0001-000000000002', '00000000-0000-0000-0000-000000000003', 'project_manager'),
+  ('00000000-0000-0000-0001-000000000002', '00000000-0000-0000-0000-000000000006', 'team_member'),
+  ('00000000-0000-0000-0001-000000000002', '00000000-0000-0000-0000-000000000007', 'team_member')
 ON CONFLICT (project_id, user_id) DO NOTHING;
 
 -- 8.6 Default Tasks
 INSERT INTO public.tasks (id, project_id, title, description, status, priority, assignee_id, points, position)
 VALUES
-  ('t0000000-0000-0000-0000-000000000001', 'p0000000-0000-0000-0000-000000000001', 'Setup Database Connection & Realtime Replication', 'Configure Supabase tables, indexes, and realtime websocket triggers.', 'in_progress', 'urgent', '00000000-0000-0000-0000-000000000004', 3, 0),
-  ('t0000000-0000-0000-0000-000000000002', 'p0000000-0000-0000-0000-000000000001', 'Optimize API Latency & Query Caching', 'Implement query memoization and optimistic state updates.', 'todo', 'high', '00000000-0000-0000-0000-000000000005', 2, 1),
-  ('t0000000-0000-0000-0000-000000000003', 'p0000000-0000-0000-0000-000000000002', 'Figma Design System Components', 'Build master button, typography, and card tokens in Tailwind CSS.', 'in_review', 'medium', '00000000-0000-0000-0000-000000000006', 5, 0),
-  ('t0000000-0000-0000-0000-000000000004', 'p0000000-0000-0000-0000-000000000002', 'Dark Mode Harmonization', 'Ensure high contrast ratio for all badges, modals, and sidebar items.', 'done', 'low', '00000000-0000-0000-0000-000000000007', 1, 0)
+  ('00000000-0000-0000-0003-000000000001', '00000000-0000-0000-0001-000000000001', 'Setup Database Connection & Realtime Replication', 'Configure Supabase tables, indexes, and realtime websocket triggers.', 'in_progress', 'urgent', '00000000-0000-0000-0000-000000000004', 3, 0),
+  ('00000000-0000-0000-0003-000000000002', '00000000-0000-0000-0001-000000000001', 'Optimize API Latency & Query Caching', 'Implement query memoization and optimistic state updates.', 'todo', 'high', '00000000-0000-0000-0000-000000000005', 2, 1),
+  ('00000000-0000-0000-0003-000000000003', '00000000-0000-0000-0001-000000000002', 'Figma Design System Components', 'Build master button, typography, and card tokens in Tailwind CSS.', 'in_review', 'medium', '00000000-0000-0000-0000-000000000006', 5, 0),
+  ('00000000-0000-0000-0003-000000000004', '00000000-0000-0000-0001-000000000002', 'Dark Mode Harmonization', 'Ensure high contrast ratio for all badges, modals, and sidebar items.', 'done', 'low', '00000000-0000-0000-0000-000000000007', 1, 0)
 ON CONFLICT (id) DO NOTHING;
