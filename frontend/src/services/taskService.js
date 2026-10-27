@@ -391,12 +391,26 @@ function saveStoredTasks(tasks) {
   } catch {}
 }
 
+export const normalizeWorkspaceId = (wsId) => {
+  if (!wsId) return '00000000-0000-0000-0000-000000000020';
+  const clean = String(wsId).trim().toLowerCase();
+  if (clean === '4rged' || clean === 'ws-1' || clean === '00000000-0000-0000-0000-000000000020') {
+    return '00000000-0000-0000-0000-000000000020';
+  }
+  if (clean === 'acme-studio' || clean === 'ws-2' || clean === '00000000-0000-0000-0000-000000000010') {
+    return '00000000-0000-0000-0000-000000000010';
+  }
+  return wsId;
+};
+
 export const taskService = {
   async fetchTasks(projectId = null, workspaceId = null) {
+    const normWorkspaceId = workspaceId ? normalizeWorkspaceId(workspaceId) : null;
+
     if (!isSupabaseConfigured) {
       let all = getStoredTasks();
-      if (workspaceId) {
-        all = all.filter((t) => !t.workspace_id || t.workspace_id === workspaceId);
+      if (normWorkspaceId) {
+        all = all.filter((t) => !t.workspace_id || normalizeWorkspaceId(t.workspace_id) === normWorkspaceId);
       }
       if (projectId) {
         all = all.filter((t) => t.project_id === projectId);
@@ -416,9 +430,10 @@ export const taskService = {
         const assigneeUser = allUsers.find(
           (u) => u.id === t.assignee_id || (t.assignee_id && u.email === t.assignee_id)
         );
+        const taskWsId = normalizeWorkspaceId(t.workspace_id || t.projects?.workspace_id);
         return {
           ...t,
-          workspace_id: t.workspace_id || t.projects?.workspace_id,
+          workspace_id: taskWsId,
           project_name: t.projects?.name,
           created_by: reporterUser?.name || t.created_by || assigneeUser?.name || 'Admin',
           created_by_id: t.reporter_id || reporterUser?.id || t.created_by_id || null,
@@ -430,14 +445,26 @@ export const taskService = {
           key: t.key || `TASK-${(t.id || '').slice(0, 4) || idx + 1}`,
         };
       });
-      if (workspaceId) {
-        tasks = tasks.filter((t) => t.workspace_id === workspaceId);
+
+      // Two-way synchronization: If any local tasks exist that were not saved to Supabase (starts with 'task-'), sync them!
+      const localTasks = getStoredTasks();
+      const unsynced = localTasks.filter((lt) => lt && String(lt.id).startsWith('task-'));
+      for (const un of unsynced) {
+        if (!tasks.some((rt) => rt.title === un.title && rt.status === un.status)) {
+          this.createTask(un).then((created) => {
+            if (created) tasks.unshift(created);
+          }).catch(() => {});
+        }
+      }
+
+      if (normWorkspaceId) {
+        tasks = tasks.filter((t) => !t.workspace_id || normalizeWorkspaceId(t.workspace_id) === normWorkspaceId);
       }
       return tasks;
     } catch (err) {
       console.warn('Supabase fetch tasks error:', err);
       let all = getStoredTasks();
-      if (workspaceId) all = all.filter((t) => !t.workspace_id || t.workspace_id === workspaceId);
+      if (normWorkspaceId) all = all.filter((t) => !t.workspace_id || normalizeWorkspaceId(t.workspace_id) === normWorkspaceId);
       if (projectId) all = all.filter((t) => t.project_id === projectId);
       return all;
     }
@@ -445,17 +472,16 @@ export const taskService = {
 
   async createTask(taskData) {
     const isUuid = (val) => typeof val === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val);
+    const normWsId = normalizeWorkspaceId(taskData.workspace_id);
 
     const defaultPrefix =
-      taskData.workspace_id === 'ws-1'
-        ? 'SRS'
-        : taskData.workspace_id === 'ws-3'
-        ? 'MOB'
-        : 'ACME';
+      normWsId === '00000000-0000-0000-0000-000000000020'
+        ? 'ACME'
+        : 'SRS';
 
     const localNewTask = {
       id: 'task-' + Date.now(),
-      workspace_id: taskData.workspace_id || 'ws-1',
+      workspace_id: normWsId,
       key: `${defaultPrefix}-${Math.floor(Math.random() * 80) + 10}`,
       type: taskData.type || 'task',
       priority: taskData.priority || 'medium',
@@ -482,14 +508,39 @@ export const taskService = {
       try {
         let resolvedProjectId = isUuid(taskData.project_id) ? taskData.project_id : null;
         if (!resolvedProjectId) {
-          if (isUuid(taskData.workspace_id)) {
-            const { data: prjs } = await supabase.from('projects').select('id, name').eq('workspace_id', taskData.workspace_id).limit(1);
-            if (prjs && prjs.length > 0) resolvedProjectId = prjs[0].id;
-          }
+          const { data: prjs } = await supabase.from('projects').select('id, name').eq('workspace_id', normWsId).limit(1);
+          if (prjs && prjs.length > 0) resolvedProjectId = prjs[0].id;
+          
           if (!resolvedProjectId) {
             const { data: anyPrj } = await supabase.from('projects').select('id, name').limit(1);
             if (anyPrj && anyPrj.length > 0) resolvedProjectId = anyPrj[0].id;
           }
+        }
+
+        // Robust resolution of assignee_id and reporter_id
+        let resolvedAssigneeId = isUuid(taskData.assignee_id) ? taskData.assignee_id : null;
+        if (!resolvedAssigneeId && taskData.assignee) {
+          const found = userService.getUsers().find(
+            (u) =>
+              (u.id && isUuid(u.id) && u.id === taskData.assignee) ||
+              (u.name && u.name.toLowerCase() === taskData.assignee.toLowerCase()) ||
+              (u.avatar && u.avatar.toLowerCase() === taskData.assignee.toLowerCase()) ||
+              (u.email && u.email.toLowerCase() === taskData.assignee.toLowerCase())
+          );
+          if (found && isUuid(found.id)) resolvedAssigneeId = found.id;
+        }
+
+        let resolvedReporterId = isUuid(taskData.reporter_id) ? taskData.reporter_id : (isUuid(taskData.created_by_id) ? taskData.created_by_id : null);
+        if (!resolvedReporterId && (taskData.reporter || taskData.created_by || taskData.created_by_email)) {
+          const term = (taskData.created_by_email || taskData.reporter || taskData.created_by || '').toLowerCase();
+          const found = userService.getUsers().find(
+            (u) =>
+              (u.id && isUuid(u.id) && u.id === term) ||
+              (u.email && u.email.toLowerCase() === term) ||
+              (u.name && u.name.toLowerCase() === term) ||
+              (u.avatar && u.avatar.toLowerCase() === term)
+          );
+          if (found && isUuid(found.id)) resolvedReporterId = found.id;
         }
 
         const insertPayload = {
@@ -500,8 +551,8 @@ export const taskService = {
           project_id: resolvedProjectId,
           due_date: taskData.due_date ? new Date(taskData.due_date).toISOString() : null,
           start_date: taskData.start_date ? new Date(taskData.start_date).toISOString() : null,
-          assignee_id: isUuid(taskData.assignee_id) ? taskData.assignee_id : null,
-          reporter_id: isUuid(taskData.reporter_id) ? taskData.reporter_id : (isUuid(taskData.created_by_id) ? taskData.created_by_id : null),
+          assignee_id: resolvedAssigneeId,
+          reporter_id: resolvedReporterId,
         };
 
         const { data, error } = await supabase
