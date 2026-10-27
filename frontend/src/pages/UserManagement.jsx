@@ -64,9 +64,31 @@ export default function UserManagement() {
   const [userToDelete, setUserToDelete] = useState(null);
 
   React.useEffect(() => {
-    userService.fetchUsersFromRemote().then((loaded) => {
-      if (Array.isArray(loaded)) setUsers(loaded);
-    });
+    const refresh = () => {
+      userService.fetchUsersFromRemote().then((loaded) => {
+        if (Array.isArray(loaded)) setUsers(loaded);
+      });
+    };
+
+    refresh();
+
+    window.addEventListener('taskflow_users_updated', refresh);
+    window.addEventListener('storage', refresh);
+
+    let channel = null;
+    if (isSupabaseConfigured) {
+      channel = supabase
+        .channel('realtime_user_management')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, refresh)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'users' }, refresh)
+        .subscribe();
+    }
+
+    return () => {
+      window.removeEventListener('taskflow_users_updated', refresh);
+      window.removeEventListener('storage', refresh);
+      if (channel) supabase.removeChannel(channel);
+    };
   }, []);
 
   const handleRoleChange = (userId, newRole) => {
@@ -111,7 +133,7 @@ export default function UserManagement() {
   const confirmDeleteUser = async () => {
     if (!userToDelete) return;
     const deletedName = userToDelete.name;
-    userService.deleteUser(userToDelete.id);
+    await userService.deleteUser(userToDelete);
     setUsers(userService.getUsers());
     activityService.logActivity('all', {
       user: user?.name || 'Admin',

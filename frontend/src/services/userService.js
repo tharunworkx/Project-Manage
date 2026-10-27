@@ -468,15 +468,40 @@ export const userService = {
     });
   },
 
-  deleteUser(userId) {
+  async deleteUser(userOrId) {
+    let targetId = typeof userOrId === 'object' ? userOrId?.id : userOrId;
+    let targetEmail = typeof userOrId === 'object' ? userOrId?.email : null;
+
+    if (!targetEmail && targetId) {
+      const found = this.findUserById(targetId);
+      if (found) targetEmail = found.email;
+    }
+
+    const cleanEmail = targetEmail?.trim()?.toLowerCase();
     const users = this.getUsers();
-    const updated = users.filter((u) => u.id !== userId);
+    const updated = users.filter((u) => {
+      if (targetId && u.id === targetId) return false;
+      if (cleanEmail && u.email && u.email.toLowerCase() === cleanEmail) return false;
+      return true;
+    });
     this.saveUsers(updated);
+
     if (isSupabaseConfigured) {
-      Promise.allSettled([
-        supabase.from('profiles').delete().eq('id', userId),
-        supabase.from('users').delete().eq('id', userId),
-      ]).catch(() => {});
+      try {
+        const deleteOps = [];
+        if (targetId) {
+          deleteOps.push(supabase.from('project_members').delete().eq('user_id', targetId));
+          deleteOps.push(supabase.from('profiles').delete().eq('id', targetId));
+          deleteOps.push(supabase.from('users').delete().eq('id', targetId));
+        }
+        if (cleanEmail) {
+          deleteOps.push(supabase.from('profiles').delete().eq('email', cleanEmail));
+          deleteOps.push(supabase.from('users').delete().eq('email', cleanEmail));
+        }
+        await Promise.allSettled(deleteOps);
+      } catch (err) {
+        console.warn('Error deleting user from Supabase:', err);
+      }
     }
     return true;
   },

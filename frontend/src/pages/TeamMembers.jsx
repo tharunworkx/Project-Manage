@@ -1,33 +1,126 @@
-import React, { useState } from 'react';
-import { Users2, Search, Mail, ShieldCheck, UserCheck } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Users2, Search, Mail, ShieldCheck, UserCheck, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import { userService } from '../services/userService';
+import { taskService } from '../services/taskService';
+import { supabase, isSupabaseConfigured } from '../lib/supabase';
+import { useAuthContext } from '../context/AuthContext';
+import { ConfirmDialog } from '../components/common/ConfirmDialog';
 import { toast } from 'sonner';
 
-const MEMBERS = [
-  { id: '1', name: 'Tharun R', email: 'tharun.workx@gmail.com', role: 'admin', activeTasks: 5, avatar: 'TR', color: '#7C3AED' },
-  { id: '2', name: 'Alex Johnson', email: 'alex.j@company.com', role: 'admin', activeTasks: 8, avatar: 'AJ', color: '#0C66E4' },
-  { id: '3', name: 'Maria Garcia', email: 'maria.g@company.com', role: 'team_member', activeTasks: 4, avatar: 'MG', color: '#579DFF' },
-  { id: '4', name: 'David Chen', email: 'david.c@company.com', role: 'team_member', activeTasks: 6, avatar: 'DC', color: '#4BCE97' },
-  { id: '5', name: 'Sophie Taylor', email: 'sophie.t@company.com', role: 'team_member', activeTasks: 7, avatar: 'ST', color: '#BA75FF' },
-  { id: '6', name: 'Liam Wilson', email: 'liam.w@company.com', role: 'team_member', activeTasks: 2, avatar: 'LW', color: '#F5CD47' },
-];
-
 export default function TeamMembers() {
+  const { isAdmin } = useAuthContext();
+  const [users, setUsers] = useState(() => userService.getUsers());
+  const [tasks, setTasks] = useState([]);
   const [search, setSearch] = useState('');
   const [filterRole, setFilterRole] = useState('all');
+  const [memberToDelete, setMemberToDelete] = useState(null);
 
-  const filtered = MEMBERS.filter(m => {
-    const matchesSearch = m.name.toLowerCase().includes(search.toLowerCase()) || m.email.toLowerCase().includes(search.toLowerCase());
-    const matchesRole = filterRole === 'all' || m.role === filterRole;
+  // Sync users & tasks with remote database and listen to realtime updates
+  useEffect(() => {
+    let isMounted = true;
+
+    const refreshData = async () => {
+      try {
+        const [remoteUsers, remoteTasks] = await Promise.all([
+          userService.fetchUsersFromRemote(),
+          taskService.fetchTasks().catch(() => []),
+        ]);
+        if (isMounted) {
+          if (Array.isArray(remoteUsers)) setUsers(remoteUsers);
+          if (Array.isArray(remoteTasks)) setTasks(remoteTasks);
+        }
+      } catch (err) {
+        console.warn('Error loading team members data:', err);
+      }
+    };
+
+    refreshData();
+
+    const handleLocalUpdate = () => {
+      setUsers(userService.getUsers());
+    };
+
+    window.addEventListener('taskflow_users_updated', handleLocalUpdate);
+    window.addEventListener('storage', handleLocalUpdate);
+
+    let channel = null;
+    if (isSupabaseConfigured) {
+      channel = supabase
+        .channel('realtime_team_members_feed')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, refreshData)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'users' }, refreshData)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks' }, refreshData)
+        .subscribe();
+    }
+
+    return () => {
+      isMounted = false;
+      window.removeEventListener('taskflow_users_updated', handleLocalUpdate);
+      window.removeEventListener('storage', handleLocalUpdate);
+      if (channel) supabase.removeChannel(channel);
+    };
+  }, []);
+
+  const getActiveTasksCount = (member) => {
+    if (!Array.isArray(tasks) || !member) return 0;
+    const cleanEmail = member.email?.toLowerCase().trim();
+    const cleanName = member.name?.toLowerCase().trim();
+    const memberId = member.id;
+
+    return tasks.filter((t) => {
+      if (t.status === 'done' || t.status === 'cancelled') return false;
+      if (t.assignee_id && t.assignee_id === memberId) return true;
+      if (t.assignee && typeof t.assignee === 'object' && t.assignee.email === cleanEmail) return true;
+      if (typeof t.assignee === 'string' && (t.assignee.toLowerCase() === cleanEmail || t.assignee.toLowerCase() === cleanName)) return true;
+      return false;
+    }).length;
+  };
+
+  const handleDeleteMember = async () => {
+    if (!memberToDelete) return;
+    const targetName = memberToDelete.name;
+    try {
+      await userService.deleteUser(memberToDelete);
+      setUsers(userService.getUsers());
+      toast.success(`Member "${targetName}" deleted successfully`);
+    } catch (err) {
+      toast.error('Failed to delete member from database');
+    } finally {
+      setMemberToDelete(null);
+    }
+  };
+
+  const filtered = users.filter((m) => {
+    const cleanSearch = search.toLowerCase();
+    const matchesSearch =
+      (m.name && m.name.toLowerCase().includes(cleanSearch)) ||
+      (m.email && m.email.toLowerCase().includes(cleanSearch));
+    const role = (m.role || 'team_member').toLowerCase();
+    const matchesRole =
+      filterRole === 'all'
+        ? true
+        : filterRole === 'admin'
+        ? role === 'admin' || role === 'project_manager'
+        : role === filterRole;
     return matchesSearch && matchesRole;
   });
 
   const getRoleBadge = (role) => {
-    if (role === 'admin') {
+    const norm = (role || 'team_member').toLowerCase();
+    if (norm === 'admin') {
+      return (
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg text-[11px] font-semibold bg-[#7C3AED]/10 text-[#7C3AED] border border-[#7C3AED]/25">
+          <ShieldCheck className="h-3.5 w-3.5 stroke-[2.2]" />
+          <span>Administrator</span>
+        </span>
+      );
+    }
+    if (norm === 'project_manager') {
       return (
         <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg text-[11px] font-semibold bg-[#0C66E4]/10 dark:bg-[#579DFF]/15 text-[#0C66E4] dark:text-[#579DFF] border border-[#0C66E4]/25">
           <ShieldCheck className="h-3.5 w-3.5 stroke-[2.2]" />
-          <span>Admin / Project Manager</span>
+          <span>Project Manager</span>
         </span>
       );
     }
@@ -41,12 +134,17 @@ export default function TeamMembers() {
 
   return (
     <div className="w-full p-4 sm:p-6 space-y-4 sm:space-y-6">
-      <div>
+      <div className="flex items-center justify-between">
         <div className="flex items-center gap-2.5">
           <div className="h-9 w-9 rounded-xl bg-[#0C66E4]/10 dark:bg-[#579DFF]/15 border border-[#0C66E4]/25 flex items-center justify-center text-[#0C66E4] dark:text-[#579DFF] shrink-0">
             <Users2 className="h-5 w-5" />
           </div>
-          <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-[#DEE4EA]">Team Members</h1>
+          <div>
+            <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-[#DEE4EA]">Team Members</h1>
+            <p className="text-xs text-slate-500 dark:text-[#9FADBC]">
+              Live synchronized team directory ({filtered.length} total)
+            </p>
+          </div>
         </div>
       </div>
 
@@ -66,7 +164,7 @@ export default function TeamMembers() {
         <div className="flex gap-2 w-full sm:w-auto overflow-x-auto no-scrollbar pb-1">
           {[
             { id: 'all', label: 'All Users' },
-            { id: 'admin', label: 'Admin / Project Managers' },
+            { id: 'admin', label: 'Admins & Managers' },
             { id: 'team_member', label: 'Team Members' },
           ].map((tab) => (
             <button
@@ -86,45 +184,72 @@ export default function TeamMembers() {
 
       {/* Grid of Team Members */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filtered.map((member) => (
-          <div
-            key={member.id}
-            className="rounded-2xl border border-slate-200 dark:border-[#282E33] bg-white dark:bg-[#161A1D] p-5 space-y-4 hover:shadow-md transition-shadow"
-          >
-            <div className="flex items-start justify-between">
-              <div className="flex items-center gap-3">
-                <div
-                  className="h-11 w-11 rounded-full text-white font-bold text-sm flex items-center justify-center shadow-xs"
-                  style={{ backgroundColor: member.color }}
-                >
-                  {member.avatar}
-                </div>
-                <div>
-                  <h3 className="font-semibold text-sm text-slate-900 dark:text-[#DEE4EA] leading-tight">{member.name}</h3>
-                  <span className="text-xs text-slate-500 dark:text-[#9FADBC]">{member.email}</span>
-                </div>
-              </div>
-            </div>
+        {filtered.map((member) => {
+          const taskCount = getActiveTasksCount(member);
+          const isMe = member.email?.toLowerCase().includes('tharun');
 
-            <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-[#282E33]/60 text-xs">
-              <div>{getRoleBadge(member.role)}</div>
-              <div className="text-slate-500 dark:text-[#738496]">
-                <strong className="text-slate-900 dark:text-[#DEE4EA]">{member.activeTasks}</strong> tasks
-              </div>
-            </div>
-
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => window.open(`mailto:${member.email}`)}
-              className="w-full text-xs h-8"
+          return (
+            <div
+              key={member.id || member.email}
+              className="rounded-2xl border border-slate-200 dark:border-[#282E33] bg-white dark:bg-[#161A1D] p-5 space-y-4 hover:shadow-md transition-shadow relative group"
             >
-              <Mail className="h-3.5 w-3.5 mr-1.5" />
-              Message
-            </Button>
-          </div>
-        ))}
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-3">
+                  <div
+                    className="h-11 w-11 rounded-full text-white font-bold text-sm flex items-center justify-center shadow-xs shrink-0"
+                    style={{ backgroundColor: member.color || '#10B981' }}
+                  >
+                    {member.avatar || (member.name ? member.name.substring(0, 2).toUpperCase() : 'U')}
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-sm text-slate-900 dark:text-[#DEE4EA] leading-tight">
+                      {member.name}
+                    </h3>
+                    <span className="text-xs text-slate-500 dark:text-[#9FADBC]">{member.email}</span>
+                  </div>
+                </div>
+
+                {isAdmin && !isMe && (
+                  <button
+                    onClick={() => setMemberToDelete(member)}
+                    className="text-slate-400 hover:text-red-500 dark:hover:text-red-400 p-1 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                    title="Delete member"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+
+              <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-[#282E33]/60 text-xs">
+                <div>{getRoleBadge(member.role)}</div>
+                <div className="text-slate-500 dark:text-[#738496]">
+                  <strong className="text-slate-900 dark:text-[#DEE4EA]">{taskCount}</strong> active tasks
+                </div>
+              </div>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => window.open(`mailto:${member.email}`)}
+                className="w-full text-xs h-8"
+              >
+                <Mail className="h-3.5 w-3.5 mr-1.5" />
+                Message
+              </Button>
+            </div>
+          );
+        })}
       </div>
+
+      <ConfirmDialog
+        isOpen={Boolean(memberToDelete)}
+        onClose={() => setMemberToDelete(null)}
+        onConfirm={handleDeleteMember}
+        title="Delete Team Member"
+        description={`Are you sure you want to permanently delete "${memberToDelete?.name}" (${memberToDelete?.email})? This action will remove them from Supabase database.`}
+        confirmText="Delete Member"
+        variant="danger"
+      />
     </div>
   );
 }
