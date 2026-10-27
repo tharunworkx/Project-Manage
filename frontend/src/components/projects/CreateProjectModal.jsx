@@ -94,6 +94,11 @@ export function CreateProjectModal({ isOpen, onClose, onCreate }) {
   // Clients state with real-time sync
   const [clients, setClients] = useState(() => clientService.getClients());
   useEffect(() => {
+    clientService.fetchClientsFromRemote().then((remote) => {
+      if (Array.isArray(remote) && remote.length > 0) {
+        setClients(remote);
+      }
+    });
     const handleUpdate = () => setClients(clientService.getClients());
     window.addEventListener('taskflow_clients_updated', handleUpdate);
     return () => window.removeEventListener('taskflow_clients_updated', handleUpdate);
@@ -382,7 +387,7 @@ export function CreateProjectModal({ isOpen, onClose, onCreate }) {
                     className="w-full h-9.5 flex items-center justify-between rounded-lg border border-slate-200 dark:border-[#333C44] bg-white dark:bg-[#22272B] px-3.5 text-xs text-slate-900 dark:text-[#DEE4EA] hover:border-slate-300 dark:hover:border-slate-500 focus:outline-none focus:border-[#2563EB] dark:focus:border-[#579DFF] transition cursor-pointer text-left shadow-2xs"
                   >
                     <span className="truncate">
-                      {clients.find((c) => c.name === client)?.company || client || 'Select Client'}
+                      {client || 'Select Client'}
                     </span>
                     <ChevronDown className="h-4 w-4 text-slate-400 shrink-0 ml-1.5" />
                   </button>
@@ -401,8 +406,17 @@ export function CreateProjectModal({ isOpen, onClose, onCreate }) {
                           : 'text-slate-700 dark:text-[#DEE4EA] hover:bg-slate-100 dark:hover:bg-[#22272B]'
                       }`}
                     >
-                      <span>{c.company || c.name}</span>
-                      {client === c.name && <Check className="h-3.5 w-3.5 shrink-0" />}
+                      <div className="flex flex-col min-w-0 pr-2">
+                        <span className="font-semibold text-slate-900 dark:text-[#DEE4EA] truncate">
+                          {c.name}
+                        </span>
+                        {c.contact_person && c.contact_person !== c.name && (
+                          <span className="text-[10px] text-slate-500 dark:text-[#9FADBC] truncate">
+                            Contact: {c.contact_person}
+                          </span>
+                        )}
+                      </div>
+                      {client === c.name && <Check className="h-3.5 w-3.5 shrink-0 ml-auto" />}
                     </DropdownMenuItem>
                   ))}
                 </DropdownMenuContent>

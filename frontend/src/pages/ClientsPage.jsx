@@ -60,6 +60,7 @@ export default function ClientsPage() {
   const [fullEditModalClient, setFullEditModalClient] = useState(null);
   const [fullEditForm, setFullEditForm] = useState({
     name: '',
+    contact_person: '',
     company: '',
     email: '',
     phone: '',
@@ -71,30 +72,35 @@ export default function ClientsPage() {
   };
 
   useEffect(() => {
+    clientService.fetchClientsFromRemote().then((remote) => {
+      if (Array.isArray(remote) && remote.length > 0) {
+        setClients(remote);
+      }
+    });
     const handleUpdate = () => refreshClients();
     window.addEventListener('taskflow_clients_updated', handleUpdate);
     return () => window.removeEventListener('taskflow_clients_updated', handleUpdate);
   }, []);
 
-  const handleToggleStatus = (clientId) => {
+  const handleToggleStatus = async (clientId) => {
     const target = clients.find((c) => c.id === clientId);
     if (!target) return;
     const nextStatus = target.status === 'Active' ? 'Deactivated' : 'Active';
-    clientService.updateClient(clientId, { status: nextStatus });
+    await clientService.updateClient(clientId, { status: nextStatus });
     refreshClients();
     toast.success(`Client "${target.name}" is now ${nextStatus}`);
   };
 
-  const handleSaveInlineEdit = (clientId) => {
+  const handleSaveInlineEdit = async (clientId) => {
     if (!editName.trim()) return;
-    clientService.updateClient(clientId, { name: editName.trim() });
+    await clientService.updateClient(clientId, { name: editName.trim() });
     refreshClients();
     setEditingClientId(null);
     setEditName('');
     toast.success('Client name updated');
   };
 
-  const handleCreateClient = (e) => {
+  const handleCreateClient = async (e) => {
     e.preventDefault();
     if (!newClientName.trim()) {
       toast.error('Client name is required');
@@ -102,8 +108,9 @@ export default function ClientsPage() {
     }
 
     try {
-      clientService.addClient({
+      await clientService.addClient({
         name: newClientName.trim(),
+        contact_person: newContactPerson.trim() || newClientName.trim(),
         company: newContactPerson.trim() || newClientName.trim(),
         email: newEmail.trim(),
         phone: newPhone.trim(),
@@ -125,22 +132,24 @@ export default function ClientsPage() {
     setFullEditModalClient(client);
     setFullEditForm({
       name: client.name || '',
-      company: client.company || client.name || '',
+      contact_person: client.contact_person || client.company || client.name || '',
+      company: client.contact_person || client.company || client.name || '',
       email: client.email || '',
       phone: client.phone || '',
       status: client.status || 'Active',
     });
   };
 
-  const handleSaveFullEdit = (e) => {
+  const handleSaveFullEdit = async (e) => {
     e.preventDefault();
     if (!fullEditForm.name.trim()) {
       toast.error('Client name is required');
       return;
     }
-    clientService.updateClient(fullEditModalClient.id, {
+    await clientService.updateClient(fullEditModalClient.id, {
       name: fullEditForm.name.trim(),
-      company: fullEditForm.company.trim() || fullEditForm.name.trim(),
+      contact_person: (fullEditForm.contact_person || fullEditForm.company || fullEditForm.name).trim(),
+      company: (fullEditForm.contact_person || fullEditForm.company || fullEditForm.name).trim(),
       email: fullEditForm.email.trim(),
       phone: fullEditForm.phone.trim(),
       status: fullEditForm.status,
@@ -465,8 +474,8 @@ export default function ClientsPage() {
 
                   {/* Cell 2: Contact Person */}
                   <TableCell className="px-3.5 py-3 text-slate-700 dark:text-[#DEE4EA] font-medium min-w-0 overflow-hidden">
-                    <span className="truncate block" title={client.company || client.name}>
-                      {client.company || client.name}
+                    <span className="truncate block" title={client.contact_person || client.company || client.name}>
+                      {client.contact_person || client.company || client.name}
                     </span>
                   </TableCell>
 
@@ -625,8 +634,14 @@ export default function ClientsPage() {
                 </label>
                 <input
                   type="text"
-                  value={fullEditForm.company}
-                  onChange={(e) => setFullEditForm({ ...fullEditForm, company: e.target.value })}
+                  value={fullEditForm.contact_person || fullEditForm.company || ''}
+                  onChange={(e) =>
+                    setFullEditForm({
+                      ...fullEditForm,
+                      contact_person: e.target.value,
+                      company: e.target.value,
+                    })
+                  }
                   className="w-full h-9 rounded-lg border border-slate-200 bg-white dark:border-[#333C44] dark:bg-[#22272B] px-3 text-xs text-slate-900 dark:text-[#DEE4EA] focus:outline-none focus:border-[#0C66E4]"
                 />
               </div>
@@ -692,9 +707,9 @@ export default function ClientsPage() {
       <ConfirmDialog
         isOpen={!!clientToDelete}
         onClose={() => setClientToDelete(null)}
-        onConfirm={() => {
+        onConfirm={async () => {
           if (clientToDelete) {
-            clientService.deleteClient(clientToDelete.id);
+            await clientService.deleteClient(clientToDelete.id);
             refreshClients();
             toast.success(`Client "${clientToDelete.name}" deleted`);
           }
