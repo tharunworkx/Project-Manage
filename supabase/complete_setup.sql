@@ -228,141 +228,179 @@ ALTER PUBLICATION supabase_realtime ADD TABLE public.notifications;
 
 -- 8. Seed Default Essential Data
 
--- 8.1 Default Workspace
+-- 8.1 Workspaces
 INSERT INTO public.workspaces (id, name, slug, description, color)
 VALUES
-  ('00000000-0000-0000-0000-000000000001', 'Southern Rescue Services', 'southern-rescue', 'Main operational workspace', '#0C66E4')
-ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name;
+  ('00000000-0000-0000-0000-000000000020', '4rged', '4rged', 'Core product development workspace', '#F59E0B'),
+  ('00000000-0000-0000-0000-000000000010', 'Acme Product Studio', 'acme-studio', 'Main product engineering and SaaS dashboard', '#7C3AED')
+ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name, color = EXCLUDED.color;
 
--- 8.2 Default User Accounts & Matching Profiles
--- Primary Admin
+-- 8.2 Actual Employee User Accounts & Matching Profiles
+-- 1. Tharun R (Admin)
 INSERT INTO public.profiles (id, email, full_name, role, status, color)
 VALUES ('00000000-0000-0000-0000-000000000001', 'tharun@gmail.com', 'Tharun R', 'admin', 'active', '#7C3AED')
 ON CONFLICT (email) DO UPDATE SET full_name = EXCLUDED.full_name, role = EXCLUDED.role;
-
 INSERT INTO public.users (id, email, full_name, password_hash, employee_id, role, is_active, color)
 VALUES ('00000000-0000-0000-0000-000000000001', 'tharun@gmail.com', 'Tharun R', '12345678', 'EMP-001', 'ADMIN', true, '#7C3AED')
 ON CONFLICT (email) DO UPDATE SET full_name = EXCLUDED.full_name, role = EXCLUDED.role;
 
--- Admin Alias
+-- 2. Tharun R Alias (Admin)
 INSERT INTO public.profiles (id, email, full_name, role, status, color)
 VALUES ('00000000-0000-0000-0000-00000000001a', 'tharun.workx@gmail.com', 'Tharun R', 'admin', 'active', '#7C3AED')
 ON CONFLICT (email) DO UPDATE SET full_name = EXCLUDED.full_name, role = EXCLUDED.role;
-
 INSERT INTO public.users (id, email, full_name, password_hash, employee_id, role, is_active, color)
 VALUES ('00000000-0000-0000-0000-00000000001a', 'tharun.workx@gmail.com', 'Tharun R', '12345678', 'EMP-001A', 'ADMIN', true, '#7C3AED')
 ON CONFLICT (email) DO UPDATE SET full_name = EXCLUDED.full_name, role = EXCLUDED.role;
 
--- Project Manager 1
+-- 3. Samvel
 INSERT INTO public.profiles (id, email, full_name, role, status, color)
-VALUES ('00000000-0000-0000-0000-000000000002', 'alex.j@company.com', 'Alex Johnson', 'project_manager', 'active', '#0C66E4')
+VALUES ('00000000-0000-0000-0000-000000000003', 'samvel@gmail.com', 'Samvel', 'team_member', 'active', '#10B981')
 ON CONFLICT (email) DO UPDATE SET full_name = EXCLUDED.full_name, role = EXCLUDED.role;
-
 INSERT INTO public.users (id, email, full_name, password_hash, employee_id, role, is_active, color)
-VALUES ('00000000-0000-0000-0000-000000000002', 'alex.j@company.com', 'Alex Johnson', '12345678', 'EMP-002', 'PROJECT_MANAGER', true, '#0C66E4')
+VALUES ('00000000-0000-0000-0000-000000000003', 'samvel@gmail.com', 'Samvel', '12345678', 'EMP-003', 'TEAM_MEMBER', true, '#10B981')
 ON CONFLICT (email) DO UPDATE SET full_name = EXCLUDED.full_name, role = EXCLUDED.role;
 
--- Project Manager 2
+-- 4. Sham Alex
 INSERT INTO public.profiles (id, email, full_name, role, status, color)
-VALUES ('00000000-0000-0000-0000-000000000003', 'sarah.m@company.com', 'Sarah Miller', 'project_manager', 'active', '#0284C7')
+VALUES ('00000000-0000-0000-0000-000000000004', 'alex@gmail.com', 'Sham Alex', 'team_member', 'active', '#10B981')
 ON CONFLICT (email) DO UPDATE SET full_name = EXCLUDED.full_name, role = EXCLUDED.role;
-
 INSERT INTO public.users (id, email, full_name, password_hash, employee_id, role, is_active, color)
-VALUES ('00000000-0000-0000-0000-000000000003', 'sarah.m@company.com', 'Sarah Miller', '12345678', 'EMP-003', 'PROJECT_MANAGER', true, '#0284C7')
+VALUES ('00000000-0000-0000-0000-000000000004', 'alex@gmail.com', 'Sham Alex', '12345678', 'EMP-004', 'TEAM_MEMBER', true, '#10B981')
 ON CONFLICT (email) DO UPDATE SET full_name = EXCLUDED.full_name, role = EXCLUDED.role;
 
--- Team Member 1
+-- 5. Srinivasan
 INSERT INTO public.profiles (id, email, full_name, role, status, color)
-VALUES ('00000000-0000-0000-0000-000000000004', 'maria.g@company.com', 'Maria Garcia', 'team_member', 'active', '#10B981')
+VALUES ('00000000-0000-0000-0000-000000000005', 'srini@gmail.com', 'Srinivasan', 'team_member', 'active', '#10B981')
 ON CONFLICT (email) DO UPDATE SET full_name = EXCLUDED.full_name, role = EXCLUDED.role;
-
 INSERT INTO public.users (id, email, full_name, password_hash, employee_id, role, is_active, color)
-VALUES ('00000000-0000-0000-0000-000000000004', 'maria.g@company.com', 'Maria Garcia', '12345678', 'EMP-004', 'TEAM_MEMBER', true, '#10B981')
+VALUES ('00000000-0000-0000-0000-000000000005', 'srini@gmail.com', 'Srinivasan', '12345678', 'EMP-005', 'TEAM_MEMBER', true, '#10B981')
 ON CONFLICT (email) DO UPDATE SET full_name = EXCLUDED.full_name, role = EXCLUDED.role;
 
--- Team Member 2
+-- 6. Gokul
 INSERT INTO public.profiles (id, email, full_name, role, status, color)
-VALUES ('00000000-0000-0000-0000-000000000005', 'david.c@company.com', 'David Chen', 'team_member', 'active', '#059669')
+VALUES ('00000000-0000-0000-0000-000000000006', 'gokul@gmail.com', 'Gokul', 'team_member', 'active', '#10B981')
 ON CONFLICT (email) DO UPDATE SET full_name = EXCLUDED.full_name, role = EXCLUDED.role;
-
 INSERT INTO public.users (id, email, full_name, password_hash, employee_id, role, is_active, color)
-VALUES ('00000000-0000-0000-0000-000000000005', 'david.c@company.com', 'David Chen', '12345678', 'EMP-005', 'TEAM_MEMBER', true, '#059669')
+VALUES ('00000000-0000-0000-0000-000000000006', 'gokul@gmail.com', 'Gokul', '12345678', 'EMP-006', 'TEAM_MEMBER', true, '#10B981')
 ON CONFLICT (email) DO UPDATE SET full_name = EXCLUDED.full_name, role = EXCLUDED.role;
 
--- Team Member 3
+-- 7. Rabil
 INSERT INTO public.profiles (id, email, full_name, role, status, color)
-VALUES ('00000000-0000-0000-0000-000000000006', 'sophie.t@company.com', 'Sophie Taylor', 'team_member', 'active', '#64748B')
+VALUES ('00000000-0000-0000-0000-000000000007', 'rabil@gmail.com', 'Rabil', 'team_member', 'active', '#10B981')
 ON CONFLICT (email) DO UPDATE SET full_name = EXCLUDED.full_name, role = EXCLUDED.role;
-
 INSERT INTO public.users (id, email, full_name, password_hash, employee_id, role, is_active, color)
-VALUES ('00000000-0000-0000-0000-000000000006', 'sophie.t@company.com', 'Sophie Taylor', '12345678', 'EMP-006', 'TEAM_MEMBER', true, '#64748B')
+VALUES ('00000000-0000-0000-0000-000000000007', 'rabil@gmail.com', 'Rabil', '12345678', 'EMP-007', 'TEAM_MEMBER', true, '#10B981')
 ON CONFLICT (email) DO UPDATE SET full_name = EXCLUDED.full_name, role = EXCLUDED.role;
 
--- Team Member 4
+-- 8. Aadhi Rajini
 INSERT INTO public.profiles (id, email, full_name, role, status, color)
-VALUES ('00000000-0000-0000-0000-000000000007', 'liam.w@company.com', 'Liam Wilson', 'team_member', 'active', '#F59E0B')
+VALUES ('00000000-0000-0000-0000-000000000008', 'rajini@gmail.com', 'Aadhi Rajini', 'team_member', 'active', '#10B981')
 ON CONFLICT (email) DO UPDATE SET full_name = EXCLUDED.full_name, role = EXCLUDED.role;
-
 INSERT INTO public.users (id, email, full_name, password_hash, employee_id, role, is_active, color)
-VALUES ('00000000-0000-0000-0000-000000000007', 'liam.w@company.com', 'Liam Wilson', '12345678', 'EMP-007', 'TEAM_MEMBER', true, '#F59E0B')
+VALUES ('00000000-0000-0000-0000-000000000008', 'rajini@gmail.com', 'Aadhi Rajini', '12345678', 'EMP-008', 'TEAM_MEMBER', true, '#10B981')
 ON CONFLICT (email) DO UPDATE SET full_name = EXCLUDED.full_name, role = EXCLUDED.role;
 
--- 8.3 Default Clients
+-- 9. Adithya Chaubhe
+INSERT INTO public.profiles (id, email, full_name, role, status, color)
+VALUES ('00000000-0000-0000-0000-000000000009', 'aadhi@gmail.com', 'Adithya Chaubhe', 'team_member', 'active', '#10B981')
+ON CONFLICT (email) DO UPDATE SET full_name = EXCLUDED.full_name, role = EXCLUDED.role;
+INSERT INTO public.users (id, email, full_name, password_hash, employee_id, role, is_active, color)
+VALUES ('00000000-0000-0000-0000-000000000009', 'aadhi@gmail.com', 'Adithya Chaubhe', '12345678', 'EMP-009', 'TEAM_MEMBER', true, '#10B981')
+ON CONFLICT (email) DO UPDATE SET full_name = EXCLUDED.full_name, role = EXCLUDED.role;
+
+-- 10. Neel (Project Manager)
+INSERT INTO public.profiles (id, email, full_name, role, status, color)
+VALUES ('00000000-0000-0000-0000-000000000010', 'neel@gmail.com', 'Neel', 'project_manager', 'active', '#0C66E4')
+ON CONFLICT (email) DO UPDATE SET full_name = EXCLUDED.full_name, role = EXCLUDED.role;
+INSERT INTO public.users (id, email, full_name, password_hash, employee_id, role, is_active, color)
+VALUES ('00000000-0000-0000-0000-000000000010', 'neel@gmail.com', 'Neel', '12345678', 'EMP-010', 'PROJECT_MANAGER', true, '#0C66E4')
+ON CONFLICT (email) DO UPDATE SET full_name = EXCLUDED.full_name, role = EXCLUDED.role;
+
+-- 11. Dhanush
+INSERT INTO public.profiles (id, email, full_name, role, status, color)
+VALUES ('00000000-0000-0000-0000-000000000011', 'dhanush@gmail.com', 'Dhanush', 'team_member', 'active', '#10B981')
+ON CONFLICT (email) DO UPDATE SET full_name = EXCLUDED.full_name, role = EXCLUDED.role;
+INSERT INTO public.users (id, email, full_name, password_hash, employee_id, role, is_active, color)
+VALUES ('00000000-0000-0000-0000-000000000011', 'dhanush@gmail.com', 'Dhanush', '12345678', 'EMP-011', 'TEAM_MEMBER', true, '#10B981')
+ON CONFLICT (email) DO UPDATE SET full_name = EXCLUDED.full_name, role = EXCLUDED.role;
+
+-- 8.3 Clients
 INSERT INTO public.clients (id, name, contact_person, company, email, phone, status)
 VALUES
-  ('00000000-0000-0000-0002-000000000001', 'Partical Black', 'Partical Black Tech', 'Partical Black Tech', 'contact@particalblack.com', '+1 (555) 019-2834', 'active'),
-  ('00000000-0000-0000-0002-000000000002', 'Acme Corporation', 'Acme Corporation', 'Acme Corporation', 'billing@acme.corp', '+1 (555) 987-6543', 'active'),
-  ('00000000-0000-0000-0002-000000000003', 'Stripe Payments', 'Stripe Payments', 'Stripe Payments', 'enterprise@stripe.com', '+1 (555) 345-6789', 'active'),
-  ('00000000-0000-0000-0002-000000000004', 'Global Dynamics', 'Global Dynamics Inc.', 'Global Dynamics Inc.', 'partners@globaldynamics.io', '+1 (555) 876-5432', 'active')
+  ('00000000-0000-0000-0002-000000000001', 'Partical Black', 'Partical Black Tech', 'Partical Black Tech', 'contact@particalblack.com', '+1 (555) 019-2834', 'active')
 ON CONFLICT (id) DO NOTHING;
 
--- 8.4 Default Projects
-INSERT INTO public.projects (id, workspace_id, project_manager_id, client, name, description, color, tag, status, budget, estimated_hours)
+-- 8.4 Actual Company Projects
+INSERT INTO public.projects (id, workspace_id, project_manager_id, client, client_id, name, description, color, tag, status, budget, estimated_hours)
 VALUES
   (
     '00000000-0000-0000-0001-000000000001',
-    '00000000-0000-0000-0000-000000000001',
-    '00000000-0000-0000-0000-000000000002',
+    '00000000-0000-0000-0000-000000000020',
+    '00000000-0000-0000-0000-000000000010',
     'Partical Black',
-    'Cloud Architecture Migration',
-    'Enterprise multi-region migration and infrastructure modernization',
-    '#0C66E4',
-    'Engineering',
-    'in_progress',
-    85000,
-    320
+    '00000000-0000-0000-0002-000000000001',
+    'Inventory Management System',
+    'Build a Inventory Management System for the company Standard',
+    '#F59E0B',
+    'General',
+    'on_hold',
+    10000,
+    160
   ),
   (
     '00000000-0000-0000-0001-000000000002',
-    '00000000-0000-0000-0000-000000000001',
-    '00000000-0000-0000-0000-000000000003',
-    'Acme Corporation',
-    'Brand Identity & UI Kit',
-    'Design system overhaul with complete component library and Figma tokens',
-    '#7C3AED',
-    'Design',
-    'in_progress',
-    42000,
-    180
+    '00000000-0000-0000-0000-000000000020',
+    '00000000-0000-0000-0000-000000000010',
+    'Partical Black',
+    '00000000-0000-0000-0002-000000000001',
+    'HRO',
+    'Build a Hiring Recusation Onboarding system for the company Standard',
+    '#F59E0B',
+    'General',
+    'on_hold',
+    10000,
+    160
+  ),
+  (
+    '00000000-0000-0000-0001-000000000003',
+    '00000000-0000-0000-0000-000000000020',
+    '00000000-0000-0000-0000-000000000010',
+    'Partical Black',
+    '00000000-0000-0000-0002-000000000001',
+    'Chat Application',
+    'Chat Application , To communicate with clients',
+    '#F59E0B',
+    'General',
+    'on_hold',
+    10000,
+    160
+  ),
+  (
+    '00000000-0000-0000-0001-000000000004',
+    '00000000-0000-0000-0000-000000000020',
+    '00000000-0000-0000-0000-000000000010',
+    'Partical Black',
+    '00000000-0000-0000-0002-000000000001',
+    'PES',
+    'Build a Project Management System ,that should be in a companyn standard',
+    '#F59E0B',
+    'General',
+    'on_hold',
+    10000,
+    160
   )
 ON CONFLICT (id) DO NOTHING;
 
 -- 8.5 Assign Project Members
 INSERT INTO public.project_members (project_id, user_id, role_in_project)
 VALUES
-  ('00000000-0000-0000-0001-000000000001', '00000000-0000-0000-0000-000000000002', 'project_manager'),
-  ('00000000-0000-0000-0001-000000000001', '00000000-0000-0000-0000-000000000004', 'team_member'),
-  ('00000000-0000-0000-0001-000000000001', '00000000-0000-0000-0000-000000000005', 'team_member'),
-  ('00000000-0000-0000-0001-000000000002', '00000000-0000-0000-0000-000000000003', 'project_manager'),
-  ('00000000-0000-0000-0001-000000000002', '00000000-0000-0000-0000-000000000006', 'team_member'),
-  ('00000000-0000-0000-0001-000000000002', '00000000-0000-0000-0000-000000000007', 'team_member')
+  ('00000000-0000-0000-0001-000000000001', '00000000-0000-0000-0000-000000000007', 'team_member'),
+  ('00000000-0000-0000-0001-000000000002', '00000000-0000-0000-0000-000000000009', 'team_member'),
+  ('00000000-0000-0000-0001-000000000003', '00000000-0000-0000-0000-000000000004', 'team_member'),
+  ('00000000-0000-0000-0001-000000000004', '00000000-0000-0000-0000-000000000011', 'team_member'),
+  ('00000000-0000-0000-0001-000000000001', '00000000-0000-0000-0000-000000000010', 'project_manager'),
+  ('00000000-0000-0000-0001-000000000002', '00000000-0000-0000-0000-000000000010', 'project_manager'),
+  ('00000000-0000-0000-0001-000000000003', '00000000-0000-0000-0000-000000000010', 'project_manager'),
+  ('00000000-0000-0000-0001-000000000004', '00000000-0000-0000-0000-000000000010', 'project_manager')
 ON CONFLICT (project_id, user_id) DO NOTHING;
 
--- 8.6 Default Tasks
-INSERT INTO public.tasks (id, project_id, title, description, status, priority, assignee_id, points, position)
-VALUES
-  ('00000000-0000-0000-0003-000000000001', '00000000-0000-0000-0001-000000000001', 'Setup Database Connection & Realtime Replication', 'Configure Supabase tables, indexes, and realtime websocket triggers.', 'in_progress', 'urgent', '00000000-0000-0000-0000-000000000004', 3, 0),
-  ('00000000-0000-0000-0003-000000000002', '00000000-0000-0000-0001-000000000001', 'Optimize API Latency & Query Caching', 'Implement query memoization and optimistic state updates.', 'todo', 'high', '00000000-0000-0000-0000-000000000005', 2, 1),
-  ('00000000-0000-0000-0003-000000000003', '00000000-0000-0000-0001-000000000002', 'Figma Design System Components', 'Build master button, typography, and card tokens in Tailwind CSS.', 'in_review', 'medium', '00000000-0000-0000-0000-000000000006', 5, 0),
-  ('00000000-0000-0000-0003-000000000004', '00000000-0000-0000-0001-000000000002', 'Dark Mode Harmonization', 'Ensure high contrast ratio for all badges, modals, and sidebar items.', 'done', 'low', '00000000-0000-0000-0000-000000000007', 1, 0)
-ON CONFLICT (id) DO NOTHING;

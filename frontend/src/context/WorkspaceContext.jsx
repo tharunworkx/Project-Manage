@@ -8,46 +8,36 @@ const STORAGE_KEY_ACTIVE_WS = 'taskflow_active_workspace_id_v1';
 
 // Seeded UUIDs matching Supabase records
 export const SEED_WORKSPACE_IDS = {
+  WS_4RGED: '00000000-0000-0000-0000-000000000020',
+  WS_ACME: '00000000-0000-0000-0000-000000000010',
   WS1: '00000000-0000-0000-0000-000000000001',
-  WS2: '00000000-0000-0000-0000-000000000010',
-  WS3: '00000000-0000-0000-0000-000000000003',
 };
 
 const INITIAL_WORKSPACES = [
   {
-    id: SEED_WORKSPACE_IDS.WS1,
-    name: 'Southern Rescue Services',
-    slug: 'southern-rescue',
-    initial: 'S',
-    color: '#0C66E4',
-    description: 'Emergency response logistics, field dispatch and rescue operations.',
+    id: SEED_WORKSPACE_IDS.WS_4RGED,
+    name: '4rged',
+    slug: '4rged',
+    initial: '4',
+    color: '#F59E0B',
+    description: 'Core product development workspace',
     role: 'owner',
   },
   {
-    id: SEED_WORKSPACE_IDS.WS2,
+    id: SEED_WORKSPACE_IDS.WS_ACME,
     name: 'Acme Product Studio',
     slug: 'acme-studio',
     initial: 'A',
     color: '#7C3AED',
-    description: 'Main product engineering, SaaS dashboard and design systems.',
+    description: 'Main product engineering and SaaS dashboard',
     role: 'admin',
-  },
-  {
-    id: SEED_WORKSPACE_IDS.WS3,
-    name: 'Mobile App Labs',
-    slug: 'mobile-labs',
-    initial: 'M',
-    color: '#10B981',
-    description: 'iOS & Android native client applications development.',
-    role: 'member',
   },
 ];
 
 const normalizeId = (id) => {
-  if (!id) return SEED_WORKSPACE_IDS.WS1;
-  if (id === 'ws-1') return SEED_WORKSPACE_IDS.WS1;
-  if (id === 'ws-2') return SEED_WORKSPACE_IDS.WS2;
-  if (id === 'ws-3') return SEED_WORKSPACE_IDS.WS3;
+  if (!id) return SEED_WORKSPACE_IDS.WS_4RGED;
+  if (id === 'ws-1' || id === '4rged') return SEED_WORKSPACE_IDS.WS_4RGED;
+  if (id === 'ws-2' || id === 'acme-studio') return SEED_WORKSPACE_IDS.WS_ACME;
   return id;
 };
 
@@ -57,13 +47,7 @@ export function WorkspaceProvider({ children }) {
       const stored = localStorage.getItem(STORAGE_KEY_WORKSPACES);
       if (stored !== null) {
         const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed)) {
-          if (isSupabaseConfigured) {
-            return parsed.filter(
-              (w) =>
-                !['ws-1', 'ws-2', 'ws-3', SEED_WORKSPACE_IDS.WS1, SEED_WORKSPACE_IDS.WS2, SEED_WORKSPACE_IDS.WS3].includes(w.id)
-            );
-          }
+        if (Array.isArray(parsed) && parsed.length > 0) {
           return parsed.map((w) => ({
             ...w,
             id: normalizeId(w.id),
@@ -71,7 +55,7 @@ export function WorkspaceProvider({ children }) {
         }
       }
     } catch {}
-    return isSupabaseConfigured ? [] : INITIAL_WORKSPACES;
+    return INITIAL_WORKSPACES;
   });
 
   const [currentWorkspace, setCurrentWorkspace] = useState(() => {
@@ -79,11 +63,11 @@ export function WorkspaceProvider({ children }) {
       const activeId = localStorage.getItem(STORAGE_KEY_ACTIVE_WS);
       if (activeId) {
         const normId = normalizeId(activeId);
-        const found = workspaces.find((w) => w.id === normId || w.id === activeId);
+        const found = workspaces.find((w) => w.id === normId || w.id === activeId || w.name === '4rged');
         if (found) return found;
       }
     } catch {}
-    return workspaces[0] || null;
+    return workspaces.find((w) => w.name === '4rged') || workspaces[0] || null;
   });
 
   const saveWorkspaces = useCallback((updated) => {

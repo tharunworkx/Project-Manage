@@ -6,12 +6,15 @@ const USERS_STORAGE_KEY = 'taskflow_authorized_users_v2';
 export const SEED_USER_IDS = {
   ADMIN: '00000000-0000-0000-0000-000000000001',
   ADMIN_ALIAS: '00000000-0000-0000-0000-00000000001a',
-  ALEX: '00000000-0000-0000-0000-000000000002',
-  SARAH: '00000000-0000-0000-0000-000000000003',
-  MARIA: '00000000-0000-0000-0000-000000000004',
-  DAVID: '00000000-0000-0000-0000-000000000005',
-  SOPHIE: '00000000-0000-0000-0000-000000000006',
-  LIAM: '00000000-0000-0000-0000-000000000007',
+  SAMVEL: '00000000-0000-0000-0000-000000000003',
+  ALEX: '00000000-0000-0000-0000-000000000004',
+  SRINI: '00000000-0000-0000-0000-000000000005',
+  GOKUL: '00000000-0000-0000-0000-000000000006',
+  RABIL: '00000000-0000-0000-0000-000000000007',
+  RAJINI: '00000000-0000-0000-0000-000000000008',
+  AADHI: '00000000-0000-0000-0000-000000000009',
+  NEEL: '00000000-0000-0000-0000-000000000010',
+  DHANUSH: '00000000-0000-0000-0000-000000000011',
 };
 
 const INITIAL_AUTHORIZED_USERS = [
@@ -36,64 +39,94 @@ const INITIAL_AUTHORIZED_USERS = [
     color: '#7C3AED',
   },
   {
-    id: SEED_USER_IDS.ALEX,
-    name: 'Alex Johnson',
-    email: 'alex.j@company.com',
-    password: '12345678',
-    role: 'project_manager',
-    status: 'Active',
-    avatar: 'AJ',
-    color: '#0C66E4',
-  },
-  {
-    id: SEED_USER_IDS.SARAH,
-    name: 'Sarah Miller',
-    email: 'sarah.m@company.com',
-    password: '12345678',
-    role: 'project_manager',
-    status: 'Active',
-    avatar: 'SM',
-    color: '#0284C7',
-  },
-  {
-    id: SEED_USER_IDS.MARIA,
-    name: 'Maria Garcia',
-    email: 'maria.g@company.com',
+    id: SEED_USER_IDS.SAMVEL,
+    name: 'Samvel',
+    email: 'samvel@gmail.com',
     password: '12345678',
     role: 'team_member',
     status: 'Active',
-    avatar: 'MG',
+    avatar: 'SA',
     color: '#10B981',
   },
   {
-    id: SEED_USER_IDS.DAVID,
-    name: 'David Chen',
-    email: 'david.c@company.com',
+    id: SEED_USER_IDS.ALEX,
+    name: 'Sham Alex',
+    email: 'alex@gmail.com',
     password: '12345678',
     role: 'team_member',
     status: 'Active',
-    avatar: 'DC',
-    color: '#059669',
+    avatar: 'SH',
+    color: '#10B981',
   },
   {
-    id: SEED_USER_IDS.SOPHIE,
-    name: 'Sophie Taylor',
-    email: 'sophie.t@company.com',
+    id: SEED_USER_IDS.SRINI,
+    name: 'Srinivasan',
+    email: 'srini@gmail.com',
     password: '12345678',
     role: 'team_member',
     status: 'Active',
-    avatar: 'ST',
-    color: '#64748B',
+    avatar: 'SR',
+    color: '#10B981',
   },
   {
-    id: SEED_USER_IDS.LIAM,
-    name: 'Liam Wilson',
-    email: 'liam.w@company.com',
+    id: SEED_USER_IDS.GOKUL,
+    name: 'Gokul',
+    email: 'gokul@gmail.com',
     password: '12345678',
     role: 'team_member',
     status: 'Active',
-    avatar: 'LW',
-    color: '#F59E0B',
+    avatar: 'GO',
+    color: '#10B981',
+  },
+  {
+    id: SEED_USER_IDS.RABIL,
+    name: 'Rabil',
+    email: 'rabil@gmail.com',
+    password: '12345678',
+    role: 'team_member',
+    status: 'Active',
+    avatar: 'RA',
+    color: '#10B981',
+  },
+  {
+    id: SEED_USER_IDS.RAJINI,
+    name: 'Aadhi Rajini',
+    email: 'rajini@gmail.com',
+    password: '12345678',
+    role: 'team_member',
+    status: 'Active',
+    avatar: 'AA',
+    color: '#10B981',
+  },
+  {
+    id: SEED_USER_IDS.AADHI,
+    name: 'Adithya Chaubhe',
+    email: 'aadhi@gmail.com',
+    password: '12345678',
+    role: 'team_member',
+    status: 'Active',
+    avatar: 'AD',
+    color: '#10B981',
+  },
+  {
+    id: SEED_USER_IDS.NEEL,
+    name: 'Neel',
+    email: 'neel@gmail.com',
+    password: '12345678',
+    role: 'project_manager',
+    status: 'Active',
+    avatar: 'NE',
+    color: '#0C66E4',
+  },
+  {
+    id: SEED_USER_IDS.DHANUSH,
+    name: 'Dhanush',
+    email: 'dhanush@gmail.com',
+    password: '12345678',
+    role: 'team_member',
+    status: 'Active',
+    avatar: 'DH',
+    color: '#10B981',
   },
 ];
 
@@ -104,17 +137,7 @@ export const userService = {
       if (stored) {
         const parsed = JSON.parse(stored);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          // Normalize legacy IDs to deterministic UUIDs if necessary
-          return parsed.map((u) => {
-            if (u.id === 'usr-admin') return { ...u, id: SEED_USER_IDS.ADMIN };
-            if (u.id === 'usr-2') return { ...u, id: SEED_USER_IDS.ALEX };
-            if (u.id === 'usr-3') return { ...u, id: SEED_USER_IDS.SARAH };
-            if (u.id === 'usr-4') return { ...u, id: SEED_USER_IDS.MARIA };
-            if (u.id === 'usr-5') return { ...u, id: SEED_USER_IDS.DAVID };
-            if (u.id === 'usr-6') return { ...u, id: SEED_USER_IDS.SOPHIE };
-            if (u.id === 'usr-7') return { ...u, id: SEED_USER_IDS.LIAM };
-            return u;
-          });
+          return parsed;
         }
       }
     } catch {}
@@ -155,6 +178,7 @@ export const userService = {
 
   /**
    * Synchronize local cache with remote Supabase `profiles` and `users` tables
+   * with automatic two-way synchronization.
    */
   async fetchUsersFromRemote() {
     if (!isSupabaseConfigured) return this.getUsers();
@@ -204,11 +228,21 @@ export const userService = {
             id: ru.id || existing.id,
             name: ru.full_name || existing.name || email.split('@')[0],
             email: email,
-            password: ru.password_hash || existing.password || 'password123',
+            password: ru.password_hash || existing.password || '12345678',
             role: (ru.role || existing.role || 'team_member').toLowerCase(),
             status: ru.is_active === false ? 'Deactivated' : 'Active',
             color: ru.color || existing.color || '#10B981',
           });
+        }
+      }
+
+      // Two-way sync: If any user exists locally that is not in remote database, push it to Supabase
+      if (Array.isArray(remoteProfiles)) {
+        const remoteEmailSet = new Set(remoteProfiles.map((rp) => rp.email?.toLowerCase()).filter(Boolean));
+        for (const [email, u] of userMap.entries()) {
+          if (!remoteEmailSet.has(email)) {
+            this.syncUserToRemote(u).catch(() => {});
+          }
         }
       }
 
