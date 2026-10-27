@@ -159,12 +159,14 @@ export const clientService = {
           .single();
 
         if (error) {
-          console.warn('Supabase insert client error:', error);
+          console.error('Supabase insert client error:', error);
+          throw new Error('Supabase client creation failed: ' + error.message);
         } else if (data) {
           remoteClient = mapRemoteClient(data);
         }
       } catch (e) {
-        console.warn('Supabase insert client error:', e);
+        console.error('Supabase insert client error:', e);
+        throw e;
       }
     }
 
@@ -172,7 +174,7 @@ export const clientService = {
       id:
         typeof crypto !== 'undefined' && crypto.randomUUID
           ? crypto.randomUUID()
-          : 'cli-' + Date.now(),
+          : '00000000-0000-0000-0000-' + Date.now().toString().padStart(12, '0'),
       name: trimmedName,
       contact_person: contactPersonVal,
       company: contactPersonVal,
@@ -219,9 +221,14 @@ export const clientService = {
         if (updates.phone !== undefined) payload.phone = updates.phone.trim() || null;
         if (updates.status !== undefined) payload.status = updates.status.toLowerCase();
 
-        await supabase.from('clients').update(payload).eq('id', id);
+        const { error } = await supabase.from('clients').update(payload).eq('id', id);
+        if (error) {
+          console.error('Supabase update client error:', error);
+          throw new Error('Supabase client update failed: ' + error.message);
+        }
       } catch (e) {
-        console.warn('Supabase update client error:', e);
+        console.error('Supabase update client error:', e);
+        throw e;
       }
     }
 
@@ -233,9 +240,14 @@ export const clientService = {
   async deleteClient(id) {
     if (isSupabaseConfigured && id && !id.startsWith('cli-')) {
       try {
-        await supabase.from('clients').delete().eq('id', id);
+        const { error } = await supabase.from('clients').delete().eq('id', id);
+        if (error) {
+          console.error('Supabase delete client error:', error);
+          throw new Error('Supabase client delete failed: ' + error.message);
+        }
       } catch (e) {
-        console.warn('Supabase delete client error:', e);
+        console.error('Supabase delete client error:', e);
+        throw e;
       }
     }
     const clients = this.getClients();

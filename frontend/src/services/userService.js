@@ -287,17 +287,20 @@ export const userService = {
         };
 
         if (existingProfile) {
-          await supabase
+          const { error } = await supabase
             .from('profiles')
             .update(profileData)
             .eq('email', cleanEmail);
+          if (error) throw error;
         } else {
-          await supabase
+          const { error } = await supabase
             .from('profiles')
             .insert([{ id: validId, email: cleanEmail, ...profileData }]);
+          if (error) throw error;
         }
       } catch (profErr) {
-        console.warn('[userService] profiles sync error:', profErr);
+        console.error('[userService] profiles sync error:', profErr);
+        throw profErr;
       }
 
       // 2. Sync to `users` table
@@ -317,20 +320,24 @@ export const userService = {
         };
 
         if (existingUser) {
-          await supabase
+          const { error } = await supabase
             .from('users')
             .update(userData)
             .eq('email', cleanEmail);
+          if (error) throw error;
         } else {
-          await supabase
+          const { error } = await supabase
             .from('users')
             .insert([{ id: validId, email: cleanEmail, ...userData }]);
+          if (error) throw error;
         }
       } catch (usrErr) {
-        console.warn('[userService] users sync error:', usrErr);
+        console.error('[userService] users sync error:', usrErr);
+        throw usrErr;
       }
     } catch (err) {
-      console.warn('Could not sync user to Supabase:', err);
+      console.error('Could not sync user to Supabase:', err);
+      throw err;
     }
   },
 

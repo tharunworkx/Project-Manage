@@ -452,6 +452,7 @@ export const taskService = {
 
         if (error) {
           console.error('Supabase task insert error:', error);
+          throw new Error('Supabase task insert failed: ' + error.message);
         } else if (data) {
           const formatted = {
             ...localNewTask,
@@ -466,7 +467,8 @@ export const taskService = {
           return formatted;
         }
       } catch (err) {
-        console.warn('Supabase task insert failed, using local cache:', err);
+        console.error('Supabase task insert error:', err);
+        throw err;
       }
     }
 
@@ -504,7 +506,10 @@ export const taskService = {
             .select('*, projects(id, name, workspace_id)')
             .single();
 
-          if (!error && data) {
+          if (error) {
+            console.error('Supabase task update error:', error);
+            throw new Error('Supabase task update failed: ' + error.message);
+          } else if (data) {
             const formatted = {
               ...data,
               workspace_id: data.workspace_id || data.projects?.workspace_id,
@@ -516,7 +521,8 @@ export const taskService = {
           }
         }
       } catch (err) {
-        console.warn('Supabase task update failed, using local cache:', err);
+        console.error('Supabase task update error:', err);
+        throw err;
       }
     }
 
@@ -524,15 +530,21 @@ export const taskService = {
   },
 
   async deleteTask(id) {
+    const isUuid = (val) => typeof val === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val);
     const current = getStoredTasks();
     const updated = current.filter((t) => t.id !== id);
     saveStoredTasks(updated);
 
-    if (isSupabaseConfigured) {
+    if (isSupabaseConfigured && isUuid(id)) {
       try {
-        await supabase.from('tasks').delete().eq('id', id);
+        const { error } = await supabase.from('tasks').delete().eq('id', id);
+        if (error) {
+          console.error('Supabase task delete failed:', error);
+          throw new Error('Supabase task delete failed: ' + error.message);
+        }
       } catch (err) {
-        console.warn('Supabase task delete failed, using local cache:', err);
+        console.error('Supabase task delete error:', err);
+        throw err;
       }
     }
 

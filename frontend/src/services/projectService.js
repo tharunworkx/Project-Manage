@@ -480,10 +480,17 @@ export const projectService = {
     const targetProject = current.find((p) => p.id === id);
     if (isSupabaseConfigured) {
       try {
-        await supabase.from('project_members').delete().eq('project_id', id);
-        await supabase.from('projects').delete().eq('id', id);
+        const { error: pmErr } = await supabase.from('project_members').delete().eq('project_id', id);
+        if (pmErr) console.warn('Supabase project_members delete warning:', pmErr);
+
+        const { error: prjErr } = await supabase.from('projects').delete().eq('id', id);
+        if (prjErr) {
+          console.error('Failed to delete project in Supabase:', prjErr);
+          throw new Error('Supabase project deletion failed: ' + prjErr.message);
+        }
       } catch (err) {
-        console.warn('Failed to delete project in Supabase:', err);
+        console.error('Failed to delete project in Supabase:', err);
+        throw err;
       }
     }
     const updated = current.filter((p) => p.id !== id);
@@ -525,7 +532,11 @@ export const projectService = {
         }
 
         if (Object.keys(dbUpdates).length > 0) {
-          await supabase.from('projects').update(dbUpdates).eq('id', id);
+          const { error: prjErr } = await supabase.from('projects').update(dbUpdates).eq('id', id);
+          if (prjErr) {
+            console.error('Failed to update project in Supabase:', prjErr);
+            throw new Error('Supabase project update failed: ' + prjErr.message);
+          }
         }
 
         // Sync members if updated
@@ -548,7 +559,8 @@ export const projectService = {
           }
         }
       } catch (err) {
-        console.warn('Failed to update project in Supabase:', err);
+        console.error('Failed to update project in Supabase:', err);
+        throw err;
       }
     }
     const current = getStoredProjects();
