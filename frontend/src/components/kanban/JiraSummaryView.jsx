@@ -61,16 +61,23 @@ export function JiraSummaryView({
 
   useEffect(() => {
     // Sync when workspace or tasks update
-    const live = activityService.getActivities(currentWorkspace?.id, tasks);
-    setActivities(live);
+    const refresh = () => {
+      setActivities(activityService.getActivities(currentWorkspace?.id, tasks));
+    };
+    refresh();
 
-    const unsubscribe = activityService.subscribe((wsId, updated) => {
-      if (!wsId || wsId === currentWorkspace?.id) {
-        setActivities(updated);
-      }
+    const unsubscribe = activityService.subscribe(() => {
+      refresh();
     });
 
-    return () => unsubscribe();
+    window.addEventListener('taskflow_activity_updated', refresh);
+    window.addEventListener('storage', refresh);
+
+    return () => {
+      unsubscribe();
+      window.removeEventListener('taskflow_activity_updated', refresh);
+      window.removeEventListener('storage', refresh);
+    };
   }, [currentWorkspace?.id, tasks]);
 
   // 2. Calculate Metric counts matching Jira top cards
@@ -370,26 +377,35 @@ export function JiraSummaryView({
                                 <span>"{item.targetField}" on </span>
                               </>
                             )}
-                            {/* Task Link Pill */}
-                            <button
-                              type="button"
-                              onClick={() => {
-                                if (item.task && onSelectTask) {
-                                  onSelectTask(item.task);
-                                }
-                              }}
-                              className="inline-flex items-center gap-1 mx-1 px-1.5 py-0.5 rounded text-[11px] font-semibold text-[#0C66E4] dark:text-[#579DFF] bg-blue-50 dark:bg-[#1C2B41] border border-blue-200 dark:border-[#579DFF]/30 hover:bg-blue-100 dark:hover:bg-[#1C2B41]/70 transition cursor-pointer"
-                              title="Click to view task details"
-                            >
-                              <CheckSquare className="h-3 w-3 shrink-0 stroke-[2.2]" />
-                              <span className="truncate max-w-[140px]">
-                                {item.taskKey}: {item.taskTitle}
+                            {/* Task Link Pill or Target Label */}
+                            {item.taskKey || item.taskTitle ? (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  if (item.task && onSelectTask) {
+                                    onSelectTask(item.task);
+                                  }
+                                }}
+                                className="inline-flex items-center gap-1 mx-1 px-1.5 py-0.5 rounded text-[11px] font-semibold text-[#0C66E4] dark:text-[#579DFF] bg-blue-50 dark:bg-[#1C2B41] border border-blue-200 dark:border-[#579DFF]/30 hover:bg-blue-100 dark:hover:bg-[#1C2B41]/70 transition cursor-pointer"
+                                title="Click to view task details"
+                              >
+                                <CheckSquare className="h-3 w-3 shrink-0 stroke-[2.2]" />
+                                <span className="truncate max-w-[140px]">
+                                  {item.taskKey ? `${item.taskKey}: ` : ''}{item.taskTitle}
+                                </span>
+                              </button>
+                            ) : item.target ? (
+                              <span className="font-semibold text-[#0C66E4] dark:text-[#579DFF] mx-1">
+                                {item.target}
                               </span>
-                            </button>
+                            ) : null}
+
                             {/* Status Pill */}
-                            <span className="inline-block px-1.5 py-0.5 rounded text-[10px] font-medium text-slate-600 dark:text-[#9FADBC] bg-slate-100 dark:bg-[#22272B] border border-slate-200 dark:border-[#333C44]">
-                              {item.statusLabel}
-                            </span>
+                            {item.statusLabel && (
+                              <span className="inline-block px-1.5 py-0.5 rounded text-[10px] font-medium text-slate-600 dark:text-[#9FADBC] bg-slate-100 dark:bg-[#22272B] border border-slate-200 dark:border-[#333C44]">
+                                {item.statusLabel}
+                              </span>
+                            )}
                           </div>
 
                           <div className="text-[11px] text-slate-400 dark:text-[#738496] mt-1">

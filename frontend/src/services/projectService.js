@@ -528,10 +528,26 @@ export const projectService = {
     const updated = [finalProject, ...current.filter((p) => p.id !== finalProject.id)];
     saveStoredProjects(updated);
 
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(
+        new CustomEvent('taskflow_activity_log', {
+          detail: {
+            workspaceId: wsId,
+            user: 'Admin',
+            action: 'created project',
+            target: finalProject.name,
+            type: 'project',
+          },
+        })
+      );
+    }
+
     return finalProject;
   },
 
   async deleteProject(id) {
+    const current = getStoredProjects();
+    const targetProject = current.find((p) => p.id === id);
     if (isSupabaseConfigured) {
       try {
         await supabase.from('project_members').delete().eq('project_id', id);
@@ -540,9 +556,22 @@ export const projectService = {
         console.warn('Failed to delete project in Supabase:', err);
       }
     }
-    const current = getStoredProjects();
     const updated = current.filter((p) => p.id !== id);
     saveStoredProjects(updated);
+
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(
+        new CustomEvent('taskflow_activity_log', {
+          detail: {
+            user: 'Admin',
+            action: 'deleted project',
+            target: targetProject?.name || 'Project',
+            type: 'project',
+          },
+        })
+      );
+    }
+
     return true;
   },
 

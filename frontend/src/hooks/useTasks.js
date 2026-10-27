@@ -1,6 +1,8 @@
+import { useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { taskService } from '../services/taskService';
 import { useWorkspaceContext } from '../context/WorkspaceContext';
+import { supabase, isSupabaseConfigured } from '../lib/supabase';
 
 export function useTasks(projectId = null, explicitWorkspaceId = null) {
   const queryClient = useQueryClient();
@@ -16,10 +18,45 @@ export function useTasks(projectId = null, explicitWorkspaceId = null) {
       ? explicitWorkspaceId
       : contextWorkspaceId;
 
+  // Real-time task synchronization: 3-second polling fallback + live Supabase Realtime channel
   const tasksQuery = useQuery({
     queryKey: ['tasks', projectId, activeWorkspaceId],
     queryFn: () => taskService.fetchTasks(projectId, activeWorkspaceId),
+    refetchInterval: 3000,
+    refetchIntervalInBackground: true,
+    refetchOnWindowFocus: true,
   });
+
+  useEffect(() => {
+    const handleLiveSync = () => {
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+    };
+
+    window.addEventListener('taskflow_tasks_updated', handleLiveSync);
+    window.addEventListener('storage', handleLiveSync);
+
+    let channel = null;
+    if (isSupabaseConfigured) {
+      channel = supabase
+        .channel('realtime_tasks_feed')
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'tasks' },
+          () => {
+            queryClient.invalidateQueries({ queryKey: ['tasks'] });
+          }
+        )
+        .subscribe();
+    }
+
+    return () => {
+      window.removeEventListener('taskflow_tasks_updated', handleLiveSync);
+      window.removeEventListener('storage', handleLiveSync);
+      if (channel) {
+        supabase.removeChannel(channel);
+      }
+    };
+  }, [queryClient]);
 
   const createTaskMutation = useMutation({
     mutationFn: (taskData) =>
@@ -27,7 +64,10 @@ export function useTasks(projectId = null, explicitWorkspaceId = null) {
         workspace_id: activeWorkspaceId || 'ws-1',
         ...taskData,
       }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['tasks'] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      window.dispatchEvent(new CustomEvent('taskflow_tasks_updated'));
+    },
   });
 
   const updateTaskMutation = useMutation({
@@ -54,6 +94,7 @@ export function useTasks(projectId = null, explicitWorkspaceId = null) {
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      window.dispatchEvent(new CustomEvent('taskflow_tasks_updated'));
     },
   });
 
@@ -75,6 +116,7 @@ export function useTasks(projectId = null, explicitWorkspaceId = null) {
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      window.dispatchEvent(new CustomEvent('taskflow_tasks_updated'));
     },
   });
 
@@ -86,3 +128,5 @@ export function useTasks(projectId = null, explicitWorkspaceId = null) {
     deleteTask: deleteTaskMutation.mutateAsync,
   };
 }
+
+export default useTasks;

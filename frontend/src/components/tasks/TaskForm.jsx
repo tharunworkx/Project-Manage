@@ -10,7 +10,7 @@ import { userService } from '../../services/userService';
 
 export function TaskForm({ initialData, onSubmit, onCancel }) {
   const { currentWorkspace } = useWorkspaceContext();
-  const { canMarkTaskDone, user } = useAuthContext();
+  const { canMarkTaskDone, user, isTeamMember } = useAuthContext();
   const { projects = [] } = useProjects(currentWorkspace?.id);
 
   const projectManagers = React.useMemo(() => userService.getProjectManagers(), []);
@@ -29,7 +29,12 @@ export function TaskForm({ initialData, onSubmit, onCancel }) {
   const [status, setStatus] = useState(initialData?.status || 'todo');
   const [type, setType] = useState(initialData?.type || 'task');
   const [priority, setPriority] = useState(initialData?.priority || 'medium');
-  const [assignee, setAssignee] = useState(initialData?.assignee || 'Unassigned');
+  const [assignee, setAssignee] = useState(() => {
+    if (isTeamMember && user?.name) {
+      return user.name;
+    }
+    return initialData?.assignee || 'Unassigned';
+  });
   const [reporter, setReporter] = useState(() => {
     if (initialData?.reporter && projectManagers.some((pm) => pm.name === initialData.reporter)) {
       return initialData.reporter;
@@ -46,6 +51,10 @@ export function TaskForm({ initialData, onSubmit, onCancel }) {
     e.preventDefault();
     if (!title.trim()) return;
     const chosenProject = projects.find((p) => p.id === projectId) || projects[0];
+    const finalAssignee = isTeamMember
+      ? (user?.name || assignee)
+      : (assignee === 'Unassigned' ? null : assignee);
+
     onSubmit({
       project_id: projectId || chosenProject?.id || null,
       project_name: chosenProject?.name || null,
@@ -55,7 +64,7 @@ export function TaskForm({ initialData, onSubmit, onCancel }) {
       status,
       type,
       priority,
-      assignee: assignee === 'Unassigned' ? null : assignee,
+      assignee: finalAssignee,
       reporter: reporter || projectManagers[0]?.name || 'Alex Johnson',
       created_by: initialData?.created_by || user?.name || 'Maria Garcia',
       created_by_role: initialData?.created_by_role || user?.role || 'team_member',
@@ -151,16 +160,25 @@ export function TaskForm({ initialData, onSubmit, onCancel }) {
             Assignee (Team Member)
           </label>
           <Select
-            value={assignee}
+            value={isTeamMember ? (user?.name || assignee) : assignee}
             onChange={(e) => setAssignee(e.target.value)}
-            className="w-full h-9"
+            disabled={isTeamMember}
+            className={`w-full h-9 ${isTeamMember ? 'opacity-85 cursor-not-allowed bg-slate-50 dark:bg-[#1D2125]' : ''}`}
           >
-            <option value="Unassigned">Unassigned</option>
-            {teamMembers.map((u) => (
-              <option key={u.id} value={u.name}>
-                {u.name}
+            {isTeamMember ? (
+              <option value={user?.name || assignee}>
+                {user?.name || assignee} (You)
               </option>
-            ))}
+            ) : (
+              <>
+                <option value="Unassigned">Unassigned</option>
+                {teamMembers.map((u) => (
+                  <option key={u.id} value={u.name}>
+                    {u.name}
+                  </option>
+                ))}
+              </>
+            )}
           </Select>
         </div>
 

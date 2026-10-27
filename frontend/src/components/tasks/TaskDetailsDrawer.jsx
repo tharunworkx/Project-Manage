@@ -23,7 +23,7 @@ import { ConfirmDialog } from '../common/ConfirmDialog';
 export function TaskDetailsDrawer({ task, isOpen = true, onClose, onUpdate, onDelete }) {
   if (isOpen === false || !task) return null;
 
-  const { canDeleteTasks, canManageTaskMetadata, canMarkTaskDone } = useAuthContext();
+  const { canDeleteTasks, canManageTaskMetadata, canMarkTaskDone, isTeamMember, user } = useAuthContext();
   const { currentWorkspace } = useWorkspaceContext();
   const projectManagers = React.useMemo(() => userService.getProjectManagers(), []);
   const teamMembers = React.useMemo(() => userService.getTeamMembers(), []);
@@ -228,22 +228,30 @@ export function TaskDetailsDrawer({ task, isOpen = true, onClose, onUpdate, onDe
             <div>
               <span className="text-[11px] font-semibold text-slate-500 dark:text-[#738496] block mb-1">Assignee</span>
               <Select
-                disabled={!canManageTaskMetadata}
-                value={assignee}
+                disabled={isTeamMember || !canManageTaskMetadata}
+                value={isTeamMember ? (user?.name || assignee) : assignee}
                 onChange={(e) => {
                   setAssignee(e.target.value);
                   handleFieldChange('assignee', e.target.value === 'Unassigned' ? null : e.target.value);
                 }}
                 className={`w-full h-8 px-2 py-1 text-xs font-medium ${
-                  !canManageTaskMetadata ? 'opacity-70 cursor-not-allowed' : ''
+                  isTeamMember || !canManageTaskMetadata ? 'opacity-85 cursor-not-allowed bg-slate-50 dark:bg-[#1D2125]' : ''
                 }`}
               >
-                <option value="Unassigned">Unassigned</option>
-                {teamMembers.map((u) => (
-                  <option key={u.id} value={u.name}>
-                    {u.name}
+                {isTeamMember ? (
+                  <option value={user?.name || assignee}>
+                    {user?.name || assignee} (You)
                   </option>
-                ))}
+                ) : (
+                  <>
+                    <option value="Unassigned">Unassigned</option>
+                    {teamMembers.map((u) => (
+                      <option key={u.id} value={u.name}>
+                        {u.name}
+                      </option>
+                    ))}
+                  </>
+                )}
               </Select>
             </div>
 

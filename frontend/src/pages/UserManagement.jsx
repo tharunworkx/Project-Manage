@@ -33,6 +33,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { ConfirmDialog } from '../components/common/ConfirmDialog';
 import { useAuthContext } from '../context/AuthContext';
+import { activityService } from '../services/activityService';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { toast } from 'sonner';
 import { Navigate, useNavigate } from 'react-router-dom';
@@ -69,8 +70,15 @@ export default function UserManagement() {
   }, []);
 
   const handleRoleChange = (userId, newRole) => {
+    const targetUser = users.find((u) => u.id === userId);
     userService.updateRole(userId, newRole);
     setUsers(userService.getUsers());
+    activityService.logActivity('all', {
+      user: user?.name || 'Admin',
+      action: 'promoted/updated role for',
+      target: `${targetUser?.name || 'Employee'} to ${newRole === 'project_manager' ? 'Project Manager' : 'Team Member'}`,
+      type: 'role',
+    });
     toast.success('Role updated');
   };
 
@@ -91,6 +99,12 @@ export default function UserManagement() {
     if (targetUser) {
       userService.syncUserToRemote(targetUser);
     }
+    activityService.logActivity('all', {
+      user: user?.name || 'Admin',
+      action: `${nextStatus === 'Active' ? 'activated' : 'deactivated'} employee account for`,
+      target: targetName || 'Employee',
+      type: 'user',
+    });
     toast.info(`Account status for "${targetName || 'User'}" set to ${nextStatus}`);
   };
 
@@ -99,6 +113,12 @@ export default function UserManagement() {
     const deletedName = userToDelete.name;
     userService.deleteUser(userToDelete.id);
     setUsers(userService.getUsers());
+    activityService.logActivity('all', {
+      user: user?.name || 'Admin',
+      action: 'deleted employee account for',
+      target: deletedName,
+      type: 'user',
+    });
     toast.success(`Account "${deletedName}" deleted permanently`);
     setUserToDelete(null);
   };
@@ -107,6 +127,12 @@ export default function UserManagement() {
     if (!editName.trim()) return;
     userService.updateUserProfile(userId, { name: editName });
     setUsers(userService.getUsers());
+    activityService.logActivity('all', {
+      user: user?.name || 'Admin',
+      action: 'updated employee profile for',
+      target: editName,
+      type: 'user',
+    });
     setEditingUserId(null);
     setEditName('');
   };
@@ -124,6 +150,13 @@ export default function UserManagement() {
       setInviteEmail('');
       setInviteName('');
       setIsInviteOpen(false);
+      activityService.logActivity('all', {
+        user: user?.name || 'Admin',
+        action: 'added employee account for',
+        target: `${newUser.name} (${newUser.role === 'project_manager' ? 'Project Manager' : 'Team Member'})`,
+        taskTitle: newUser.email,
+        type: 'user',
+      });
       toast.success(`Account for "${newUser.name}" (${newUser.email}) created successfully!`);
     } catch (err) {
       toast.error(err.message || 'Could not register employee');
