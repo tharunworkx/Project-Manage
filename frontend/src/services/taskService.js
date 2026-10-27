@@ -1,4 +1,54 @@
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
+import { userService } from './userService';
+
+/**
+ * Determines whether a given task was created by (or assigned to) a specific user.
+ * Supports matching across User ID, Email, Full Name, Reporter, and Assignee (for team member self-assignment).
+ */
+export function isTaskCreatedByUser(task, user) {
+  if (!task || !user) return false;
+
+  const targetId = user.id ? String(user.id).trim().toLowerCase() : null;
+  const targetEmail = user.email ? user.email.trim().toLowerCase() : null;
+  const targetName = user.name ? user.name.trim().toLowerCase() : null;
+  const targetAvatar = user.avatar ? user.avatar.trim().toLowerCase() : null;
+
+  // 1. Direct ID match
+  if (targetId) {
+    if (task.created_by_id && String(task.created_by_id).trim().toLowerCase() === targetId) return true;
+    if (task.reporter_id && String(task.reporter_id).trim().toLowerCase() === targetId) return true;
+    if (task.user_id && String(task.user_id).trim().toLowerCase() === targetId) return true;
+    if (task.creator_id && String(task.creator_id).trim().toLowerCase() === targetId) return true;
+    if (task.assignee_id && String(task.assignee_id).trim().toLowerCase() === targetId) return true;
+  }
+
+  // 2. Email match
+  if (targetEmail) {
+    if (task.created_by_email && task.created_by_email.trim().toLowerCase() === targetEmail) return true;
+    if (task.reporter_email && task.reporter_email.trim().toLowerCase() === targetEmail) return true;
+    if (task.assignee_email && task.assignee_email.trim().toLowerCase() === targetEmail) return true;
+  }
+
+  // 3. Name match
+  if (targetName) {
+    if (task.created_by && task.created_by.trim().toLowerCase() === targetName) return true;
+    if (task.reporter && task.reporter.trim().toLowerCase() === targetName) return true;
+    if (task.assignee && task.assignee.trim().toLowerCase() === targetName) return true;
+  }
+
+  // 4. Avatar/Initials match (e.g. badge "RA" on ACME-60 for Aadhi Rajini)
+  const initials = targetName
+    ? targetName.split(' ').map((n) => n[0]).join('').toLowerCase()
+    : null;
+
+  if (task.assignee) {
+    const cleanAssignee = task.assignee.trim().toLowerCase();
+    if (targetAvatar && cleanAssignee === targetAvatar) return true;
+    if (initials && cleanAssignee === initials) return true;
+  }
+
+  return false;
+}
 
 const TASKS_STORAGE_KEY = 'taskflow_tasks_cache_v5';
 
@@ -315,36 +365,24 @@ const MOCK_TASKS = [
 ];
 
 function getStoredTasks() {
-  const teamMemberPool = ['Maria Garcia', 'David Chen', 'Sophie Taylor', 'Liam Wilson'];
   try {
     const raw = localStorage.getItem(TASKS_STORAGE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
       if (Array.isArray(parsed)) {
-        const enriched = parsed.map((t, idx) => {
-          if (!t.created_by) {
-            return { ...t, created_by: teamMemberPool[idx % teamMemberPool.length] };
-          }
-          return t;
-        });
         if (isSupabaseConfigured) {
-          return enriched.filter(
+          return parsed.filter(
             (t) =>
               !t.id?.toString().startsWith('srs-') &&
               !t.id?.toString().startsWith('acme-') &&
               !t.id?.toString().startsWith('mob-')
           );
         }
-        return enriched;
+        return parsed;
       }
     }
   } catch {}
-  return isSupabaseConfigured
-    ? []
-    : MOCK_TASKS.map((t, idx) => ({
-        ...t,
-        created_by: t.created_by || teamMemberPool[idx % teamMemberPool.length],
-      }));
+  return isSupabaseConfigured ? [] : MOCK_TASKS;
 }
 
 function saveStoredTasks(tasks) {
@@ -370,14 +408,28 @@ export const taskService = {
       if (projectId) query = query.eq('project_id', projectId);
       const { data, error } = await query;
       if (error) throw error;
-      const teamMemberPool = ['Maria Garcia', 'David Chen', 'Sophie Taylor', 'Liam Wilson'];
-      let tasks = (data || []).map((t, idx) => ({
-        ...t,
-        workspace_id: t.workspace_id || t.projects?.workspace_id,
-        project_name: t.projects?.name,
-        created_by: t.created_by || teamMemberPool[idx % teamMemberPool.length],
-        key: t.key || `TASK-${(t.id || '').slice(0, 4) || idx + 1}`,
-      }));
+      const allUsers = userService.getUsers();
+      let tasks = (data || []).map((t, idx) => {
+        const reporterUser = allUsers.find(
+          (u) => u.id === t.reporter_id || (t.reporter_id && u.email === t.reporter_id)
+        );
+        const assigneeUser = allUsers.find(
+          (u) => u.id === t.assignee_id || (t.assignee_id && u.email === t.assignee_id)
+        );
+        return {
+          ...t,
+          workspace_id: t.workspace_id || t.projects?.workspace_id,
+          project_name: t.projects?.name,
+          created_by: reporterUser?.name || t.created_by || assigneeUser?.name || 'Admin',
+          created_by_id: t.reporter_id || reporterUser?.id || t.created_by_id || null,
+          created_by_email: reporterUser?.email || t.created_by_email || null,
+          reporter: reporterUser?.name || t.reporter || 'Admin',
+          reporter_id: t.reporter_id || reporterUser?.id || null,
+          assignee: assigneeUser?.name || t.assignee || 'Unassigned',
+          assignee_id: t.assignee_id || assigneeUser?.id || null,
+          key: t.key || `TASK-${(t.id || '').slice(0, 4) || idx + 1}`,
+        };
+      });
       if (workspaceId) {
         tasks = tasks.filter((t) => t.workspace_id === workspaceId);
       }
@@ -408,7 +460,14 @@ export const taskService = {
       type: taskData.type || 'task',
       priority: taskData.priority || 'medium',
       status: taskData.status || 'todo',
-      created_by: taskData.created_by || 'Maria Garcia',
+      created_by: taskData.created_by || taskData.reporter || 'Admin',
+      created_by_id: taskData.created_by_id || null,
+      created_by_email: taskData.created_by_email || null,
+      created_by_role: taskData.created_by_role || 'team_member',
+      reporter: taskData.reporter || taskData.created_by || 'Admin',
+      reporter_id: taskData.reporter_id || taskData.created_by_id || null,
+      assignee: taskData.assignee || 'Unassigned',
+      assignee_id: taskData.assignee_id || null,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
       ...taskData,
@@ -442,6 +501,7 @@ export const taskService = {
           due_date: taskData.due_date ? new Date(taskData.due_date).toISOString() : null,
           start_date: taskData.start_date ? new Date(taskData.start_date).toISOString() : null,
           assignee_id: isUuid(taskData.assignee_id) ? taskData.assignee_id : null,
+          reporter_id: isUuid(taskData.reporter_id) ? taskData.reporter_id : (isUuid(taskData.created_by_id) ? taskData.created_by_id : null),
         };
 
         const { data, error } = await supabase

@@ -1,16 +1,25 @@
 import { useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { taskService } from '../services/taskService';
+import { taskService, isTaskCreatedByUser } from '../services/taskService';
 import { useWorkspaceContext } from '../context/WorkspaceContext';
+import { useAuthContext } from '../context/AuthContext';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 
 export function useTasks(projectId = null, explicitWorkspaceId = null) {
   const queryClient = useQueryClient();
 
   let contextWorkspaceId = null;
+  let currentUser = null;
+  let isMemberRole = false;
   try {
     const ws = useWorkspaceContext();
     contextWorkspaceId = ws?.currentWorkspace?.id;
+  } catch {}
+
+  try {
+    const auth = useAuthContext();
+    currentUser = auth?.user;
+    isMemberRole = auth?.isTeamMember;
   } catch {}
 
   const activeWorkspaceId =
@@ -58,10 +67,27 @@ export function useTasks(projectId = null, explicitWorkspaceId = null) {
     };
   }, [queryClient]);
 
+  const allTasks = tasksQuery.data || [];
+
+  // Role-based visibility enforcement:
+  // - Team Member: Only display tasks created by (or assigned to) that specific team member!
+  // - Admin and Project Manager: Display ALL team members' tasks!
+  const visibleTasks = isMemberRole && currentUser
+    ? allTasks.filter((t) => isTaskCreatedByUser(t, currentUser))
+    : allTasks;
+
   const createTaskMutation = useMutation({
     mutationFn: (taskData) =>
       taskService.createTask({
         workspace_id: activeWorkspaceId || 'ws-1',
+        created_by: currentUser?.name || taskData.created_by || 'Admin',
+        created_by_id: currentUser?.id || taskData.created_by_id || null,
+        created_by_email: currentUser?.email || taskData.created_by_email || null,
+        created_by_role: currentUser?.role || taskData.created_by_role || 'team_member',
+        reporter: currentUser?.name || taskData.reporter || 'Admin',
+        reporter_id: currentUser?.id || taskData.reporter_id || null,
+        assignee: isMemberRole ? (currentUser?.name || taskData.assignee) : taskData.assignee,
+        assignee_id: isMemberRole ? (currentUser?.id || taskData.assignee_id) : taskData.assignee_id,
         ...taskData,
       }),
     onSuccess: () => {
@@ -122,7 +148,8 @@ export function useTasks(projectId = null, explicitWorkspaceId = null) {
 
   return {
     ...tasksQuery,
-    tasks: tasksQuery.data || [],
+    tasks: visibleTasks,
+    allTasks,
     createTask: createTaskMutation.mutateAsync,
     updateTask: updateTaskMutation.mutateAsync,
     deleteTask: deleteTaskMutation.mutateAsync,

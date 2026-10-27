@@ -26,6 +26,7 @@ import { TaskDialog } from '../tasks/TaskDialog';
 import { TASK_STATUSES } from '../../lib/constants';
 import { formatDate } from '../../lib/utils';
 import { useAuthContext } from '../../context/AuthContext';
+import { isTaskCreatedByUser } from '../../services/taskService';
 import { toast } from 'sonner';
 import {
   DropdownMenu,
@@ -36,7 +37,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 export function KanbanBoard({ tasks = [], onTaskUpdate, onTaskCreate, onTaskDelete }) {
-  const { canCreateTasks, canMarkTaskDone } = useAuthContext();
+  const { user, canCreateTasks, canMarkTaskDone } = useAuthContext();
   const [viewMode, setViewMode] = useState(() => {
     try {
       return localStorage.getItem('taskflow_board_view_mode') || 'grid';
@@ -89,10 +90,10 @@ export function KanbanBoard({ tasks = [], onTaskUpdate, onTaskCreate, onTaskDele
     if (!matchesSearch) return false;
 
     // 2. Only my issues filter
-    if (onlyMe && t.assignee !== 'TR') return false;
+    if (onlyMe && !isTaskCreatedByUser(t, user)) return false;
 
     // 3. Dropdown filter type
-    if (filterType === 'my' && t.assignee !== 'TR') return false;
+    if (filterType === 'my' && !isTaskCreatedByUser(t, user)) return false;
     if (filterType === 'incomplete' && t.status === 'done') return false;
     if (filterType === 'done' && t.status !== 'done') return false;
     if (filterType === 'high' && !['high', 'urgent'].includes(t.priority)) return false;
@@ -189,6 +190,7 @@ export function KanbanBoard({ tasks = [], onTaskUpdate, onTaskCreate, onTaskDele
         onToggleInsights={() => setShowInsights(!showInsights)}
         viewMode={viewMode}
         onViewModeChange={handleViewModeChange}
+        user={user}
       />
 
       {/* Optional Insights Banner */}

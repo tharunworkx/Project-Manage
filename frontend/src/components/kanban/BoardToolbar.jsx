@@ -21,7 +21,19 @@ export function BoardToolbar({
   onToggleInsights,
   viewMode = 'grid',
   onViewModeChange,
+  user,
 }) {
+  const userInitials =
+    user?.avatar ||
+    (user?.name
+      ? user.name
+          .split(' ')
+          .map((n) => n[0])
+          .join('')
+          .substring(0, 2)
+          .toUpperCase()
+      : 'ME');
+
   const [isFilterMenuOpen, setIsFilterMenuOpen] = useState(false);
   const [isGroupMenuOpen, setIsGroupMenuOpen] = useState(false);
 
@@ -79,17 +91,17 @@ export function BoardToolbar({
           )}
         </div>
 
-        {/* Quick filter by TR avatar */}
+        {/* Quick filter by user avatar */}
         <button
           onClick={onToggleOnlyMe}
-          title={onlyMe ? 'Showing only my issues (click to clear)' : 'Filter by TR (Only my issues)'}
+          title={onlyMe ? 'Showing only my issues (click to clear)' : `Filter by ${userInitials} (Only my issues)`}
           className={`flex h-7 w-7 items-center justify-center rounded-full text-white font-bold text-[11px] transition cursor-pointer relative ${
             onlyMe
               ? 'ring-2 ring-[#0C66E4] dark:ring-[#579DFF] bg-[#7C3AED]'
               : 'bg-[#7C3AED] hover:ring-2 hover:ring-slate-300 dark:hover:ring-[#738496]'
           }`}
         >
-          TR
+          {userInitials}
           {onlyMe && (
             <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full bg-[#0C66E4] dark:bg-[#579DFF] ring-1 ring-white dark:ring-[#101214]" />
           )}
