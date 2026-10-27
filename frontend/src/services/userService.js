@@ -237,31 +237,64 @@ export const userService = {
 
       user.id = validId;
 
-      await Promise.allSettled([
-        supabase.from('profiles').upsert(
-          {
-            id: validId,
-            email: cleanEmail,
-            full_name: user.name || cleanEmail.split('@')[0],
-            role: user.role?.toLowerCase() || 'team_member',
-            status: user.status === 'Deactivated' ? 'deactivated' : 'active',
-            color: user.color || '#10B981',
-          },
-          { onConflict: 'email' }
-        ),
-        supabase.from('users').upsert(
-          {
-            id: validId,
-            email: cleanEmail,
-            full_name: user.name || cleanEmail.split('@')[0],
-            role: (user.role || 'team_member').toUpperCase(),
-            password_hash: user.password || '12345678',
-            is_active: user.status !== 'Deactivated',
-            color: user.color || '#10B981',
-          },
-          { onConflict: 'email' }
-        ),
-      ]);
+      // 1. Sync to `profiles` table
+      try {
+        const { data: existingProfile } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('email', cleanEmail)
+          .maybeSingle();
+
+        const profileData = {
+          full_name: user.name || cleanEmail.split('@')[0],
+          role: user.role?.toLowerCase() || 'team_member',
+          status: user.status === 'Deactivated' ? 'deactivated' : 'active',
+          color: user.color || '#10B981',
+        };
+
+        if (existingProfile) {
+          await supabase
+            .from('profiles')
+            .update(profileData)
+            .eq('email', cleanEmail);
+        } else {
+          await supabase
+            .from('profiles')
+            .insert([{ id: validId, email: cleanEmail, ...profileData }]);
+        }
+      } catch (profErr) {
+        console.warn('[userService] profiles sync error:', profErr);
+      }
+
+      // 2. Sync to `users` table
+      try {
+        const { data: existingUser } = await supabase
+          .from('users')
+          .select('id')
+          .eq('email', cleanEmail)
+          .maybeSingle();
+
+        const userData = {
+          full_name: user.name || cleanEmail.split('@')[0],
+          role: (user.role || 'team_member').toUpperCase(),
+          password_hash: user.password || '12345678',
+          is_active: user.status !== 'Deactivated',
+          color: user.color || '#10B981',
+        };
+
+        if (existingUser) {
+          await supabase
+            .from('users')
+            .update(userData)
+            .eq('email', cleanEmail);
+        } else {
+          await supabase
+            .from('users')
+            .insert([{ id: validId, email: cleanEmail, ...userData }]);
+        }
+      } catch (usrErr) {
+        console.warn('[userService] users sync error:', usrErr);
+      }
     } catch (err) {
       console.warn('Could not sync user to Supabase:', err);
     }

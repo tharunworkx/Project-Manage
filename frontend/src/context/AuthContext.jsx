@@ -6,11 +6,13 @@ import { userService } from '../services/userService';
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  // Current logged in user object
+  // Current logged in user object (sessionStorage ensures new windows/tabs require logging in)
   const [user, setUser] = useState(() => {
     try {
-      const savedUser = localStorage.getItem('taskflow_logged_in_user');
-      if (savedUser) return JSON.parse(savedUser);
+      const sessionUser = sessionStorage.getItem('taskflow_logged_in_user');
+      if (sessionUser) return JSON.parse(sessionUser);
+      // Clean up any legacy persistent localStorage to prevent unauthorized auto-login on new visits
+      localStorage.removeItem('taskflow_logged_in_user');
     } catch {}
     return null;
   });
@@ -30,11 +32,11 @@ export function AuthProvider({ children }) {
   // Active role mode (Admin can simulate other roles; managers and members are locked)
   const [role, setRoleState] = useState(() => {
     try {
-      const savedUser = localStorage.getItem('taskflow_logged_in_user');
-      const parsed = savedUser ? JSON.parse(savedUser) : null;
+      const sessionUser = sessionStorage.getItem('taskflow_logged_in_user');
+      const parsed = sessionUser ? JSON.parse(sessionUser) : null;
       if (parsed) {
         if (parsed.email?.toLowerCase().includes('tharun') || parsed.role === ROLES.ADMIN) {
-          const savedRole = localStorage.getItem('taskora_active_role');
+          const savedRole = sessionStorage.getItem('taskora_active_role');
           return savedRole || ROLES.ADMIN;
         }
         return parsed.role || ROLES.TEAM_MEMBER;
@@ -54,7 +56,7 @@ export function AuthProvider({ children }) {
     else if (newRole === ROLES.PROJECT_MANAGER) target = ROLES.PROJECT_MANAGER;
 
     setRoleState(target);
-    localStorage.setItem('taskora_active_role', target);
+    sessionStorage.setItem('taskora_active_role', target);
   };
 
   const signIn = async (email, password) => {
@@ -62,15 +64,16 @@ export function AuthProvider({ children }) {
     const authenticatedUser = userService.authenticate(cleanEmail, password);
 
     setUser(authenticatedUser);
-    localStorage.setItem('taskflow_logged_in_user', JSON.stringify(authenticatedUser));
+    sessionStorage.setItem('taskflow_logged_in_user', JSON.stringify(authenticatedUser));
+    localStorage.removeItem('taskflow_logged_in_user');
 
     // If Admin, restore active role or default to admin; if Manager/Member, lock to their designated role
     if (cleanEmail.includes('tharun') || authenticatedUser.role === ROLES.ADMIN) {
       setRoleState(ROLES.ADMIN);
-      localStorage.setItem('taskora_active_role', ROLES.ADMIN);
+      sessionStorage.setItem('taskora_active_role', ROLES.ADMIN);
     } else {
       setRoleState(authenticatedUser.role || ROLES.TEAM_MEMBER);
-      localStorage.setItem('taskora_active_role', authenticatedUser.role || ROLES.TEAM_MEMBER);
+      sessionStorage.setItem('taskora_active_role', authenticatedUser.role || ROLES.TEAM_MEMBER);
     }
 
     return { data: { user: authenticatedUser }, error: null };
@@ -94,14 +97,15 @@ export function AuthProvider({ children }) {
       });
 
       setUser(registeredUser);
-      localStorage.setItem('taskflow_logged_in_user', JSON.stringify(registeredUser));
+      sessionStorage.setItem('taskflow_logged_in_user', JSON.stringify(registeredUser));
+      localStorage.removeItem('taskflow_logged_in_user');
 
       if (registeredUser.email.toLowerCase().includes('tharun') || registeredUser.role === ROLES.ADMIN) {
         setRoleState(ROLES.ADMIN);
-        localStorage.setItem('taskora_active_role', ROLES.ADMIN);
+        sessionStorage.setItem('taskora_active_role', ROLES.ADMIN);
       } else {
         setRoleState(registeredUser.role || ROLES.TEAM_MEMBER);
-        localStorage.setItem('taskora_active_role', registeredUser.role || ROLES.TEAM_MEMBER);
+        sessionStorage.setItem('taskora_active_role', registeredUser.role || ROLES.TEAM_MEMBER);
       }
 
       return { data: { user: registeredUser }, error: null };
@@ -117,9 +121,10 @@ export function AuthProvider({ children }) {
         ...updatedFields,
       };
       try {
-        localStorage.setItem('taskflow_logged_in_user', JSON.stringify(updated));
+        sessionStorage.setItem('taskflow_logged_in_user', JSON.stringify(updated));
+        localStorage.removeItem('taskflow_logged_in_user');
       } catch (err) {
-        console.error('Error saving user to localStorage', err);
+        console.error('Error saving user to sessionStorage', err);
       }
       try {
         if (updated.email) {
@@ -135,6 +140,8 @@ export function AuthProvider({ children }) {
   };
 
   const signOut = () => {
+    sessionStorage.removeItem('taskflow_logged_in_user');
+    sessionStorage.removeItem('taskora_active_role');
     localStorage.removeItem('taskflow_logged_in_user');
     localStorage.removeItem('taskora_active_role');
     setUser(null);
