@@ -27,8 +27,9 @@ import { useAuthContext } from '../../context/AuthContext';
 import { useWorkspaceContext } from '../../context/WorkspaceContext';
 import { CreateProjectModal } from './CreateProjectModal';
 import { ProjectDetailModal } from './ProjectDetailModal';
-import { projectService, isProjectAssignedToEmail } from '../../services/projectService';
+import { projectService, isProjectAssignedToEmail, normalizeWorkspaceId, saveStoredProjects, getStoredProjects, mapRemoteProject } from '../../services/projectService';
 import { userService } from '../../services/userService';
+import { supabase, isSupabaseConfigured } from '../../lib/supabase';
 import { ConfirmDialog } from '../common/ConfirmDialog';
 import {
   Empty,
@@ -78,7 +79,6 @@ export function ManageProjectsView() {
           return parsed.filter(
             (p) =>
               !p.id?.toString().startsWith('SRS-') &&
-              !p.id?.toString().startsWith('00000000-0000-0000-0000-000000000') &&
               !['proj-101', 'proj-102', 'proj-201', 'proj-301', 'proj-302'].includes(p.id)
           );
         }
@@ -93,27 +93,117 @@ export function ManageProjectsView() {
   const [selectedProject, setSelectedProject] = useState(null);
   const [projectToDelete, setProjectToDelete] = useState(null);
 
-  // Sync projects with Supabase whenever active workspace changes
+  // Real-time synchronization of projects: Supabase Realtime channel + Storage + Custom Event + Focus + Polling
   useEffect(() => {
     let isMounted = true;
-    projectService.fetchProjects(currentWorkspace?.id).then((data) => {
-      if (isMounted) {
-        setProjects(data || []);
+
+    const reloadProjects = async () => {
+      try {
+        const data = await projectService.fetchProjects(currentWorkspace?.id);
+        if (isMounted && Array.isArray(data)) {
+          setProjects(data);
+        }
+      } catch (err) {
+        console.warn('Realtime fetch projects error:', err);
       }
-    });
+    };
+
+    // Initial fetch
+    reloadProjects();
+
+    // 1. Listen for custom events dispatched in the same window/session
+    const handleCustomSync = (e) => {
+      if (e?.detail) {
+        if (e.detail.deleted && e.detail.id) {
+          setProjects((prev) => prev.filter((p) => p.id !== e.detail.id));
+          if (selectedProject?.id === e.detail.id) setSelectedProject(null);
+        } else if (Array.isArray(e.detail.projects)) {
+          setProjects(e.detail.projects);
+        } else if (Array.isArray(e.detail)) {
+          setProjects(e.detail);
+        }
+      }
+      reloadProjects();
+    };
+    window.addEventListener('taskflow_projects_updated', handleCustomSync);
+
+    // 2. Listen for cross-tab storage changes (e.g. manager deletes in another tab/profile)
+    const handleStorage = (e) => {
+      if (e.key === 'taskflow_manage_projects_list_v4' && e.newValue) {
+        try {
+          const parsed = JSON.parse(e.newValue);
+          if (Array.isArray(parsed)) {
+            setProjects(parsed);
+          }
+        } catch {}
+      }
+      reloadProjects();
+    };
+    window.addEventListener('storage', handleStorage);
+
+    // 3. Listen for window focus and visibility change
+    const handleFocus = () => reloadProjects();
+    window.addEventListener('focus', handleFocus);
+
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') reloadProjects();
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+
+    // 4. Active 2.5s Polling fallback (ensures background updates without manual refresh)
+    const interval = setInterval(reloadProjects, 2500);
+
+    // 5. Live Supabase Realtime Channel for instant updates across different accounts/devices
+    let channel = null;
+    if (isSupabaseConfigured) {
+      const channelId = `manage_projects_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+      channel = supabase
+        .channel(channelId)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'projects' }, (payload) => {
+          if (payload?.eventType === 'DELETE' && payload.old?.id) {
+            const delId = payload.old.id;
+            setProjects((prev) => prev.filter((p) => p.id !== delId));
+            if (selectedProject?.id === delId) setSelectedProject(null);
+            try {
+              const cur = getStoredProjects();
+              saveStoredProjects(cur.filter((p) => p.id !== delId), false);
+            } catch {}
+          } else if (payload?.eventType === 'INSERT' && payload.new?.id) {
+            const mapped = mapRemoteProject(payload.new);
+            setProjects((prev) => {
+              if (prev.some((p) => p.id === mapped.id)) return prev;
+              return [mapped, ...prev];
+            });
+          } else if (payload?.eventType === 'UPDATE' && payload.new?.id) {
+            const mapped = mapRemoteProject(payload.new);
+            setProjects((prev) =>
+              prev.map((p) => (p.id === mapped.id ? { ...p, ...mapped } : p))
+            );
+          }
+          reloadProjects();
+        })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'project_members' }, () => {
+          reloadProjects();
+        })
+        .subscribe();
+    }
+
     return () => {
       isMounted = false;
+      clearInterval(interval);
+      window.removeEventListener('taskflow_projects_updated', handleCustomSync);
+      window.removeEventListener('storage', handleStorage);
+      window.removeEventListener('focus', handleFocus);
+      document.removeEventListener('visibilitychange', handleVisibility);
+      if (channel) {
+        supabase.removeChannel(channel);
+      }
     };
-  }, [currentWorkspace?.id]);
+  }, [currentWorkspace?.id, user?.id, user?.email, isAdmin, isProjectManager, isTeamMember]);
 
   const saveProjects = (updated) => {
     setProjects(updated);
-    try {
-      localStorage.setItem(
-        'taskflow_manage_projects_list_v4',
-        JSON.stringify(updated)
-      );
-    } catch {}
+    saveStoredProjects(updated, true);
   };
 
   const handleCreateProject = async (createdProject) => {
@@ -129,14 +219,32 @@ export function ManageProjectsView() {
       setProjects((prev) => [saved, ...prev.filter((p) => p.id !== saved.id)]);
       setIsNewProjectOpen(false);
       toast.success(`Project "${saved.name}" created successfully!`);
+      // Also fetch fresh projects to ensure relations/members are completely hydrated
+      projectService.fetchProjects(currentWorkspace?.id).then((fresh) => {
+        if (Array.isArray(fresh)) setProjects(fresh);
+      });
     } catch (err) {
       console.error('Create project error:', err);
       toast.error(err?.message || 'Failed to create project');
     }
   };
 
-  const handleDeleteProject = (id, name) => {
+  const handleDeleteProject = (id, name, direct = false) => {
     if (!canManageProjects) {
+      return;
+    }
+    if (direct) {
+      // Direct deletion from confirmed sub-modal
+      setProjects((prev) => prev.filter((p) => p.id !== id));
+      if (selectedProject?.id === id) setSelectedProject(null);
+      projectService.deleteProject(id).then(() => {
+        toast.success(`Project "${name || 'Project'}" deleted`);
+      }).catch((err) => {
+        toast.error('Failed to delete project: ' + (err?.message || 'Error'));
+        projectService.fetchProjects(currentWorkspace?.id).then((fresh) => {
+          if (Array.isArray(fresh)) setProjects(fresh);
+        });
+      });
       return;
     }
     setProjectToDelete({ id, name });
@@ -144,17 +252,23 @@ export function ManageProjectsView() {
 
   const confirmDeleteProject = async () => {
     if (!projectToDelete) return;
+    const targetId = projectToDelete.id;
+    const targetName = projectToDelete.name || 'Project';
+    // Optimistic immediate UI removal
+    setProjects((prev) => prev.filter((p) => p.id !== targetId));
+    if (selectedProject?.id === targetId) {
+      setSelectedProject(null);
+    }
+    setProjectToDelete(null);
     try {
-      await projectService.deleteProject(projectToDelete.id);
-      setProjects((prev) => prev.filter((p) => p.id !== projectToDelete.id));
-      if (selectedProject?.id === projectToDelete.id) {
-        setSelectedProject(null);
-      }
-      toast.success(`Project "${projectToDelete.name || 'Project'}" deleted`);
+      await projectService.deleteProject(targetId);
+      toast.success(`Project "${targetName}" deleted`);
     } catch (err) {
       console.error('Delete project error:', err);
-    } finally {
-      setProjectToDelete(null);
+      toast.error('Failed to delete project: ' + (err?.message || 'Error'));
+      projectService.fetchProjects(currentWorkspace?.id).then((fresh) => {
+        if (Array.isArray(fresh)) setProjects(fresh);
+      });
     }
   };
 
@@ -257,8 +371,9 @@ export function ManageProjectsView() {
 
   // Filter and sort logic - partitioned by active workspace
   const displayedProjects = useMemo(() => {
+    const activeWsNorm = normalizeWorkspaceId ? normalizeWorkspaceId(currentWorkspace?.id) : currentWorkspace?.id;
     let result = projects.filter(
-      (p) => !p.workspace_id || p.workspace_id === currentWorkspace?.id
+      (p) => !p.workspace_id || !currentWorkspace?.id || (normalizeWorkspaceId ? normalizeWorkspaceId(p.workspace_id) : p.workspace_id) === activeWsNorm
     );
 
     // If Team Member role, only show projects assigned to this member verified by email/ID

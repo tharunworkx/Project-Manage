@@ -361,7 +361,8 @@ export function ProjectDetailModal({
           isOpen={isDeleteDialogOpen}
           onClose={() => setIsDeleteDialogOpen(false)}
           onConfirm={() => {
-            onDelete?.(project.id, project.name);
+            onDelete?.(project.id, project.name, true);
+            setIsDeleteDialogOpen(false);
             onClose();
           }}
           title="Delete Project"

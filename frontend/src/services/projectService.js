@@ -9,10 +9,15 @@ const SEED_WORKSPACE_IDS = {
   WS1: '00000000-0000-0000-0000-000000000001',
 };
 
-const normalizeWorkspaceId = (id) => {
+export const normalizeWorkspaceId = (id) => {
   if (!id) return SEED_WORKSPACE_IDS.WS_4RGED;
-  if (id === 'ws-1' || id === '4rged') return SEED_WORKSPACE_IDS.WS_4RGED;
-  if (id === 'ws-2' || id === 'acme-studio') return SEED_WORKSPACE_IDS.WS_ACME;
+  const clean = String(id).trim().toLowerCase();
+  if (clean === '4rged' || clean === 'ws-1' || clean === SEED_WORKSPACE_IDS.WS_4RGED.toLowerCase()) {
+    return SEED_WORKSPACE_IDS.WS_4RGED;
+  }
+  if (clean === 'acme-studio' || clean === 'ws-2' || clean === SEED_WORKSPACE_IDS.WS_ACME.toLowerCase()) {
+    return SEED_WORKSPACE_IDS.WS_ACME;
+  }
   return id;
 };
 
@@ -83,7 +88,7 @@ const MOCK_PROJECTS = [
   },
 ];
 
-function getStoredProjects() {
+export function getStoredProjects() {
   try {
     const stored = localStorage.getItem(PROJECTS_STORAGE_KEY);
     if (stored) {
@@ -100,13 +105,16 @@ function getStoredProjects() {
   return isSupabaseConfigured ? [] : MOCK_PROJECTS;
 }
 
-function saveStoredProjects(projects) {
+export function saveStoredProjects(projects, emitEvent = true) {
   try {
     localStorage.setItem(PROJECTS_STORAGE_KEY, JSON.stringify(projects));
+    if (emitEvent && typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('taskflow_projects_updated', { detail: projects }));
+    }
   } catch {}
 }
 
-const mapRemoteProject = (row) => ({
+export const mapRemoteProject = (row) => ({
   id: row.id,
   workspace_id: row.workspace_id,
   name: row.name,
@@ -255,7 +263,14 @@ export const projectService = {
         };
       });
 
-      saveStoredProjects(merged);
+      if (normWorkspaceId) {
+        const otherWorkspaceProjects = stored.filter(
+          (p) => p.workspace_id && p.workspace_id !== normWorkspaceId
+        );
+        saveStoredProjects([...merged, ...otherWorkspaceProjects], false);
+      } else {
+        saveStoredProjects(merged, false);
+      }
       return merged;
     } catch (err) {
       console.warn('Supabase fetch projects error, using cached storage:', err);
@@ -280,6 +295,13 @@ export const projectService = {
       }
     }
 
+    const cleanBudget = project.budget
+      ? parseFloat(String(project.budget).replace(/[^0-9.]/g, '')) || null
+      : null;
+    const cleanHours = (project.estimatedHours || project.estimated_hours)
+      ? parseInt(String(project.estimatedHours || project.estimated_hours).replace(/[^0-9]/g, ''), 10) || null
+      : null;
+
     const dbPayload = {
       workspace_id: wsId,
       project_manager_id: pmId && pmId.includes('-') ? pmId : null,
@@ -290,8 +312,8 @@ export const projectService = {
       end_date: project.end_date || null,
       image_url: project.imageUrl || project.image_url || null,
       client: project.client || null,
-      budget: project.budget || null,
-      estimated_hours: project.estimatedHours || project.estimated_hours || null,
+      budget: cleanBudget,
+      estimated_hours: cleanHours,
       tag: project.tag || 'General',
       status: project.status || 'in_progress',
     };
@@ -480,6 +502,9 @@ export const projectService = {
     const targetProject = current.find((p) => p.id === id);
     if (isSupabaseConfigured) {
       try {
+        const { error: tskErr } = await supabase.from('tasks').delete().eq('project_id', id);
+        if (tskErr) console.warn('Supabase tasks delete warning:', tskErr);
+
         const { error: pmErr } = await supabase.from('project_members').delete().eq('project_id', id);
         if (pmErr) console.warn('Supabase project_members delete warning:', pmErr);
 
@@ -494,9 +519,31 @@ export const projectService = {
       }
     }
     const updated = current.filter((p) => p.id !== id);
-    saveStoredProjects(updated);
+    saveStoredProjects(updated, false);
+
+    // Also clean up tasks belonging to this project from local cache
+    try {
+      const rawTasks = localStorage.getItem('taskflow_tasks_cache_v5');
+      if (rawTasks) {
+        const parsedTasks = JSON.parse(rawTasks);
+        if (Array.isArray(parsedTasks)) {
+          const remTasks = parsedTasks.filter((t) => t.project_id !== id && t.projectId !== id);
+          localStorage.setItem('taskflow_tasks_cache_v5', JSON.stringify(remTasks));
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('taskflow_tasks_updated', { detail: remTasks }));
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('Could not clean tasks for deleted project:', e);
+    }
 
     if (typeof window !== 'undefined') {
+      window.dispatchEvent(
+        new CustomEvent('taskflow_projects_updated', {
+          detail: { id, deleted: true, projects: updated },
+        })
+      );
       window.dispatchEvent(
         new CustomEvent('taskflow_activity_log', {
           detail: {

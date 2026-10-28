@@ -149,6 +149,10 @@ export function WorkspaceProvider({ children }) {
       try {
         localStorage.setItem(STORAGE_KEY_ACTIVE_WS, target.id);
       } catch {}
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('taskflow_projects_updated'));
+        window.dispatchEvent(new CustomEvent('taskflow_tasks_updated'));
+      }
     }
   };
 

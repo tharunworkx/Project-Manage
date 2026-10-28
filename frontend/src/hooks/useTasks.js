@@ -37,21 +37,60 @@ export function useTasks(projectId = null, explicitWorkspaceId = null) {
   });
 
   useEffect(() => {
-    const handleLiveSync = () => {
+    const handleCustomSync = (e) => {
+      if (e?.detail?.deleted && e?.detail?.id) {
+        queryClient.setQueriesData({ queryKey: ['tasks'] }, (old) => {
+          if (!Array.isArray(old)) return old;
+          return old.filter((t) => t.id !== e.detail.id);
+        });
+      } else if (Array.isArray(e?.detail)) {
+        queryClient.setQueriesData({ queryKey: ['tasks'] }, () => e.detail);
+      }
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
     };
 
-    window.addEventListener('taskflow_tasks_updated', handleLiveSync);
-    window.addEventListener('storage', handleLiveSync);
+    const handleStorage = (e) => {
+      if ((e.key === 'taskflow_jira_board_tasks_v2' || e.key === 'taskflow_tasks_cache_v5') && e.newValue) {
+        try {
+          const parsed = JSON.parse(e.newValue);
+          if (Array.isArray(parsed)) {
+            queryClient.setQueriesData({ queryKey: ['tasks'] }, () => parsed);
+          }
+        } catch {}
+      }
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+    };
+
+    const handleFocus = () => {
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+    };
+
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      }
+    };
+
+    window.addEventListener('taskflow_tasks_updated', handleCustomSync);
+    window.addEventListener('storage', handleStorage);
+    window.addEventListener('focus', handleFocus);
+    document.addEventListener('visibilitychange', handleVisibility);
 
     let channel = null;
     if (isSupabaseConfigured) {
+      const channelId = `realtime_tasks_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
       channel = supabase
-        .channel('realtime_tasks_feed')
+        .channel(channelId)
         .on(
           'postgres_changes',
           { event: '*', schema: 'public', table: 'tasks' },
-          () => {
+          (payload) => {
+            if (payload?.eventType === 'DELETE' && payload.old?.id) {
+              queryClient.setQueriesData({ queryKey: ['tasks'] }, (old) => {
+                if (!Array.isArray(old)) return old;
+                return old.filter((t) => t.id !== payload.old.id);
+              });
+            }
             queryClient.invalidateQueries({ queryKey: ['tasks'] });
           }
         )
@@ -59,8 +98,10 @@ export function useTasks(projectId = null, explicitWorkspaceId = null) {
     }
 
     return () => {
-      window.removeEventListener('taskflow_tasks_updated', handleLiveSync);
-      window.removeEventListener('storage', handleLiveSync);
+      window.removeEventListener('taskflow_tasks_updated', handleCustomSync);
+      window.removeEventListener('storage', handleStorage);
+      window.removeEventListener('focus', handleFocus);
+      document.removeEventListener('visibilitychange', handleVisibility);
       if (channel) {
         supabase.removeChannel(channel);
       }

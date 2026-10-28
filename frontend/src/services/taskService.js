@@ -385,9 +385,12 @@ function getStoredTasks() {
   return isSupabaseConfigured ? [] : MOCK_TASKS;
 }
 
-function saveStoredTasks(tasks) {
+export function saveStoredTasks(tasks, emitEvent = true) {
   try {
     localStorage.setItem(TASKS_STORAGE_KEY, JSON.stringify(tasks));
+    if (emitEvent && typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('taskflow_tasks_updated', { detail: tasks }));
+    }
   } catch {}
 }
 
@@ -644,7 +647,7 @@ export const taskService = {
     const isUuid = (val) => typeof val === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val);
     const current = getStoredTasks();
     const updated = current.filter((t) => t.id !== id);
-    saveStoredTasks(updated);
+    saveStoredTasks(updated, true);
 
     if (isSupabaseConfigured && isUuid(id)) {
       try {
@@ -657,6 +660,10 @@ export const taskService = {
         console.error('Supabase task delete error:', err);
         throw err;
       }
+    }
+
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('taskflow_tasks_updated', { detail: { id, deleted: true } }));
     }
 
     return true;

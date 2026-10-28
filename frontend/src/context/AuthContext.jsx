@@ -57,6 +57,10 @@ export function AuthProvider({ children }) {
 
     setRoleState(target);
     sessionStorage.setItem('taskora_active_role', target);
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('taskflow_projects_updated'));
+      window.dispatchEvent(new CustomEvent('taskflow_tasks_updated'));
+    }
   };
 
   const signIn = async (email, password) => {
@@ -74,6 +78,11 @@ export function AuthProvider({ children }) {
     } else {
       setRoleState(authenticatedUser.role || ROLES.TEAM_MEMBER);
       sessionStorage.setItem('taskora_active_role', authenticatedUser.role || ROLES.TEAM_MEMBER);
+    }
+
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('taskflow_projects_updated'));
+      window.dispatchEvent(new CustomEvent('taskflow_tasks_updated'));
     }
 
     return { data: { user: authenticatedUser }, error: null };
@@ -146,6 +155,10 @@ export function AuthProvider({ children }) {
     localStorage.removeItem('taskora_active_role');
     setUser(null);
     setRoleState(null);
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('taskflow_projects_updated'));
+      window.dispatchEvent(new CustomEvent('taskflow_tasks_updated'));
+    }
   };
 
   const isAdmin = Boolean(user && role === ROLES.ADMIN);
