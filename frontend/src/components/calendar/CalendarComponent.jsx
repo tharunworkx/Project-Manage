@@ -16,85 +16,8 @@ import { DatePicker } from '../ui/date-picker';
 import { useTasks } from '../../hooks/useTasks';
 
 // Sample events exactly matching the provided calendar screenshot
-const INITIAL_EVENTS = [
-  // Day 5
-  { id: 'e1', title: 'Coffee with Ali', time: '5:00 pm', date: '2026-10-05', color: 'gray' },
-  { id: 'e2', title: 'Marketing sit...', time: '8:00 pm', date: '2026-10-05', color: 'gray' },
+const INITIAL_EVENTS = [];
 
-  // Day 8
-  { id: 'e3', title: 'All-hands me...', time: '9:30 pm', date: '2026-10-08', color: 'gray' },
-
-  // Day 9
-  { id: 'e4', title: 'Dinner with C...', time: '12:00 am', date: '2026-10-09', color: 'gray' },
-  { id: 'e5', title: 'Friday standup', time: '2:30 pm', date: '2026-10-09', color: 'gray' },
-  { id: 'e6', title: 'Olivia x Riley', time: '3:30 pm', date: '2026-10-09', color: 'purple' },
-  { id: 'e6b', title: 'Client check-in', time: '5:00 pm', date: '2026-10-09', color: 'blue', hiddenByDefault: true },
-
-  // Day 10
-  { id: 'e7', title: 'House inspec...', time: '4:30 pm', date: '2026-10-10', color: 'amber' },
-
-  // Day 11
-  { id: 'e8', title: "Ava's engagm...", time: '6:30 pm', date: '2026-10-11', color: 'purple' },
-
-  // Day 12
-  { id: 'e9', title: 'Monday stand...', time: '2:30 pm', date: '2026-10-12', color: 'gray' },
-  { id: 'e10', title: 'Content plann...', time: '4:30 pm', date: '2026-10-12', color: 'blue' },
-
-  // Day 13 (TODAY)
-  { id: 'e11', title: 'Product demo', time: '4:00 pm', date: '2026-10-13', color: 'blue' },
-  { id: 'e12', title: 'Catch up w/ A...', time: '8:00 pm', date: '2026-10-13', color: 'pink' },
-
-  // Day 14
-  { id: 'e13', title: 'Deep work', time: '2:30 pm', date: '2026-10-14', color: 'blue' },
-  { id: 'e14', title: 'One-on-one ...', time: '3:30 pm', date: '2026-10-14', color: 'pink' },
-  { id: 'e15', title: 'Design sync', time: '4:00 pm', date: '2026-10-14', color: 'blue' },
-  { id: 'e15b', title: 'Sprint retro', time: '5:30 pm', date: '2026-10-14', color: 'gray', hiddenByDefault: true },
-  { id: 'e15c', title: 'API deployment', time: '6:30 pm', date: '2026-10-14', color: 'green', hiddenByDefault: true },
-
-  // Day 15
-  { id: 'e16', title: 'Lunch with Oli...', time: '5:30 pm', date: '2026-10-15', color: 'green' },
-
-  // Day 16
-  { id: 'e17', title: 'Coffee w/ Am...', time: '3:00 pm', date: '2026-10-16', color: 'pink' },
-  { id: 'e18', title: 'Design feedb...', time: '8:00 pm', date: '2026-10-16', color: 'pink' },
-
-  // Day 17
-  { id: 'e19', title: 'Half marathon', time: '12:30 pm', date: '2026-10-17', color: 'green' },
-
-  // Day 19
-  { id: 'e20', title: 'Team lunch', time: '5:45 pm', date: '2026-10-19', color: 'pink' },
-
-  // Day 21
-  { id: 'e21', title: 'Product plann...', time: '3:00 pm', date: '2026-10-21', color: 'blue' },
-
-  // Day 22
-  { id: 'e22', title: "Amélie's first ...", time: '3:30 pm', date: '2026-10-22', color: 'pink' },
-  { id: 'e23', title: 'All-hands me...', time: '9:30 pm', date: '2026-10-22', color: 'gray' },
-
-  // Day 23
-  { id: 'e24', title: 'Accountant', time: '7:15 pm', date: '2026-10-23', color: 'yellow' },
-  { id: 'e25', title: 'Marketing sit...', time: '8:00 pm', date: '2026-10-23', color: 'gray' },
-
-  // Multi-day banner: Team offsite (Days 26, 27, 28)
-  { id: 'span-offsite', title: 'Team offsite', startDate: '2026-10-26', endDate: '2026-10-28', color: 'green', isSpanning: true },
-
-  // Day 26
-  { id: 'e26', title: 'Deep work', time: '2:45 pm', date: '2026-10-26', color: 'blue' },
-
-  // Day 27
-  { id: 'e27', title: 'Quarterly revi...', time: '5:00 pm', date: '2026-10-27', color: 'amber' },
-  { id: 'e28', title: 'Lunch with Za...', time: '6:30 pm', date: '2026-10-27', color: 'green' },
-
-  // Day 28
-  { id: 'e29', title: 'Deep work', time: '2:30 pm', date: '2026-10-28', color: 'blue' },
-  { id: 'e30', title: 'Design sync', time: '8:00 pm', date: '2026-10-28', color: 'blue' },
-
-  // Day 29
-  { id: 'e31', title: 'Amélie coffee', time: '3:30 pm', date: '2026-10-29', color: 'pink' },
-
-  // Day 30
-  { id: 'e32', title: 'Dinner with C...', time: '12:30 am', date: '2026-10-30', color: 'gray' },
-];
 
 const COLOR_STYLES = {
   blue: 'bg-blue-50 dark:bg-[#1C2B41] text-blue-600 dark:text-[#579DFF] border border-blue-200 dark:border-[#579DFF]/30 hover:border-blue-400 dark:hover:border-[#579DFF]',

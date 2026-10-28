@@ -21,88 +21,29 @@ export const normalizeWorkspaceId = (id) => {
   return id;
 };
 
-const MOCK_PROJECTS = [
-  {
-    id: '00000000-0000-0000-0001-000000000001',
-    key: 'PROJ-FE48',
-    name: 'Inventory Management System',
-    description: 'Build a Inventory Management System for the company Standard',
-    color: '#F59E0B',
-    tag: 'General',
-    client: 'Partical Black',
-    budget: 10000,
-    status: 'on_hold',
-    workspace_id: SEED_WORKSPACE_IDS.WS_4RGED,
-    project_manager_id: SEED_USER_IDS.NEEL,
-    member_ids: [SEED_USER_IDS.NEEL, SEED_USER_IDS.RABIL],
-    member_emails: ['neel@gmail.com', 'rabil@gmail.com'],
-    moreCount: 0,
-  },
-  {
-    id: '00000000-0000-0000-0001-000000000002',
-    key: 'PROJ-E2A7',
-    name: 'HRO',
-    description: 'Build a Hiring Recusation Onboarding system for the company Standard',
-    color: '#F59E0B',
-    tag: 'General',
-    client: 'Partical Black',
-    budget: 10000,
-    status: 'on_hold',
-    workspace_id: SEED_WORKSPACE_IDS.WS_4RGED,
-    project_manager_id: SEED_USER_IDS.NEEL,
-    member_ids: [SEED_USER_IDS.NEEL, SEED_USER_IDS.AADHI],
-    member_emails: ['neel@gmail.com', 'aadhi@gmail.com'],
-    moreCount: 0,
-  },
-  {
-    id: '00000000-0000-0000-0001-000000000003',
-    key: 'PROJ-49C9',
-    name: 'Chat Application',
-    description: 'Chat Application , To communicate with clients',
-    color: '#F59E0B',
-    tag: 'General',
-    client: 'Partical Black',
-    budget: 10000,
-    status: 'on_hold',
-    workspace_id: SEED_WORKSPACE_IDS.WS_4RGED,
-    project_manager_id: SEED_USER_IDS.NEEL,
-    member_ids: [SEED_USER_IDS.NEEL, SEED_USER_IDS.ALEX],
-    member_emails: ['neel@gmail.com', 'alex@gmail.com'],
-    moreCount: 0,
-  },
-  {
-    id: '00000000-0000-0000-0001-000000000004',
-    key: 'PROJ-C682',
-    name: 'PES',
-    description: 'Build a Project Management System ,that should be in a companyn standard',
-    color: '#F59E0B',
-    tag: 'General',
-    client: 'Partical Black',
-    budget: 10000,
-    status: 'on_hold',
-    workspace_id: SEED_WORKSPACE_IDS.WS_4RGED,
-    project_manager_id: SEED_USER_IDS.NEEL,
-    member_ids: [SEED_USER_IDS.NEEL, SEED_USER_IDS.DHANUSH],
-    member_emails: ['neel@gmail.com', 'dhanush@gmail.com'],
-    moreCount: 0,
-  },
-];
+const MOCK_PROJECTS = [];
 
 export function getStoredProjects() {
   try {
     const stored = localStorage.getItem(PROJECTS_STORAGE_KEY);
     if (stored) {
       const parsed = JSON.parse(stored);
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        return parsed.map((p) => ({
-          ...p,
-          workspace_id: normalizeWorkspaceId(p.workspace_id),
-          member_emails: p.member_emails || (p.members ? p.members.map((m) => m.email?.toLowerCase()).filter(Boolean) : []),
-        }));
+      if (Array.isArray(parsed)) {
+        return parsed
+          .filter(
+            (p) =>
+              !p.id?.toString().startsWith('proj-') &&
+              !p.id?.toString().startsWith('00000000-0000-0000-0001-')
+          )
+          .map((p) => ({
+            ...p,
+            workspace_id: normalizeWorkspaceId(p.workspace_id),
+            member_emails: p.member_emails || (p.members ? p.members.map((m) => m.email?.toLowerCase()).filter(Boolean) : []),
+          }));
       }
     }
   } catch {}
-  return isSupabaseConfigured ? [] : MOCK_PROJECTS;
+  return [];
 }
 
 export function saveStoredProjects(projects, emitEvent = true) {

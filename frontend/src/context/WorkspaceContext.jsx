@@ -13,29 +13,10 @@ export const SEED_WORKSPACE_IDS = {
   WS1: '00000000-0000-0000-0000-000000000001',
 };
 
-const INITIAL_WORKSPACES = [
-  {
-    id: SEED_WORKSPACE_IDS.WS_4RGED,
-    name: '4rged',
-    slug: '4rged',
-    initial: '4',
-    color: '#F59E0B',
-    description: 'Core product development workspace',
-    role: 'owner',
-  },
-  {
-    id: SEED_WORKSPACE_IDS.WS_ACME,
-    name: 'Acme Product Studio',
-    slug: 'acme-studio',
-    initial: 'A',
-    color: '#7C3AED',
-    description: 'Main product engineering and SaaS dashboard',
-    role: 'admin',
-  },
-];
+const INITIAL_WORKSPACES = [];
 
 const normalizeId = (id) => {
-  if (!id) return SEED_WORKSPACE_IDS.WS_4RGED;
+  if (!id) return null;
   if (id === 'ws-1' || id === '4rged') return SEED_WORKSPACE_IDS.WS_4RGED;
   if (id === 'ws-2' || id === 'acme-studio') return SEED_WORKSPACE_IDS.WS_ACME;
   return id;
@@ -47,15 +28,15 @@ export function WorkspaceProvider({ children }) {
       const stored = localStorage.getItem(STORAGE_KEY_WORKSPACES);
       if (stored !== null) {
         const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed) && parsed.length > 0) {
+        if (Array.isArray(parsed)) {
           return parsed.map((w) => ({
             ...w,
-            id: normalizeId(w.id),
+            id: normalizeId(w.id) || w.id,
           }));
         }
       }
     } catch {}
-    return INITIAL_WORKSPACES;
+    return [];
   });
 
   const [currentWorkspace, setCurrentWorkspace] = useState(() => {

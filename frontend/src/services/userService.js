@@ -17,28 +17,7 @@ export const SEED_USER_IDS = {
   DHANUSH: '00000000-0000-0000-0000-000000000011',
 };
 
-const INITIAL_AUTHORIZED_USERS = [
-  {
-    id: SEED_USER_IDS.ADMIN,
-    name: 'Tharun R',
-    email: 'tharun@gmail.com',
-    password: '12345678',
-    role: 'admin',
-    status: 'Active',
-    avatar: 'TR',
-    color: '#7C3AED',
-  },
-  {
-    id: SEED_USER_IDS.ADMIN_ALIAS,
-    name: 'Tharun R',
-    email: 'tharun.workx@gmail.com',
-    password: '12345678',
-    role: 'admin',
-    status: 'Active',
-    avatar: 'TR',
-    color: '#7C3AED',
-  },
-];
+const INITIAL_AUTHORIZED_USERS = [];
 
 export const userService = {
   getUsers() {
@@ -51,7 +30,7 @@ export const userService = {
         }
       }
     } catch {}
-    return INITIAL_AUTHORIZED_USERS;
+    return [];
   },
 
   saveUsers(users) {
@@ -143,10 +122,9 @@ export const userService = {
         }
       }
 
-      // If both remote tables are completely empty, only then seed initial users
       if (userMap.size === 0) {
-        this.saveUsers(INITIAL_AUTHORIZED_USERS);
-        return INITIAL_AUTHORIZED_USERS;
+        this.saveUsers([]);
+        return [];
       }
 
       const merged = Array.from(userMap.values());

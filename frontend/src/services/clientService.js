@@ -3,68 +3,7 @@ import { supabase, isSupabaseConfigured } from '../lib/supabase';
 
 const CLIENTS_STORAGE_KEY = 'taskflow_clients_v2';
 
-export const INITIAL_CLIENTS = [
-  {
-    id: 'cli-1',
-    name: 'Partical Black',
-    contact_person: 'Sundhar',
-    company: 'Sundhar',
-    email: 'sundar@mail.com',
-    phone: '9876543210',
-    status: 'Active',
-    createdAt: '2026-01-10',
-  },
-  {
-    id: 'cli-2',
-    name: 'Southern Rescue Services',
-    contact_person: 'Southern Rescue Services',
-    company: 'Southern Rescue Services',
-    email: 'contact@southernrescue.org',
-    phone: '+1 (555) 234-5678',
-    status: 'Active',
-    createdAt: '2026-01-15',
-  },
-  {
-    id: 'cli-3',
-    name: 'Acme Corporation',
-    contact_person: 'Acme Corporation',
-    company: 'Acme Corporation',
-    email: 'billing@acme.corp',
-    phone: '+1 (555) 987-6543',
-    status: 'Active',
-    createdAt: '2026-02-10',
-  },
-  {
-    id: 'cli-4',
-    name: 'Stripe Payments',
-    contact_person: 'Stripe Payments',
-    company: 'Stripe Payments',
-    email: 'enterprise@stripe.com',
-    phone: '+1 (555) 345-6789',
-    status: 'Active',
-    createdAt: '2026-03-01',
-  },
-  {
-    id: 'cli-5',
-    name: 'Global Dynamics',
-    contact_person: 'Global Dynamics Inc.',
-    company: 'Global Dynamics Inc.',
-    email: 'partners@globaldynamics.io',
-    phone: '+1 (555) 876-5432',
-    status: 'Active',
-    createdAt: '2026-03-18',
-  },
-  {
-    id: 'cli-6',
-    name: 'Taskflow Internal',
-    contact_person: 'Taskflow Inc.',
-    company: 'Taskflow Inc.',
-    email: 'ops@taskflow.internal',
-    phone: '+1 (555) 456-7890',
-    status: 'Active',
-    createdAt: '2026-04-05',
-  },
-];
+export const INITIAL_CLIENTS = [];
 
 function mapRemoteClient(rc) {
   const contactPerson = rc.contact_person || rc.company || rc.name || '';
@@ -88,13 +27,12 @@ export const clientService = {
       const stored = localStorage.getItem(CLIENTS_STORAGE_KEY);
       if (stored) {
         const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed;
+        if (Array.isArray(parsed)) {
+          return parsed.filter((c) => !c.id?.toString().startsWith('cli-'));
         }
       }
     } catch {}
-    this.saveClients(INITIAL_CLIENTS);
-    return INITIAL_CLIENTS;
+    return [];
   },
 
   saveClients(clients) {

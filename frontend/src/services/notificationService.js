@@ -4,44 +4,7 @@ const NOTIFICATIONS_STORAGE_KEY = 'taskflow_notifications_cache_v2';
 const NOTIFICATIONS_INIT_FLAG = 'taskflow_notifications_initialized_v2';
 const NOTIFICATIONS_DELETED_KEY = 'taskflow_notifications_deleted_ids_v2';
 
-export const DEFAULT_NOTIFICATIONS = [
-  {
-    id: 'notif-1',
-    title: 'Task Assigned',
-    message: 'You have been assigned to "Design Mobile Sidebar Layout"',
-    desc: 'You have been assigned to "Design Mobile Sidebar Layout"',
-    time: '20 minutes ago',
-    unread: true,
-    created_at: new Date(Date.now() - 20 * 60 * 1000).toISOString(),
-  },
-  {
-    id: 'notif-2',
-    title: 'Deadline Approaching',
-    message: 'Task "Implement JWT Filter" is due tomorrow at 5:00 PM',
-    desc: 'Task "Implement JWT Filter" is due tomorrow at 5:00 PM',
-    time: '2 hours ago',
-    unread: true,
-    created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-  },
-  {
-    id: 'notif-3',
-    title: 'Project Status Updated',
-    message: 'Project "Core Platform Revamp" moved to Active',
-    desc: 'Project "Core Platform Revamp" moved to Active',
-    time: '1 day ago',
-    unread: false,
-    created_at: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-  },
-  {
-    id: 'notif-4',
-    title: 'New Comment',
-    message: 'Alex Johnson commented on "Supabase Connection Pooler Setup"',
-    desc: 'Alex Johnson commented on "Supabase Connection Pooler Setup"',
-    time: '2 days ago',
-    unread: false,
-    created_at: new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString(),
-  },
-];
+export const DEFAULT_NOTIFICATIONS = [];
 
 function formatRelativeTime(isoDate) {
   if (!isoDate) return 'Just now';
@@ -102,25 +65,14 @@ function getStoredNotifications() {
   try {
     const deleted = getDeletedIds();
     const stored = localStorage.getItem(NOTIFICATIONS_STORAGE_KEY);
-    const hasInitialized = localStorage.getItem(NOTIFICATIONS_INIT_FLAG);
-
     if (stored !== null) {
       const parsed = JSON.parse(stored);
       if (Array.isArray(parsed)) {
-        return parsed.filter(n => !deleted.has(n.id));
+        return parsed.filter(n => !deleted.has(n.id) && !n.id?.toString().startsWith('notif-'));
       }
     }
-
-    if (!hasInitialized) {
-      localStorage.setItem(NOTIFICATIONS_INIT_FLAG, 'true');
-      localStorage.setItem(NOTIFICATIONS_STORAGE_KEY, JSON.stringify(DEFAULT_NOTIFICATIONS));
-      return DEFAULT_NOTIFICATIONS.filter(n => !deleted.has(n.id));
-    }
-
-    return [];
-  } catch {
-    return DEFAULT_NOTIFICATIONS;
-  }
+  } catch {}
+  return [];
 }
 
 function saveStoredNotifications(notifications) {
