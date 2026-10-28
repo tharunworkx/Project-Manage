@@ -62,6 +62,26 @@ export default function UserManagement() {
   const [editingUserId, setEditingUserId] = useState(null);
   const [editName, setEditName] = useState('');
   const [userToDelete, setUserToDelete] = useState(null);
+  const [activeMenuUserId, setActiveMenuUserId] = useState(null);
+  const actionMenuRef = React.useRef(null);
+
+  React.useEffect(() => {
+    if (!activeMenuUserId) return;
+    const handleClickOutside = (e) => {
+      if (actionMenuRef.current && !actionMenuRef.current.contains(e.target)) {
+        setActiveMenuUserId(null);
+      }
+    };
+    const handleEscape = (e) => {
+      if (e.key === 'Escape') setActiveMenuUserId(null);
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleEscape);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [activeMenuUserId]);
 
   React.useEffect(() => {
     const refresh = () => {
@@ -422,7 +442,7 @@ export default function UserManagement() {
             <TableHead id="actions" className="text-right">Actions</TableHead>
           </TableHeader>
           <TableBody>
-            {filteredUsers.map((user) => (
+            {filteredUsers.map((user, idx) => (
               <TableRow key={user.id} id={user.id}>
                 <TableCell>
                   <div className="flex items-center gap-3">
@@ -525,24 +545,34 @@ export default function UserManagement() {
                   </span>
                 </TableCell>
                 <TableCell className="text-right">
-                  <div className="flex items-center justify-end">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
+                  <div className="flex items-center justify-end relative">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setActiveMenuUserId(activeMenuUserId === user.id ? null : user.id);
+                      }}
+                      className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-500 hover:text-slate-800 dark:text-[#9FADBC] dark:hover:text-[#DEE4EA] hover:bg-slate-100 dark:hover:bg-[#282E33] transition cursor-pointer"
+                      title="Account actions"
+                    >
+                      <MoreVertical className="h-4 w-4" />
+                    </button>
+                    {activeMenuUserId === user.id && (
+                      <div
+                        ref={actionMenuRef}
+                        className={`absolute right-0 ${
+                          idx >= filteredUsers.length - 2 && filteredUsers.length > 2
+                            ? 'bottom-full mb-1.5'
+                            : 'top-full mt-1.5'
+                        } w-40 rounded-xl border border-slate-200 dark:border-[#282E33] bg-white dark:bg-[#161A1D] p-1.5 shadow-2xl text-xs z-50`}
+                      >
                         <button
                           type="button"
-                          className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-500 hover:text-slate-800 dark:text-[#9FADBC] dark:hover:text-[#DEE4EA] hover:bg-slate-100 dark:hover:bg-[#282E33] transition cursor-pointer"
-                          title="Account actions"
-                        >
-                          <MoreVertical className="h-4 w-4" />
-                        </button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent
-                        align="end"
-                        className="w-40 rounded-xl border border-slate-200 dark:border-[#282E33] bg-white dark:bg-[#161A1D] p-1.5 shadow-xl text-xs z-50"
-                      >
-                        <DropdownMenuItem
-                          onClick={() => handleToggleStatus(user.id)}
-                          className="flex items-center gap-2 px-2.5 py-2 rounded-lg cursor-pointer hover:bg-slate-100 dark:hover:bg-[#22272B] text-slate-700 dark:text-[#DEE4EA] font-medium"
+                          onClick={() => {
+                            setActiveMenuUserId(null);
+                            handleToggleStatus(user.id);
+                          }}
+                          className="w-full flex items-center gap-2 px-2.5 py-2 rounded-lg cursor-pointer hover:bg-slate-100 dark:hover:bg-[#22272B] text-slate-700 dark:text-[#DEE4EA] font-medium text-left"
                         >
                           {user.status === 'Active' ? (
                             <>
@@ -555,17 +585,21 @@ export default function UserManagement() {
                               <span>Activate</span>
                             </>
                           )}
-                        </DropdownMenuItem>
+                        </button>
 
-                        <DropdownMenuItem
-                          onClick={() => setUserToDelete(user)}
-                          className="flex items-center gap-2 px-2.5 py-2 rounded-lg cursor-pointer hover:bg-rose-50 dark:hover:bg-rose-950/30 text-rose-600 dark:text-rose-400 font-medium"
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setActiveMenuUserId(null);
+                            setUserToDelete(user);
+                          }}
+                          className="w-full flex items-center gap-2 px-2.5 py-2 rounded-lg cursor-pointer hover:bg-rose-50 dark:hover:bg-rose-950/30 text-rose-600 dark:text-rose-400 font-medium text-left"
                         >
                           <Trash2 className="h-3.5 w-3.5" />
                           <span>Delete</span>
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </TableCell>
               </TableRow>
