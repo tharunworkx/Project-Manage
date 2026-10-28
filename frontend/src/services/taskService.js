@@ -449,15 +449,14 @@ export const taskService = {
         };
       });
 
-      // Two-way synchronization: If any local tasks exist that were not saved to Supabase (starts with 'task-'), sync them!
       const localTasks = getStoredTasks();
-      const unsynced = localTasks.filter((lt) => lt && String(lt.id).startsWith('task-'));
-      for (const un of unsynced) {
-        if (!tasks.some((rt) => rt.title === un.title && rt.status === un.status)) {
-          this.createTask(un).then((created) => {
-            if (created) tasks.unshift(created);
-          }).catch(() => {});
-        }
+      if (normWorkspaceId) {
+        const otherWorkspaceTasks = localTasks.filter(
+          (t) => t.workspace_id && normalizeWorkspaceId(t.workspace_id) !== normWorkspaceId
+        );
+        saveStoredTasks([...tasks, ...otherWorkspaceTasks], false);
+      } else {
+        saveStoredTasks(tasks, false);
       }
 
       if (normWorkspaceId) {

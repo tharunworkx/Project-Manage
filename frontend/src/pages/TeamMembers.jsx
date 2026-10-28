@@ -37,8 +37,18 @@ export default function TeamMembers() {
 
     refreshData();
 
-    const handleLocalUpdate = () => {
-      setUsers(userService.getUsers());
+    const handleLocalUpdate = (e) => {
+      if (e?.detail?.deleted && (e.detail.id || e.detail.email)) {
+        setUsers((prev) =>
+          prev.filter(
+            (u) =>
+              (e.detail.id ? u.id !== e.detail.id : true) &&
+              (e.detail.email ? u.email?.toLowerCase() !== e.detail.email?.toLowerCase() : true)
+          )
+        );
+      } else {
+        setUsers(userService.getUsers());
+      }
     };
 
     window.addEventListener('taskflow_users_updated', handleLocalUpdate);
@@ -46,10 +56,23 @@ export default function TeamMembers() {
 
     let channel = null;
     if (isSupabaseConfigured) {
+      const channelId = `realtime_team_members_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
       channel = supabase
-        .channel('realtime_team_members_feed')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, refreshData)
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'users' }, refreshData)
+        .channel(channelId)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, (payload) => {
+          if (payload?.eventType === 'DELETE' && payload.old?.id) {
+            setUsers((prev) => prev.filter((u) => u.id !== payload.old.id));
+          } else {
+            refreshData();
+          }
+        })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'users' }, (payload) => {
+          if (payload?.eventType === 'DELETE' && payload.old?.id) {
+            setUsers((prev) => prev.filter((u) => u.id !== payload.old.id));
+          } else {
+            refreshData();
+          }
+        })
         .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks' }, refreshData)
         .subscribe();
     }
@@ -79,15 +102,21 @@ export default function TeamMembers() {
 
   const handleDeleteMember = async () => {
     if (!memberToDelete) return;
-    const targetName = memberToDelete.name;
+    const target = memberToDelete;
+    const targetName = target.name || 'Member';
+    setMemberToDelete(null);
+
+    // Optimistic immediate UI removal
+    setUsers((prev) =>
+      prev.filter((u) => u.id !== target.id && u.email?.toLowerCase() !== target.email?.toLowerCase())
+    );
+
     try {
-      await userService.deleteUser(memberToDelete);
-      setUsers(userService.getUsers());
+      await userService.deleteUser(target);
       toast.success(`Member "${targetName}" deleted successfully`);
     } catch (err) {
       toast.error('Failed to delete member from database');
-    } finally {
-      setMemberToDelete(null);
+      refreshData();
     }
   };
 

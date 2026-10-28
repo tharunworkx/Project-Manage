@@ -38,96 +38,6 @@ const INITIAL_AUTHORIZED_USERS = [
     avatar: 'TR',
     color: '#7C3AED',
   },
-  {
-    id: SEED_USER_IDS.SAMVEL,
-    name: 'Samvel',
-    email: 'samvel@gmail.com',
-    password: '12345678',
-    role: 'team_member',
-    status: 'Active',
-    avatar: 'SA',
-    color: '#10B981',
-  },
-  {
-    id: SEED_USER_IDS.ALEX,
-    name: 'Sham Alex',
-    email: 'alex@gmail.com',
-    password: '12345678',
-    role: 'team_member',
-    status: 'Active',
-    avatar: 'SH',
-    color: '#10B981',
-  },
-  {
-    id: SEED_USER_IDS.SRINI,
-    name: 'Srinivasan',
-    email: 'srini@gmail.com',
-    password: '12345678',
-    role: 'team_member',
-    status: 'Active',
-    avatar: 'SR',
-    color: '#10B981',
-  },
-  {
-    id: SEED_USER_IDS.GOKUL,
-    name: 'Gokul',
-    email: 'gokul@gmail.com',
-    password: '12345678',
-    role: 'team_member',
-    status: 'Active',
-    avatar: 'GO',
-    color: '#10B981',
-  },
-  {
-    id: SEED_USER_IDS.RABIL,
-    name: 'Rabil',
-    email: 'rabil@gmail.com',
-    password: '12345678',
-    role: 'team_member',
-    status: 'Active',
-    avatar: 'RA',
-    color: '#10B981',
-  },
-  {
-    id: SEED_USER_IDS.RAJINI,
-    name: 'Aadhi Rajini',
-    email: 'rajini@gmail.com',
-    password: '12345678',
-    role: 'team_member',
-    status: 'Active',
-    avatar: 'AA',
-    color: '#10B981',
-  },
-  {
-    id: SEED_USER_IDS.AADHI,
-    name: 'Adithya Chaubhe',
-    email: 'aadhi@gmail.com',
-    password: '12345678',
-    role: 'team_member',
-    status: 'Active',
-    avatar: 'AD',
-    color: '#10B981',
-  },
-  {
-    id: SEED_USER_IDS.NEEL,
-    name: 'Neel',
-    email: 'neel@gmail.com',
-    password: '12345678',
-    role: 'project_manager',
-    status: 'Active',
-    avatar: 'NE',
-    color: '#0C66E4',
-  },
-  {
-    id: SEED_USER_IDS.DHANUSH,
-    name: 'Dhanush',
-    email: 'dhanush@gmail.com',
-    password: '12345678',
-    role: 'team_member',
-    status: 'Active',
-    avatar: 'DH',
-    color: '#10B981',
-  },
 ];
 
 export const userService = {
@@ -136,12 +46,11 @@ export const userService = {
       const stored = localStorage.getItem(USERS_STORAGE_KEY);
       if (stored) {
         const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed) && parsed.length > 0) {
+        if (Array.isArray(parsed)) {
           return parsed;
         }
       }
     } catch {}
-    this.saveUsers(INITIAL_AUTHORIZED_USERS);
     return INITIAL_AUTHORIZED_USERS;
   },
 
@@ -177,47 +86,44 @@ export const userService = {
   },
 
   /**
-   * Synchronize local cache with remote Supabase `profiles` and `users` tables
-   * with automatic two-way synchronization.
+   * Synchronize local cache with remote Supabase `profiles` and `users` tables.
+   * When Supabase is configured, the remote database is the source of truth.
    */
   async fetchUsersFromRemote() {
     if (!isSupabaseConfigured) return this.getUsers();
     try {
-      const [{ data: remoteProfiles }, { data: remoteUsers }] = await Promise.all([
-        supabase.from('profiles').select('*'),
-        supabase.from('users').select('*'),
+      const [{ data: remoteProfiles, error: pErr }, { data: remoteUsers, error: uErr }] = await Promise.all([
+        supabase.from('profiles').select('*').order('created_at', { ascending: true }),
+        supabase.from('users').select('*').order('created_at', { ascending: true }),
       ]);
 
-      const localUsers = this.getUsers();
-      const userMap = new Map();
-
-      // Seed local users first
-      for (const u of localUsers) {
-        if (u.email) userMap.set(u.email.toLowerCase(), { ...u });
+      if (pErr && uErr) {
+        return this.getUsers();
       }
 
-      // Merge remote profiles
+      // Supabase is the single source of truth when configured.
+      const userMap = new Map();
+
+      // 1. Merge remote profiles
       if (Array.isArray(remoteProfiles)) {
         for (const rp of remoteProfiles) {
           if (!rp.email) continue;
           const email = rp.email.toLowerCase();
-          const existing = userMap.get(email) || {};
           userMap.set(email, {
-            ...existing,
-            id: rp.id || existing.id,
-            name: rp.full_name || existing.name || email.split('@')[0],
+            id: rp.id,
+            name: rp.full_name || email.split('@')[0],
             email: email,
-            role: (rp.role || existing.role || 'team_member').toLowerCase(),
+            role: (rp.role || 'team_member').toLowerCase(),
             status: rp.status === 'deactivated' ? 'Deactivated' : 'Active',
-            color: rp.color || existing.color || '#10B981',
+            color: rp.color || '#10B981',
             avatar: rp.full_name
               ? rp.full_name.split(' ').map((n) => n[0]).join('').substring(0, 2).toUpperCase()
-              : (existing.avatar || email.substring(0, 2).toUpperCase()),
+              : email.substring(0, 2).toUpperCase(),
           });
         }
       }
 
-      // Merge remote users table
+      // 2. Merge remote users table
       if (Array.isArray(remoteUsers)) {
         for (const ru of remoteUsers) {
           if (!ru.email) continue;
@@ -230,23 +136,21 @@ export const userService = {
             email: email,
             password: ru.password_hash || existing.password || '12345678',
             role: (ru.role || existing.role || 'team_member').toLowerCase(),
-            status: ru.is_active === false ? 'Deactivated' : 'Active',
+            status: ru.is_active === false ? 'Deactivated' : (existing.status || 'Active'),
             color: ru.color || existing.color || '#10B981',
+            avatar: existing.avatar || (ru.full_name ? ru.full_name.split(' ').map((n) => n[0]).join('').substring(0, 2).toUpperCase() : email.substring(0, 2).toUpperCase()),
           });
         }
       }
 
-      // Two-way sync: If any user exists locally that is not in remote database, push it to Supabase
-      if (Array.isArray(remoteProfiles)) {
-        const remoteEmailSet = new Set(remoteProfiles.map((rp) => rp.email?.toLowerCase()).filter(Boolean));
-        for (const [email, u] of userMap.entries()) {
-          if (!remoteEmailSet.has(email)) {
-            this.syncUserToRemote(u).catch(() => {});
-          }
-        }
+      // If both remote tables are completely empty, only then seed initial users
+      if (userMap.size === 0) {
+        this.saveUsers(INITIAL_AUTHORIZED_USERS);
+        return INITIAL_AUTHORIZED_USERS;
       }
 
       const merged = Array.from(userMap.values());
+      // Save authoritative list to local storage
       this.saveUsers(merged);
       return merged;
     } catch (err) {
@@ -519,21 +423,39 @@ export const userService = {
     }
 
     const cleanEmail = targetEmail?.trim()?.toLowerCase();
-    const users = this.getUsers();
-    const updated = users.filter((u) => {
-      if (targetId && u.id === targetId) return false;
-      if (cleanEmail && u.email && u.email.toLowerCase() === cleanEmail) return false;
-      return true;
-    });
-    this.saveUsers(updated);
 
     if (isSupabaseConfigured) {
       try {
+        let remoteId = targetId;
+        if (cleanEmail) {
+          try {
+            const { data: prof } = await supabase
+              .from('profiles')
+              .select('id')
+              .eq('email', cleanEmail)
+              .maybeSingle();
+            if (prof?.id) remoteId = prof.id;
+          } catch {}
+        }
+
+        // Step 1: Clear foreign keys first to prevent FK constraint violations!
+        const fkOps = [];
+        const idsToClean = Array.from(new Set([targetId, remoteId].filter(Boolean)));
+        for (const uid of idsToClean) {
+          fkOps.push(supabase.from('project_members').delete().eq('user_id', uid));
+          fkOps.push(supabase.from('tasks').update({ assignee_id: null }).eq('assignee_id', uid));
+          fkOps.push(supabase.from('tasks').update({ reporter_id: null }).eq('reporter_id', uid));
+          fkOps.push(supabase.from('projects').update({ project_manager_id: null }).eq('project_manager_id', uid));
+          fkOps.push(supabase.from('comments').delete().eq('user_id', uid));
+          fkOps.push(supabase.from('notifications').delete().eq('user_id', uid));
+        }
+        await Promise.allSettled(fkOps);
+
+        // Step 2: Delete from profiles and users tables
         const deleteOps = [];
-        if (targetId) {
-          deleteOps.push(supabase.from('project_members').delete().eq('user_id', targetId));
-          deleteOps.push(supabase.from('profiles').delete().eq('id', targetId));
-          deleteOps.push(supabase.from('users').delete().eq('id', targetId));
+        for (const uid of idsToClean) {
+          deleteOps.push(supabase.from('profiles').delete().eq('id', uid));
+          deleteOps.push(supabase.from('users').delete().eq('id', uid));
         }
         if (cleanEmail) {
           deleteOps.push(supabase.from('profiles').delete().eq('email', cleanEmail));
@@ -543,6 +465,22 @@ export const userService = {
       } catch (err) {
         console.warn('Error deleting user from Supabase:', err);
       }
+    }
+
+    const users = this.getUsers();
+    const updated = users.filter((u) => {
+      if (targetId && u.id === targetId) return false;
+      if (cleanEmail && u.email && u.email.toLowerCase() === cleanEmail) return false;
+      return true;
+    });
+    this.saveUsers(updated);
+
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(
+        new CustomEvent('taskflow_users_updated', {
+          detail: { id: targetId, email: cleanEmail, deleted: true, users: updated },
+        })
+      );
     }
     return true;
   },

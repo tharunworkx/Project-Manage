@@ -37,6 +37,7 @@ import { useProjects } from '../hooks/useProjects';
 import { useAuthContext } from '../context/AuthContext';
 import { ConfirmDialog } from '../components/common/ConfirmDialog';
 import { toast } from 'sonner';
+import { supabase, isSupabaseConfigured } from '../lib/supabase';
 
 export default function ClientsPage() {
   const { isAdmin, isProjectManager, isTeamMember, user } = useAuthContext();
@@ -73,13 +74,37 @@ export default function ClientsPage() {
 
   useEffect(() => {
     clientService.fetchClientsFromRemote().then((remote) => {
-      if (Array.isArray(remote) && remote.length > 0) {
+      if (Array.isArray(remote)) {
         setClients(remote);
       }
     });
+
     const handleUpdate = () => refreshClients();
     window.addEventListener('taskflow_clients_updated', handleUpdate);
-    return () => window.removeEventListener('taskflow_clients_updated', handleUpdate);
+    window.addEventListener('storage', handleUpdate);
+
+    let channel = null;
+    if (isSupabaseConfigured) {
+      const channelId = `realtime_clients_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+      channel = supabase
+        .channel(channelId)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'clients' }, (payload) => {
+          if (payload?.eventType === 'DELETE' && payload.old?.id) {
+            setClients((prev) => prev.filter((c) => c.id !== payload.old.id));
+          } else {
+            clientService.fetchClientsFromRemote().then((remote) => {
+              if (Array.isArray(remote)) setClients(remote);
+            });
+          }
+        })
+        .subscribe();
+    }
+
+    return () => {
+      window.removeEventListener('taskflow_clients_updated', handleUpdate);
+      window.removeEventListener('storage', handleUpdate);
+      if (channel) supabase.removeChannel(channel);
+    };
   }, []);
 
   const handleToggleStatus = async (clientId) => {
@@ -709,9 +734,19 @@ export default function ClientsPage() {
         onClose={() => setClientToDelete(null)}
         onConfirm={async () => {
           if (clientToDelete) {
-            await clientService.deleteClient(clientToDelete.id);
-            refreshClients();
-            toast.success(`Client "${clientToDelete.name}" deleted`);
+            const targetId = clientToDelete.id;
+            const targetName = clientToDelete.name;
+            setClients((prev) => prev.filter((c) => c.id !== targetId));
+            setClientToDelete(null);
+            try {
+              await clientService.deleteClient(targetId);
+              toast.success(`Client "${targetName}" deleted`);
+            } catch (err) {
+              toast.error('Failed to delete client');
+              clientService.fetchClientsFromRemote().then((remote) => {
+                if (Array.isArray(remote)) setClients(remote);
+              });
+            }
           }
         }}
         title="Delete Client"

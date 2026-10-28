@@ -136,8 +136,26 @@ export function WorkspaceProvider({ children }) {
     }
 
     syncWithSupabase();
+
+    let channel = null;
+    if (isSupabaseConfigured) {
+      const channelId = `realtime_workspaces_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+      channel = supabase
+        .channel(channelId)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'workspaces' }, (payload) => {
+          if (payload?.eventType === 'DELETE' && payload.old?.id) {
+            setWorkspaces((prev) => prev.filter((w) => w.id !== payload.old.id));
+            setCurrentWorkspace((prev) => (prev?.id === payload.old.id ? null : prev));
+          } else {
+            syncWithSupabase();
+          }
+        })
+        .subscribe();
+    }
+
     return () => {
       isMounted = false;
+      if (channel) supabase.removeChannel(channel);
     };
   }, []);
 

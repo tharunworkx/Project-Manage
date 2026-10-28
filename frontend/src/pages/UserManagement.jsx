@@ -72,20 +72,57 @@ export default function UserManagement() {
 
     refresh();
 
-    window.addEventListener('taskflow_users_updated', refresh);
+    const handleCustomSync = (e) => {
+      if (e?.detail?.deleted && (e.detail.id || e.detail.email)) {
+        setUsers((prev) =>
+          prev.filter(
+            (u) =>
+              (e.detail.id ? u.id !== e.detail.id : true) &&
+              (e.detail.email ? u.email?.toLowerCase() !== e.detail.email?.toLowerCase() : true)
+          )
+        );
+      } else if (Array.isArray(e?.detail?.users)) {
+        setUsers(e.detail.users);
+      } else {
+        refresh();
+      }
+    };
+
+    window.addEventListener('taskflow_users_updated', handleCustomSync);
     window.addEventListener('storage', refresh);
 
     let channel = null;
     if (isSupabaseConfigured) {
+      const channelId = `realtime_users_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
       channel = supabase
-        .channel('realtime_user_management')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, refresh)
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'users' }, refresh)
+        .channel(channelId)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, (payload) => {
+          if (payload?.eventType === 'DELETE' && payload.old?.id) {
+            setUsers((prev) => prev.filter((u) => u.id !== payload.old.id));
+            try {
+              const cur = userService.getUsers();
+              userService.saveUsers(cur.filter((u) => u.id !== payload.old.id));
+            } catch {}
+          } else {
+            refresh();
+          }
+        })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'users' }, (payload) => {
+          if (payload?.eventType === 'DELETE' && payload.old?.id) {
+            setUsers((prev) => prev.filter((u) => u.id !== payload.old.id));
+            try {
+              const cur = userService.getUsers();
+              userService.saveUsers(cur.filter((u) => u.id !== payload.old.id));
+            } catch {}
+          } else {
+            refresh();
+          }
+        })
         .subscribe();
     }
 
     return () => {
-      window.removeEventListener('taskflow_users_updated', refresh);
+      window.removeEventListener('taskflow_users_updated', handleCustomSync);
       window.removeEventListener('storage', refresh);
       if (channel) supabase.removeChannel(channel);
     };
@@ -132,17 +169,31 @@ export default function UserManagement() {
 
   const confirmDeleteUser = async () => {
     if (!userToDelete) return;
-    const deletedName = userToDelete.name;
-    await userService.deleteUser(userToDelete);
-    setUsers(userService.getUsers());
-    activityService.logActivity('all', {
-      user: user?.name || 'Admin',
-      action: 'deleted employee account for',
-      target: deletedName,
-      type: 'user',
-    });
-    toast.success(`Account "${deletedName}" deleted permanently`);
+    const target = userToDelete;
+    const deletedName = target.name || 'User';
     setUserToDelete(null);
+
+    // Optimistic immediate UI removal
+    setUsers((prev) =>
+      prev.filter((u) => u.id !== target.id && u.email?.toLowerCase() !== target.email?.toLowerCase())
+    );
+
+    try {
+      await userService.deleteUser(target);
+      activityService.logActivity('all', {
+        user: user?.name || 'Admin',
+        action: 'deleted employee account for',
+        target: deletedName,
+        type: 'user',
+      });
+      toast.success(`Account "${deletedName}" deleted permanently`);
+    } catch (err) {
+      console.error('Delete user error:', err);
+      toast.error('Failed to delete user');
+      userService.fetchUsersFromRemote().then((loaded) => {
+        if (Array.isArray(loaded)) setUsers(loaded);
+      });
+    }
   };
 
   const handleSaveEdit = (userId) => {

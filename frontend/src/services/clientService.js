@@ -119,12 +119,11 @@ export const clientService = {
         return this.getClients();
       }
 
-      if (Array.isArray(data) && data.length > 0) {
+      if (Array.isArray(data)) {
         const mapped = data.map(mapRemoteClient);
         this.saveClients(mapped);
         return mapped;
       }
-      return this.getClients();
     } catch (err) {
       console.warn('Error fetching clients from Supabase:', err);
       return this.getClients();
