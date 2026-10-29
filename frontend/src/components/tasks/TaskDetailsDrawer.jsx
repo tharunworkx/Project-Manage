@@ -25,8 +25,48 @@ export function TaskDetailsDrawer({ task, isOpen = true, onClose, onUpdate, onDe
 
   const { canDeleteTasks, canManageTaskMetadata, canMarkTaskDone, isTeamMember, user } = useAuthContext();
   const { currentWorkspace } = useWorkspaceContext();
-  const projectManagers = React.useMemo(() => userService.getProjectManagers(), []);
-  const teamMembers = React.useMemo(() => userService.getTeamMembers(), []);
+  const [usersList, setUsersList] = useState(() => userService.getUsers());
+
+  React.useEffect(() => {
+    userService.fetchUsersFromRemote().then((remoteUsers) => {
+      if (Array.isArray(remoteUsers) && remoteUsers.length > 0) {
+        setUsersList(remoteUsers);
+      }
+    }).catch(() => {});
+
+    const handleUsersUpdated = () => {
+      setUsersList(userService.getUsers());
+    };
+    window.addEventListener('taskflow_users_updated', handleUsersUpdated);
+    return () => window.removeEventListener('taskflow_users_updated', handleUsersUpdated);
+  }, []);
+
+  const projectManagers = React.useMemo(() => {
+    const managers = usersList.filter(
+      (u) =>
+        u.role?.toLowerCase() === 'project_manager' ||
+        u.role?.toLowerCase() === 'admin'
+    );
+    const seen = new Set();
+    return managers.filter((u) => {
+      const key = (u.name || u.email || '').toLowerCase().trim();
+      if (!key || seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }, [usersList]);
+
+  // All active members available to be assigned tasks by Admin or Project Manager
+  const assignableMembers = React.useMemo(() => {
+    const seen = new Set();
+    return usersList.filter((u) => {
+      if (!u.name || u.status === 'Deactivated') return false;
+      const key = (u.name || u.email || '').toLowerCase().trim();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }, [usersList]);
 
   const [title, setTitle] = useState(task.title || '');
   const [description, setDescription] = useState(task.description || '');
@@ -59,7 +99,7 @@ export function TaskDetailsDrawer({ task, isOpen = true, onClose, onUpdate, onDe
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   const handleFieldChange = (field, value) => {
-    const updates = { [field]: value };
+    const updates = typeof field === 'object' ? field : { [field]: value };
     if (onUpdate) {
       onUpdate(updates, task.id);
     }
@@ -231,8 +271,20 @@ export function TaskDetailsDrawer({ task, isOpen = true, onClose, onUpdate, onDe
                 disabled={isTeamMember || !canManageTaskMetadata}
                 value={isTeamMember ? (user?.name || assignee) : assignee}
                 onChange={(e) => {
-                  setAssignee(e.target.value);
-                  handleFieldChange('assignee', e.target.value === 'Unassigned' ? null : e.target.value);
+                  const val = e.target.value;
+                  setAssignee(val);
+                  const newAssignee = val === 'Unassigned' ? null : val;
+                  const matchedUser = newAssignee
+                    ? usersList.find(
+                        (u) =>
+                          (u.name && u.name.toLowerCase() === newAssignee.toLowerCase()) ||
+                          u.id === newAssignee
+                      )
+                    : null;
+                  handleFieldChange({
+                    assignee: matchedUser?.name || newAssignee,
+                    assignee_id: matchedUser?.id || null,
+                  });
                 }}
                 className={`w-full h-8 px-2 py-1 text-xs font-medium ${
                   isTeamMember || !canManageTaskMetadata ? 'opacity-85 cursor-not-allowed bg-slate-50 dark:bg-[#1D2125]' : ''
@@ -245,9 +297,9 @@ export function TaskDetailsDrawer({ task, isOpen = true, onClose, onUpdate, onDe
                 ) : (
                   <>
                     <option value="Unassigned">Unassigned</option>
-                    {teamMembers.map((u) => (
-                      <option key={u.id} value={u.name}>
-                        {u.name}
+                    {assignableMembers.map((u) => (
+                      <option key={u.id || u.email} value={u.name}>
+                        {u.name} {u.role === 'team_member' ? '(Team Member)' : u.role === 'project_manager' ? '(Project Manager)' : u.role === 'admin' ? '(Admin)' : ''}
                       </option>
                     ))}
                   </>
@@ -270,7 +322,7 @@ export function TaskDetailsDrawer({ task, isOpen = true, onClose, onUpdate, onDe
                 }`}
               >
                 {projectManagers.map((u) => (
-                  <option key={u.id} value={u.name}>
+                  <option key={u.id || u.email} value={u.name}>
                     {u.name} ({u.role === 'admin' ? 'Admin' : 'Project Manager'})
                   </option>
                 ))}

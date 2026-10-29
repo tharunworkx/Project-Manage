@@ -13,8 +13,48 @@ export function TaskForm({ initialData, onSubmit, onCancel }) {
   const { canMarkTaskDone, user, isTeamMember } = useAuthContext();
   const { projects = [] } = useProjects(currentWorkspace?.id);
 
-  const projectManagers = React.useMemo(() => userService.getProjectManagers(), []);
-  const teamMembers = React.useMemo(() => userService.getTeamMembers(), []);
+  const [usersList, setUsersList] = useState(() => userService.getUsers());
+
+  useEffect(() => {
+    userService.fetchUsersFromRemote().then((remoteUsers) => {
+      if (Array.isArray(remoteUsers) && remoteUsers.length > 0) {
+        setUsersList(remoteUsers);
+      }
+    }).catch(() => {});
+
+    const handleUsersUpdated = () => {
+      setUsersList(userService.getUsers());
+    };
+    window.addEventListener('taskflow_users_updated', handleUsersUpdated);
+    return () => window.removeEventListener('taskflow_users_updated', handleUsersUpdated);
+  }, []);
+
+  const projectManagers = React.useMemo(() => {
+    const managers = usersList.filter(
+      (u) =>
+        u.role?.toLowerCase() === 'project_manager' ||
+        u.role?.toLowerCase() === 'admin'
+    );
+    const seen = new Set();
+    return managers.filter((u) => {
+      const key = (u.name || u.email || '').toLowerCase().trim();
+      if (!key || seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }, [usersList]);
+
+  // All active members available to be assigned tasks by Admin or Project Manager
+  const assignableMembers = React.useMemo(() => {
+    const seen = new Set();
+    return usersList.filter((u) => {
+      if (!u.name || u.status === 'Deactivated') return false;
+      const key = (u.name || u.email || '').toLowerCase().trim();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }, [usersList]);
 
   const [projectId, setProjectId] = useState(initialData?.project_id || '');
 
@@ -55,6 +95,15 @@ export function TaskForm({ initialData, onSubmit, onCancel }) {
       ? (user?.name || assignee)
       : (assignee === 'Unassigned' ? null : assignee);
 
+    const matchedAssignee = finalAssignee
+      ? usersList.find(
+          (u) =>
+            (u.name && u.name.toLowerCase() === finalAssignee.toLowerCase()) ||
+            u.id === finalAssignee ||
+            (u.email && u.email.toLowerCase() === finalAssignee.toLowerCase())
+        )
+      : null;
+
     onSubmit({
       project_id: projectId || chosenProject?.id || null,
       project_name: chosenProject?.name || null,
@@ -64,8 +113,8 @@ export function TaskForm({ initialData, onSubmit, onCancel }) {
       status,
       type,
       priority,
-      assignee: finalAssignee,
-      assignee_id: isTeamMember ? (user?.id || null) : null,
+      assignee: matchedAssignee?.name || finalAssignee || null,
+      assignee_id: matchedAssignee?.id || (isTeamMember ? (user?.id || null) : null),
       reporter: user?.name || reporter || 'Admin',
       reporter_id: user?.id || null,
       created_by: initialData?.created_by || user?.name || 'Admin',
@@ -176,9 +225,9 @@ export function TaskForm({ initialData, onSubmit, onCancel }) {
             ) : (
               <>
                 <option value="Unassigned">Unassigned</option>
-                {teamMembers.map((u) => (
-                  <option key={u.id} value={u.name}>
-                    {u.name}
+                {assignableMembers.map((u) => (
+                  <option key={u.id || u.email} value={u.name}>
+                    {u.name} {u.role === 'team_member' ? '(Team Member)' : u.role === 'project_manager' ? '(Project Manager)' : u.role === 'admin' ? '(Admin)' : ''}
                   </option>
                 ))}
               </>
@@ -196,7 +245,7 @@ export function TaskForm({ initialData, onSubmit, onCancel }) {
             className="w-full h-9"
           >
             {projectManagers.map((u) => (
-              <option key={u.id} value={u.name}>
+              <option key={u.id || u.email} value={u.name}>
                 {u.name} ({u.role === 'admin' ? 'Admin' : 'Project Manager'})
               </option>
             ))}

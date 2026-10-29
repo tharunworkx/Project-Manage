@@ -379,14 +379,28 @@ export const userService = {
     });
   },
 
-  getTeamMembers() {
-    const raw = this.getUsers().filter(
-      (u) => u.role?.toLowerCase() === 'team_member'
-    );
+  getAllMembers() {
+    const raw = this.getUsers().filter((u) => u.status !== 'Deactivated');
     const seen = new Set();
     return raw.filter((u) => {
-      if (!u.name || seen.has(u.name)) return false;
-      seen.add(u.name);
+      const key = (u.name || u.email || '').trim().toLowerCase();
+      if (!key || seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  },
+
+  getTeamMembers() {
+    const raw = this.getUsers().filter((u) => {
+      if (u.status === 'Deactivated') return false;
+      const r = (u.role || '').toLowerCase();
+      return r === 'team_member' || r === 'member' || r === 'employee' || (!r.includes('admin') && !r.includes('manager'));
+    });
+    const seen = new Set();
+    return raw.filter((u) => {
+      const key = (u.name || u.email || '').trim().toLowerCase();
+      if (!key || seen.has(key)) return false;
+      seen.add(key);
       return true;
     });
   },

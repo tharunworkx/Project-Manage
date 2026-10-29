@@ -293,6 +293,23 @@ export const taskService = {
             payload[col] = updates[col];
           }
         }
+
+        if (updates.assignee !== undefined && updates.assignee_id === undefined) {
+          if (!updates.assignee || updates.assignee === 'Unassigned') {
+            payload.assignee_id = null;
+          } else {
+            const allUsers = userService.getUsers();
+            const found = allUsers.find(
+              (u) =>
+                (u.id && isUuid(u.id) && u.id === updates.assignee) ||
+                (u.name && u.name.toLowerCase() === updates.assignee.toLowerCase()) ||
+                (u.email && u.email.toLowerCase() === updates.assignee.toLowerCase())
+            );
+            if (found && isUuid(found.id)) {
+              payload.assignee_id = found.id;
+            }
+          }
+        }
         if (payload.due_date === '') payload.due_date = null;
         if (payload.start_date === '') payload.start_date = null;
         if (payload.status && !['backlog', 'todo', 'in_progress', 'in_review', 'done', 'cancelled'].includes(payload.status)) {
@@ -313,8 +330,12 @@ export const taskService = {
             console.error('Supabase task update error:', error);
             throw new Error('Supabase task update failed: ' + error.message);
           } else if (data) {
+            const allUsers = userService.getUsers();
+            const assigneeUser = allUsers.find((u) => u.id === data.assignee_id);
             const formatted = {
               ...data,
+              assignee: assigneeUser?.name || updates.assignee || 'Unassigned',
+              assignee_id: data.assignee_id || null,
               workspace_id: data.workspace_id || data.projects?.workspace_id,
               project_name: data.projects?.name,
             };

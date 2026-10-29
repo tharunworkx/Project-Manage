@@ -1,11 +1,5 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { ChevronDown, Check } from 'lucide-react';
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-} from './motion/dropdown-menu';
 import { cn } from '@/lib/utils';
 
 export function Select({
@@ -23,8 +17,10 @@ export function Select({
   required,
 }) {
   const [open, setOpen] = useState(false);
+  const containerRef = useRef(null);
+  const [openUpwards, setOpenUpwards] = useState(false);
 
-  // Parse options from either `options` prop or `children` (<option> tags)
+  // Recursively extract options supporting React.Fragment, arrays, and standard <option> tags
   const options = useMemo(() => {
     if (Array.isArray(optionsProp)) {
       return optionsProp.map((opt) => {
@@ -37,13 +33,24 @@ export function Select({
 
     if (children) {
       const parsed = [];
-      React.Children.forEach(children, (child) => {
-        if (React.isValidElement(child)) {
-          const val = child.props.value !== undefined ? String(child.props.value) : '';
-          const label = child.props.children || val;
-          parsed.push({ value: val, label, disabled: child.props.disabled });
-        }
-      });
+      const extractOptions = (node) => {
+        React.Children.forEach(node, (child) => {
+          if (!child) return;
+          if (React.isValidElement(child)) {
+            // Unpack React.Fragment (e.g. <> <option .../> </>)
+            if (child.type === React.Fragment) {
+              extractOptions(child.props?.children);
+            } else if (Array.isArray(child)) {
+              extractOptions(child);
+            } else {
+              const val = child.props?.value !== undefined ? String(child.props.value) : '';
+              const label = child.props?.children !== undefined ? child.props.children : val;
+              parsed.push({ value: val, label, disabled: child.props?.disabled });
+            }
+          }
+        });
+      };
+      extractOptions(children);
       return parsed;
     }
 
@@ -56,7 +63,37 @@ export function Select({
     return options.find((opt) => opt.value === stringVal);
   }, [options, value]);
 
-  const displayLabel = selectedOption ? selectedOption.label : placeholder;
+  const displayLabel = selectedOption ? selectedOption.label : (placeholder || 'Select an option');
+
+  // Handle outside click & escape key
+  useEffect(() => {
+    if (!open) return;
+    const handleClickOutside = (e) => {
+      if (containerRef.current && !containerRef.current.contains(e.target)) {
+        setOpen(false);
+      }
+    };
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') setOpen(false);
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [open]);
+
+  // Toggle dropdown with dynamic position detection
+  const handleToggle = () => {
+    if (disabled) return;
+    if (!open && containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect();
+      const spaceBelow = window.innerHeight - rect.bottom;
+      setOpenUpwards(spaceBelow < 220 && rect.top > 220);
+    }
+    setOpen((prev) => !prev);
+  };
 
   const handleSelect = (optVal) => {
     if (disabled) return;
@@ -72,70 +109,81 @@ export function Select({
     setOpen(false);
   };
 
-  // Filter out placeholder options from the rendered dropdown menu items
+  // Filter out placeholder prompts from rendered options list
   const menuOptions = useMemo(() => {
     return options.filter((opt) => {
-      if (!opt.value || String(opt.value).trim() === '') return false;
-      const lower = String(opt.label).toLowerCase().trim();
-      if (lower.startsWith('select ') || lower === 'select') return false;
+      const lower = String(opt.label || '').toLowerCase().trim();
+      if ((!opt.value || String(opt.value).trim() === '') && (lower.startsWith('select') || lower === '')) {
+        return false;
+      }
       return true;
     });
   }, [options]);
 
   return (
-    <DropdownMenu open={open} onOpenChange={setOpen}>
-      <DropdownMenuTrigger asChild disabled={disabled}>
-        <button
-          type="button"
-          id={id}
-          name={name}
-          disabled={disabled}
-          className={cn(
-            "flex w-full items-center justify-between gap-2 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-medium text-slate-800 transition hover:bg-slate-50 focus:border-[#0C66E4] focus:outline-none dark:border-[#333C44] dark:bg-[#1E2227] dark:text-[#DEE4EA] dark:hover:bg-[#282E33] dark:focus:border-[#579DFF] cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 select-none shadow-2xs",
-            className
-          )}
-        >
-          <span className={cn("truncate text-left", !selectedOption && "text-slate-400 dark:text-[#738496]")}>
-            {displayLabel}
-          </span>
-          <ChevronDown
-            className={cn(
-              "h-3.5 w-3.5 shrink-0 text-slate-400 transition-transform duration-200 dark:text-[#738496]",
-              open && "rotate-180"
-            )}
-          />
-        </button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent
-        align="start"
+    <div ref={containerRef} className="relative w-full">
+      <button
+        type="button"
+        id={id}
+        name={name}
+        disabled={disabled}
+        onClick={handleToggle}
         className={cn(
-          "w-[var(--anchor-width)] min-w-[200px] max-h-64 overflow-y-auto p-1.5 rounded-2xl border border-slate-200 dark:border-[#282E33] bg-white dark:bg-[#161A1D] shadow-2xl z-50",
-          contentClassName
+          "flex w-full items-center justify-between gap-2 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-medium text-slate-800 transition hover:bg-slate-50 focus:border-[#0C66E4] focus:outline-none dark:border-[#333C44] dark:bg-[#1E2227] dark:text-[#DEE4EA] dark:hover:bg-[#282E33] dark:focus:border-[#579DFF] cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 select-none shadow-2xs",
+          className
         )}
       >
-        {menuOptions.map((opt, idx) => {
-          const isSelected = String(opt.value) === (value !== undefined && value !== null ? String(value) : '');
-          return (
-            <DropdownMenuItem
-              key={`${opt.value}-${idx}`}
-              disabled={opt.disabled}
-              onClick={() => handleSelect(opt.value)}
-              className={cn(
-                "flex items-center justify-between gap-2 px-3 py-2 rounded-xl text-xs font-medium cursor-pointer transition select-none",
-                isSelected
-                  ? "bg-blue-50 text-[#0C66E4] dark:bg-[#1C2B41] dark:text-[#579DFF] font-semibold"
-                  : "text-slate-700 dark:text-[#DEE4EA] hover:bg-slate-100 dark:hover:bg-[#22272B]"
-              )}
-            >
-              <span className="truncate">{opt.label}</span>
-              {isSelected && (
-                <Check className="h-3.5 w-3.5 shrink-0 text-[#0C66E4] dark:text-[#579DFF]" />
-              )}
-            </DropdownMenuItem>
-          );
-        })}
-      </DropdownMenuContent>
-    </DropdownMenu>
+        <span className={cn("truncate text-left", !selectedOption && "text-slate-400 dark:text-[#738496]")}>
+          {displayLabel}
+        </span>
+        <ChevronDown
+          className={cn(
+            "h-3.5 w-3.5 shrink-0 text-slate-400 transition-transform duration-200 dark:text-[#738496]",
+            open && "rotate-180"
+          )}
+        />
+      </button>
+
+      {open && (
+        <div
+          className={cn(
+            "absolute left-0 w-full min-w-[200px] max-h-60 overflow-y-auto p-1.5 rounded-2xl border border-slate-200 dark:border-[#282E33] bg-white dark:bg-[#161A1D] shadow-2xl z-50",
+            openUpwards ? "bottom-full mb-1.5" : "top-full mt-1.5",
+            contentClassName
+          )}
+        >
+          {menuOptions.length === 0 ? (
+            <div className="px-3 py-2 text-xs text-slate-400 dark:text-[#738496] italic text-center">
+              No options available
+            </div>
+          ) : (
+            menuOptions.map((opt, idx) => {
+              const isSelected = String(opt.value) === (value !== undefined && value !== null ? String(value) : '');
+              return (
+                <button
+                  type="button"
+                  key={`${opt.value}-${idx}`}
+                  disabled={opt.disabled}
+                  onClick={() => handleSelect(opt.value)}
+                  className={cn(
+                    "flex w-full items-center justify-between gap-2 px-3 py-2 rounded-xl text-xs font-medium cursor-pointer transition select-none text-left",
+                    isSelected
+                      ? "bg-blue-50 text-[#0C66E4] dark:bg-[#1C2B41] dark:text-[#579DFF] font-semibold"
+                      : "text-slate-700 dark:text-[#DEE4EA] hover:bg-slate-100 dark:hover:bg-[#22272B]",
+                    opt.disabled && "opacity-50 cursor-not-allowed"
+                  )}
+                >
+                  <span className="truncate">{opt.label}</span>
+                  {isSelected && (
+                    <Check className="h-3.5 w-3.5 shrink-0 text-[#0C66E4] dark:text-[#579DFF]" />
+                  )}
+                </button>
+              );
+            })
+          )}
+        </div>
+      )}
+    </div>
   );
 }
 
